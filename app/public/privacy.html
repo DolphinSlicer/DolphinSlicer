@@ -41,6 +41,7 @@
   <li>Your models are sliced on your own computer. They are never uploaded.</li>
   <li>There are no accounts, no ads, no analytics and no tracking cookies.</li>
   <li>If you turn on Google Drive sync, your data goes to your own Google Drive and nowhere else.</li>
+  <li>If you connect an AI assistant, it can read and change your presets and settings in your Drive.</li>
 </ul>
 
 <h2>Data in your browser</h2>
@@ -59,7 +60,7 @@
     It keeps your presets, settings, model library and the printers you choose to sync (including their API keys)
     in a "DolphinSlicer" folder in your Drive.
   </li>
-  <li>Your browser exchanges these files with Google directly. They never pass through our servers.</li>
+  <li>For sync, your browser exchanges these files with Google directly. They never pass through our servers.</li>
   <li>
     To keep you signed in, a small service on dolphinslicer.app (<code>/api/auth</code>) completes the Google sign-in
     and renews access. It keeps Google's renewal token encrypted in a cookie in your browser and stores nothing on
@@ -67,10 +68,36 @@
     any time in your <a href="https://myaccount.google.com/permissions">Google account</a>.
   </li>
   <li>
-    This data is used only to sync your DolphinSlicer setup between your devices. It is not shared, sold or used for
-    advertising. DolphinSlicer's use of information received from Google APIs adheres to the
+    This data is used only to sync your DolphinSlicer setup between your devices, and for the AI assistants you
+    connect (below). It is not shared, sold or used for advertising. DolphinSlicer's use of information received from Google APIs adheres to the
     <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>,
     including the Limited Use requirements.
+  </li>
+</ul>
+
+<h2>AI assistants (optional)</h2>
+<p>
+  You can connect an AI assistant, such as Claude or ChatGPT, to DolphinSlicer's MCP server
+  (<code>dolphinslicer.app/mcp</code>). It can then look at your setup and save presets for you.
+</p>
+<ul>
+  <li>
+    When you connect one, DolphinSlicer shows which app is asking, and you sign in with Google as for Drive sync
+    (the same <code>drive.file</code> permission).
+  </li>
+  <li>
+    When the assistant uses it, the server reads from your Drive: your presets, the presets you selected, your
+    printer and filament list, units and currency. It saves the presets the assistant changes there. It does not
+    read your models or your printer connections.
+  </li>
+  <li>
+    The server passes what it reads to the assistant and stores nothing. The assistant's access is an encrypted
+    token that the assistant keeps and only the server can read.
+  </li>
+  <li>What the assistant receives is handled by its provider, under that provider's privacy policy.</li>
+  <li>
+    Removing DolphinSlicer's access in your <a href="https://myaccount.google.com/permissions">Google account</a>
+    disconnects every assistant, and signs out Drive sync too.
   </li>
 </ul>
 
@@ -85,7 +112,7 @@
 <h2>Other sites the app contacts</h2>
 <p>Only when you use the feature:</p>
 <ul>
-  <li>Google, for sign-in and Drive, when you use Drive sync.</li>
+  <li>Google, for sign-in and Drive, when you use Drive sync or connect an AI assistant.</li>
   <li>GitHub, when you open the help for a setting: the text comes from the OrcaSlicer wiki.</li>
   <li>The site a "Slice now" link names, to load its model.</li>
   <li>Your printers, at the addresses you enter, when you send G-code or check their status.</li>
@@ -93,7 +120,8 @@
 
 <h2>Cookies</h2>
 <p>
-  Only the sign-in cookies described above, set when you connect Google Drive. There are no other cookies.
+  Only sign-in cookies: the one described above, set when you connect Google Drive, and two short-lived ones while
+  you connect an AI assistant. There are no other cookies.
 </p>
 
 <h2>No warranty</h2>

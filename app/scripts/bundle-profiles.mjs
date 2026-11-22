@@ -2,6 +2,7 @@
 //   public/profiles/<hash>/<Vendor>.json   {"files": {"<Vendor>.json": "…", "<Vendor>/machine/x.json": "…"}}
 //   public/profiles-manifest.json          vendor catalog (names, printer models) + bundle paths
 //   public/profiles/<hash>/catalog.json    each vendor's presets by type (comparing with any preset)
+//   public/profiles/<hash>/presets/<n>.json the presets by name, for the MCP server (server/mcp/shard.ts)
 // The engine writes a bundle's files into MEMFS at /orca/system/ and loads them with
 // PresetBundle (see engine/bridge/orca_presets.cpp). File contents are kept byte-for-byte.
 // Source: ORCA_PROFILES, default ../.work/orca-src/resources/profiles.
@@ -9,6 +10,7 @@
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { presetShard, SHARDS } from '../server/mcp/shard.ts';
 
 const app = resolve(import.meta.dirname, '..');
 const src = process.env.ORCA_PROFILES ?? resolve(app, '../.work/orca-src/resources/profiles');
@@ -32,6 +34,8 @@ const vendors = readdirSync(src)
   .sort();
 const bundles = [];
 const presetVendors = {};
+/** Each shard's presets: name → vendor → file text. */
+const shards = Array.from({ length: SHARDS }, () => ({}));
 /** Each vendor's presets one can pick (instantiation), by type: to compare with any of them. */
 const catalog = {};
 const TYPE = { machine: 'printer', filament: 'filament', process: 'print' };
@@ -83,6 +87,15 @@ for (const id of vendors) {
         /* not a preset */
       }
     }
+  for (const [path, t] of Object.entries(files)) {
+    if (!/\/(machine|filament|process)\//.test(path)) continue;
+    try {
+      const j = JSON.parse(t);
+      if (j.name && j.type !== 'machine_model') (shards[presetShard(j.name)][j.name] ??= {})[id] = t;
+    } catch {
+      /* not a preset */
+    }
+  }
   const text = JSON.stringify({ files });
   bundles.push({
     id,
@@ -108,6 +121,8 @@ const index = Object.fromEntries(
 );
 writeFileSync(resolve(out, dirId, 'index.json'), JSON.stringify(index));
 writeFileSync(resolve(out, dirId, 'catalog.json'), JSON.stringify(catalog));
+mkdirSync(resolve(out, dirId, 'presets'));
+shards.forEach((s, i) => writeFileSync(resolve(out, dirId, 'presets', `${i}.json`), JSON.stringify(s)));
 let total = 0;
 for (const b of bundles) {
   writeFileSync(resolve(out, dirId, `${b.id}.json`), b.text);
