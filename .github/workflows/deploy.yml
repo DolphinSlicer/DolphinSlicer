@@ -1,0 +1,112 @@
+# Deploys main to Cloudflare Pages (dolphinslicer.app). The engines are cached by their sources:
+# a commit that leaves engine/ alone reuses them, one that changes it builds them (cold: hours,
+# with warm dependency and compiler caches: much less).
+name: deploy
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One deploy at a time, in order; a newer push waits rather than cancels a running one.
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  engine:
+    name: Engine (${{ matrix.variant }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 340
+    strategy:
+      matrix:
+        variant: [st, mt]
+    env:
+      DEPS_JOBS: 4
+      ENGINE_JOBS: 4
+    steps:
+      - uses: actions/checkout@v4
+      - name: Engine built from these sources
+        id: dist
+        uses: actions/cache@v4
+        with:
+          path: .work/build-engine-${{ matrix.variant }}/dist
+          key: engine-dist-${{ matrix.variant }}-${{ hashFiles('engine/**', '!engine/test/**') }}
+      - name: Free disk space
+        if: steps.dist.outputs.cache-hit != 'true'
+        run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+      - name: Cache WASM dependencies
+        if: steps.dist.outputs.cache-hit != 'true'
+        uses: actions/cache@v4
+        with:
+          path: .work/deps-${{ matrix.variant }}
+          key: deps-${{ matrix.variant }}-${{ hashFiles('engine/versions.env', 'engine/deps/**', 'engine/patches/deps/**', 'engine/docker/Dockerfile', 'engine/docker/*.patch') }}
+      - name: Cache compiler output
+        if: steps.dist.outputs.cache-hit != 'true'
+        uses: actions/cache@v4
+        with:
+          path: |
+            .work/ccache
+            .work/emcache
+          key: ccache-${{ matrix.variant }}-${{ github.sha }}
+          restore-keys: ccache-${{ matrix.variant }}-
+      - name: Build dependencies
+        if: steps.dist.outputs.cache-hit != 'true'
+        run: |
+          if [ ! -f .work/deps-${{ matrix.variant }}/include/boost/version.hpp ]; then
+            engine/scripts/build-deps.sh ${{ matrix.variant }}
+          fi
+      - name: Build engine
+        if: steps.dist.outputs.cache-hit != 'true'
+        run: engine/scripts/build-engine.sh ${{ matrix.variant }} orca_engine
+      - uses: actions/upload-artifact@v4
+        with:
+          name: engine-${{ matrix.variant }}
+          path: .work/build-engine-${{ matrix.variant }}/dist/slicer-${{ matrix.variant }}.*
+          retention-days: 1
+          if-no-files-found: error
+
+  deploy:
+    name: Build and deploy
+    needs: engine
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: app/package-lock.json }
+      - uses: actions/download-artifact@v4
+        with: { name: engine-st, path: .work/engine-st }
+      - uses: actions/download-artifact@v4
+        with: { name: engine-mt, path: .work/engine-mt }
+      # Profiles, calibration models and translations come from the pinned OrcaSlicer checkout.
+      - name: Fetch OrcaSlicer sources
+        run: bash -c 'source engine/scripts/common.sh && fetch_orca'
+      - name: Install
+        working-directory: app
+        run: npm ci
+      - name: Build
+        working-directory: app
+        env:
+          ENGINE_DIST_ST: ${{ github.workspace }}/.work/engine-st
+          ENGINE_DIST_MT: ${{ github.workspace }}/.work/engine-mt
+        run: npm run build
+      - name: Deploy to Cloudflare Pages
+        working-directory: app
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx --yes wrangler@4.166.0 pages deploy dist --project-name dolphinslicer --branch main --commit-hash ${{ github.sha }}
+      - name: Check the live site
+        working-directory: app
+        run: |
+          built=$(ls dist/assets | grep -E '^index-.*\.js$')
+          for i in $(seq 1 12); do
+            live=$(curl -fsS https://dolphinslicer.app/ | grep -oE 'index-[A-Za-z0-9_-]+\.js' | head -1) || true
+            [ "$live" = "$built" ] && { echo "live: $live"; exit 0; }
+            sleep 10
+          done
+          echo "live site serves ${live:-nothing}, built $built" >&2
+          exit 1
