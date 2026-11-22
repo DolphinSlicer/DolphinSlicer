@@ -39,36 +39,50 @@ browser.
 
 ## Features
 
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/images/preview-dark.png">
-    <img src="docs/images/preview-light.png" alt="The sliced bunny in the G-code preview, colored by line type, with print time, filament and cost">
-  </picture>
-</p>
+- **Prepare your plate**: import STL, 3MF, OBJ and AMF, then move, rotate, scale, arrange and paint
+  supports.
+- **Preview the G-code** layer by layer, with print time, filament use and cost.
+- **OrcaSlicer's settings and printer profiles** for 70+ brands, plus your own printers. Import your
+  OrcaSlicer and PrusaSlicer presets.
+- **Calibration tests**: temperature, flow, pressure advance, retraction and more.
+- **Send to your printer** over Klipper or OctoPrint, or export the G-code.
+- **Model library** and optional **Google Drive sync** across your devices.
+- **"Slice now" links** that open a model from your website ([how to add one](docs/QUICK_LINK.md)).
 
-- **Import** STL, 3MF, OBJ and AMF files. 3MF projects keep their positions and per-object settings.
-- **Prepare your plate**: move, rotate and scale, arrange, auto orient, lay on face and paint supports.
-- **Preview the G-code** layer by layer, colored by line type, speed and more, with print time,
-  filament use and cost.
-- **Printer profiles** for 70+ brands, the same ones OrcaSlicer ships, plus your own custom printers
-  and nozzle variants.
-- **Calibration tests** from OrcaSlicer: temperature tower, flow rate, pressure advance, retraction,
-  max flowrate, VFA, input shaping and cornering.
-- **Send to your printer** over Klipper (Moonraker) or OctoPrint, or export the G-code.
-- **Model library** to keep the models you print often.
-- **Google Drive sync** (optional) for your presets, models and settings, across all your devices.
-- **Works with your OrcaSlicer presets**: import and export printer, filament and process presets,
-  and bring presets over from PrusaSlicer.
-- **"Slice now" links** that open a model from your website straight in DolphinSlicer
-  ([how to add one](docs/QUICK_LINK.md)).
-- **In your language**: the interface uses OrcaSlicer's translations in 22 languages.
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/images/settings-dark.png">
-    <img src="docs/images/settings-light.png" alt="The print settings, with the same pages and options as OrcaSlicer desktop">
-  </picture>
-</p>
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/images/preview-dark.png">
+        <img src="docs/images/preview-light.png" alt="The sliced bunny in the G-code preview, colored by line type, with print time, filament and cost">
+      </picture>
+      <br>G-code preview
+    </td>
+    <td width="50%" align="center">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/images/settings-dark.png">
+        <img src="docs/images/settings-light.png" alt="The print settings, with the same pages and options as OrcaSlicer desktop">
+      </picture>
+      <br>Print settings
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/images/library-dark.png">
+        <img src="docs/images/library-light.png" alt="The model library with the Stanford Bunny, 3DBenchy and calibration models">
+      </picture>
+      <br>Model library
+    </td>
+    <td width="50%" align="center">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/images/calibration-dark.png">
+        <img src="docs/images/calibration-light.png" alt="A temperature tower on the plate and the menu of calibration tests">
+      </picture>
+      <br>Calibration tests
+    </td>
+  </tr>
+</table>
 
 ## Getting started
 
@@ -108,8 +122,8 @@ DolphinSlicer is built on [OrcaSlicer](https://github.com/OrcaSlicer/OrcaSlicer)
 contributors, itself based on Bambu Studio, PrusaSlicer and Slic3r. Build recipes and several fixes
 come from [OrcaWeb](https://github.com/Hiosdra/OrcaWeb). See [NOTICE](NOTICE) for all credits.
 
-The model in the screenshots is the Stanford Bunny by the Stanford Computer Graphics Laboratory, one
-of OrcaSlicer's sample models.
+The models in the screenshots are OrcaSlicer's sample and calibration models, among them the
+Stanford Bunny by the Stanford Computer Graphics Laboratory and 3DBenchy by Creative Tools.
 
 DolphinSlicer is free software under the
 [GNU Affero General Public License v3.0 or later](LICENSE).
