@@ -6,8 +6,8 @@ This project builds and links OrcaSlicer (https://github.com/OrcaSlicer/OrcaSlic
 Copyright (C) SoftFever and contributors, AGPL-3.0; itself derived from Bambu Studio,
 PrusaSlicer and Slic3r.
 
-Build recipes and several source fixes are adapted from OrcaWeb
-(https://github.com/Hiosdra/OrcaWeb), AGPL-3.0. Provenance is recorded per patch in docs/PATCHES.md.
+Build recipes and several source fixes are adapted from OrcaWasm, formerly OrcaWeb
+(https://github.com/Hiosdra/OrcaWasm), AGPL-3.0. Provenance is recorded per patch in docs/PATCHES.md.
 
 Third-party dependency licenses are listed in THIRD_PARTY_NOTICES.md (generated at build time).
 
