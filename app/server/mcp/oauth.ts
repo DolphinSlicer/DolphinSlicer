@@ -135,21 +135,21 @@ async function client(env: OAuthEnv, cid: string): Promise<Registration | null> 
     try {
       const u = new URL(cid);
       if (u.pathname === '/' || u.hash) return null;
-      const r = await fetch(cid, { headers: { Accept: 'application/json' }, redirect: 'error', signal: AbortSignal.timeout(5000) });
-      const text = r.ok ? await r.text() : '';
-      if (!text || text.length > 65536) return null;
+      // Cloudflare's fetch has no redirect: 'error'; a redirect is refused here instead.
+      const r = await fetch(cid, { headers: { Accept: 'application/json' }, redirect: 'manual', signal: AbortSignal.timeout(5000) });
+      const text = r.status === 200 ? await r.text() : '';
+      if (!text || text.length > 65536) throw new Error(`HTTP ${r.status}, ${text.length} bytes`);
       const doc = JSON.parse(text) as Partial<Registration> & { client_id?: string };
-      if (
-        doc.client_id !== cid ||
-        !Array.isArray(doc.redirect_uris) ||
-        !doc.redirect_uris.every((x) => typeof x === 'string' && validRedirect(x))
-      )
-        return null;
+      if (doc.client_id !== cid) throw new Error(`its client_id is ${doc.client_id}`);
+      // Only https and loopback redirects can be used (a desktop app may list its own scheme too).
+      const uris = Array.isArray(doc.redirect_uris) ? doc.redirect_uris.filter((x) => typeof x === 'string' && validRedirect(x)) : [];
+      if (!uris.length) throw new Error('no usable redirect_uris');
       return {
-        redirect_uris: doc.redirect_uris,
+        redirect_uris: uris,
         client_name: typeof doc.client_name === 'string' && doc.client_name ? doc.client_name : u.host,
       };
-    } catch {
+    } catch (e) {
+      console.error(`MCP client metadata ${cid}: ${(e as Error).message}`);
       return null;
     }
   }

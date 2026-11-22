@@ -9,6 +9,7 @@ import { handleRequest, type ServerEnv } from '../server/routes';
 
 const ORIGIN = 'https://dolphinslicer.test';
 const REDIRECT = 'https://client.example/callback';
+const CLIENT_DOC = 'https://client.example/oauth/metadata.json';
 
 // ── profiles ─────────────────────────────────────────────────────────────────────────────────
 const schema = {
@@ -256,6 +257,10 @@ beforeEach(() => {
         googleTokenCalls.push(new URLSearchParams(String(init.body)));
         return googleTokenReply();
       }
+      // Cloudflare's fetch refuses redirect: 'error'.
+      if (init.redirect && init.redirect !== 'follow' && init.redirect !== 'manual') throw new TypeError('Invalid redirect value');
+      if (input === CLIENT_DOC)
+        return Response.json({ client_id: CLIENT_DOC, client_name: 'Doc App', redirect_uris: [REDIRECT, 'docapp://callback'] });
       if (url.host !== 'www.googleapis.com') return new Response('not found', { status: 404 });
       expect(new Headers(init.headers).get('authorization')).toBe('Bearer g-access');
       const method = init.method ?? 'GET';
@@ -411,6 +416,21 @@ describe('sign-in', () => {
     googleTokenReply = () => new Response('{}', { status: 400 });
     const revoked = await call('/mcp/token', form({ grant_type: 'refresh_token', refresh_token: tokens.refresh_token }));
     expect((await revoked.json()).error).toBe('invalid_grant');
+  });
+
+  it('takes clients named by a metadata document', async () => {
+    const q = new URLSearchParams({
+      response_type: 'code',
+      client_id: CLIENT_DOC,
+      redirect_uri: REDIRECT,
+      code_challenge: 'c'.repeat(43),
+      code_challenge_method: 'S256',
+    });
+    const page = await call(`/mcp/authorize?${q}`);
+    expect(page.status).toBe(200);
+    expect(await page.text()).toContain('Connect Doc App to DolphinSlicer?');
+    q.set('client_id', 'https://client.example/other.json');
+    expect((await call(`/mcp/authorize?${q}`)).status).toBe(400);
   });
 
   it('refuses unknown redirects and consent from elsewhere', async () => {
