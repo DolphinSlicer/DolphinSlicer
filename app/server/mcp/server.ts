@@ -4,6 +4,7 @@
 // Every request needs an access token from the sign-in (oauth.ts).
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { AuthExpired } from '../../src/drive/api';
+import { INSTRUCTIONS } from './appGuide';
 import { accessToken, CORS, json, MCP_SCOPE, type OAuthEnv, resourceMetadataUrl } from './oauth';
 import { type Assets, Profiles } from './profiles';
 import { TOOLS, ToolError } from './tools';
@@ -20,15 +21,13 @@ const serverInfo = (origin: string) => ({
   name: 'dolphinslicer',
   title: 'DolphinSlicer',
   version: '1.0.0',
-  description: 'Your DolphinSlicer presets and OrcaSlicer profiles',
+  description: 'Your DolphinSlicer setup, presets and settings help',
   websiteUrl: 'https://dolphinslicer.app',
   icons: [
     { src: `${origin}/icon-512.png`, mimeType: 'image/png', sizes: ['512x512'] },
     { src: `${origin}/dolphin-slicer-mark.svg`, mimeType: 'image/svg+xml', sizes: ['any'] },
   ],
 });
-const INSTRUCTIONS =
-  "DolphinSlicer is OrcaSlicer in the browser. These tools read the user's setup and presets (as DolphinSlicer last synced them to their Google Drive), OrcaSlicer's system profiles and setting help, and save presets. Start with get_setup. Saved presets reach DolphinSlicer at its next sync, when its tab is reopened or reloaded. Ask before saving.";
 
 type Id = string | number;
 interface RpcRequest {

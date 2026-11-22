@@ -88,6 +88,4 @@ Without the secret, `/api/auth` is not served and the app falls back to the popu
 
 `server/mcp/` is an MCP server for AI assistants at `/mcp` ([docs/MCP.md](../docs/MCP.md)). It
 signs users in through Google with the same OAuth client and callback as the token service, so
-it needs nothing beyond the secret. It reads OrcaSlicer's profiles from the site's own files:
-`scripts/bundle-profiles.mjs` also writes them split by preset name (`profiles/<hash>/presets/`),
-and `scripts/dump-schema.mjs` writes each type's default values (`settings-defaults.json`).
+it needs nothing beyond the secret.

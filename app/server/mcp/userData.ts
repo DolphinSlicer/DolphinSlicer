@@ -23,7 +23,8 @@ export interface SyncedSettings {
 export class UserData {
   readonly drive: Drive;
   private app?: Promise<string | null>;
-  private presetTree?: Promise<{ root: string; folders: Map<string, string>; files: Map<string, string> } | null>;
+  private settingsChild?: Promise<{ id: string; modifiedTime: string } | undefined>;
+  private presetTree?: Promise<{ root: string; folders: Map<string, string>; files: Map<string, string>; latest: string } | null>;
 
   constructor(token: string) {
     this.drive = new Drive(token);
@@ -39,9 +40,13 @@ export class UserData {
     return this.app;
   }
 
+  private settingsFile() {
+    this.settingsChild ??= this.appFolder().then((app) => (app ? this.child(app, SETTINGS, false) : undefined));
+    return this.settingsChild;
+  }
+
   async settings(): Promise<SyncedSettings | null> {
-    const app = await this.appFolder();
-    const file = app && (await this.child(app, SETTINGS, false));
+    const file = await this.settingsFile();
     if (!file) return null;
     try {
       const j = JSON.parse(await this.drive.download(file.id)) as { settings?: Record<string, { value?: unknown }> };
@@ -64,7 +69,8 @@ export class UserData {
       const root = app && (await this.child(app, PRESETS, true));
       if (!root) return null;
       const t = await this.drive.tree(root.id);
-      return { root: root.id, folders: t.folders, files: new Map(t.files.map((f) => [f.path, f.id])) };
+      const latest = t.files.reduce((m, f) => (f.modifiedTime > m ? f.modifiedTime : m), '');
+      return { root: root.id, folders: t.folders, files: new Map(t.files.map((f) => [f.path, f.id])), latest };
     })();
     return this.presetTree;
   }
@@ -76,6 +82,12 @@ export class UserData {
   private async find(type: PresetType, name: string): Promise<string | undefined> {
     const files = (await this.tree())?.files;
     return files?.get(UserData.path(type, name, false)) ?? files?.get(UserData.path(type, name, true));
+  }
+
+  /** When DolphinSlicer last wrote the settings file and any preset file to Drive. */
+  async updated(): Promise<{ settings: string | null; presets: string | null }> {
+    const [file, tree] = await Promise.all([this.settingsFile(), this.tree()]);
+    return { settings: file?.modifiedTime ?? null, presets: tree?.latest || null };
   }
 
   /** The names of the user's presets by type. */

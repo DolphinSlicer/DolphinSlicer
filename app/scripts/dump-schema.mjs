@@ -2,9 +2,10 @@
 // public/settings-schema.json, served next to the app and loaded when the settings open, and
 // each preset type's default values (desktop's "Default Printer", "Default Filament" and
 // "Default Setting", what presets inherit at the root) to public/settings-defaults.json for the
-// MCP server (server/mcp/profiles.ts).
+// MCP server (server/mcp/profiles.ts), with the settings that hold one value per extruder variant
+// (Direct Drive Standard, Bowden High Flow, …), as OrcaSlicer's PrintConfig.cpp lists them.
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const app = resolve(import.meta.dirname, '..');
@@ -34,5 +35,18 @@ for (const [type, name] of [
   for (const [k, v] of Object.entries(values)) if (s.options[k]?.type === 'string' && typeof v === 'string') values[k] = unescapeConfig(v);
   defaults[type] = values;
 }
+// print_options_with_variant, filament_options_with_variant, printer_options_with_variant_1 (the
+// _2 set, machine limits, also holds a silent-mode value per variant).
+const config = readFileSync(resolve(process.env.ORCA_SRC ?? resolve(app, '../.work/orca-src'), 'src/libslic3r/PrintConfig.cpp'), 'utf8');
+const variantSet = (name) => {
+  const m = new RegExp(`std::set<std::string> ${name} = \\{([^}]*)\\}`).exec(config);
+  if (!m) throw new Error(`dump-schema: ${name} not found in PrintConfig.cpp`);
+  return [...m[1].replace(/\/\/.*$/gm, '').matchAll(/"([^"]+)"/g)].map((x) => x[1]).filter((k) => s.options[k]);
+};
+defaults.variants = {
+  print: variantSet('print_options_with_variant'),
+  filament: variantSet('filament_options_with_variant'),
+  printer: variantSet('printer_options_with_variant_1'),
+};
 writeFileSync(resolve(app, 'public/settings-defaults.json'), JSON.stringify(defaults));
 console.log('dump-schema: default values → public/settings-defaults.json');

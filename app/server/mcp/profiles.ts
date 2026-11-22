@@ -93,7 +93,12 @@ export class Profiles {
 
   manifest = () => this.load<Manifest>('profiles-manifest.json');
   schema = () => this.load<Schema>('settings-schema.json');
-  private allDefaults = () => this.load<Record<PresetType, Values>>('settings-defaults.json');
+  private allDefaults = () => this.load<Record<PresetType, Values> & { variants: Record<PresetType, string[]> }>('settings-defaults.json');
+
+  /** The settings of a type that hold one value per extruder variant. */
+  async variantKeys(type: PresetType): Promise<Set<string>> {
+    return new Set((await this.allDefaults()).variants?.[type] ?? []);
+  }
   async catalog(): Promise<Catalog> {
     return this.load<Catalog>((await this.manifest()).catalog);
   }

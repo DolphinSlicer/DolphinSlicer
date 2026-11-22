@@ -1,7 +1,8 @@
-// The MCP server's tools: the user's setup and presets (from their Google Drive), OrcaSlicer's
-// system profiles and setting definitions, and saving a preset.
+// The MCP server's tools: the user's setup and presets (from their Google Drive), the built-in
+// (OrcaSlicer's) profiles and setting definitions, and saving a preset.
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { BAD_NAME_CHARS } from '../../src/presets/renamePrinter';
+import { settingLocation, shownInModes } from './appGuide';
 import {
   escapeConfig,
   ownValues,
@@ -35,7 +36,7 @@ interface Tool {
 const TYPE_PROP = {
   type: 'string',
   enum: PRESET_TYPES,
-  description: 'printer, filament or print (print settings, called "process" in OrcaSlicer files)',
+  description: 'printer, filament or print (print settings; "process" in preset files)',
 };
 const KEYS_PROP = {
   type: 'array',
@@ -70,6 +71,37 @@ function pick(values: Values, keys: string[] | null): Values {
   if (!keys) return values;
   const out: Values = {};
   for (const k of keys) if (k in values) out[k] = values[k]!;
+  return out;
+}
+
+const VARIANT_KEY: Record<PresetType, string> = {
+  printer: 'printer_extruder_variant',
+  filament: 'filament_extruder_variant',
+  print: 'print_extruder_variant',
+};
+const EXTRUDER_ID: Partial<Record<PresetType, string>> = { printer: 'printer_extruder_id', print: 'print_extruder_id' };
+
+/**
+ * The names of a preset's extruder variants ("Direct Drive Standard", "Bowden High Flow", …) when
+ * it has several: its per-variant settings hold one value for each, in this order.
+ */
+function variantLabels(type: PresetType, values: Values): string[] | null {
+  const v = values[VARIANT_KEY[type]];
+  if (!Array.isArray(v) || v.length < 2) return null;
+  const ids = values[EXTRUDER_ID[type] ?? ''];
+  const twice = new Set(v).size !== v.length;
+  return v.map((name, i) => (twice ? `Extruder ${Array.isArray(ids) ? ids[i] : i + 1}: ${name}` : name));
+}
+
+type Shown = Value | Record<string, string>;
+/** Values to show: per-variant lists as an object by variant name. */
+async function labeled(ctx: ToolContext, type: PresetType, values: Values, of: Values = values): Promise<Record<string, Shown>> {
+  const labels = variantLabels(type, of);
+  if (!labels) return values;
+  const per = await ctx.profiles.variantKeys(type);
+  const out: Record<string, Shown> = {};
+  for (const [k, v] of Object.entries(values))
+    out[k] = per.has(k) && Array.isArray(v) && v.length === labels.length ? Object.fromEntries(labels.map((l, i) => [l, v[i]!])) : v;
   return out;
 }
 
@@ -121,6 +153,8 @@ async function settingInfo(profiles: Profiles, key: string) {
     label: d.full_label || d.label,
     ...(d.category ? { category: d.category } : {}),
     preset_type: types.join(', ') || 'none',
+    ...(types[0] && settingLocation(types[0], key) ? { location: settingLocation(types[0], key) } : {}),
+    shown_in_modes: shownInModes(d),
     value_type: d.type,
     ...(d.sidetext ? { unit: d.sidetext } : {}),
     default: d.default,
@@ -129,9 +163,24 @@ async function settingInfo(profiles: Profiles, key: string) {
     ...(d.enum_values ? { options: d.enum_values.map((v, i) => ({ value: v, label: d.enum_labels?.[i] ?? v })) } : {}),
     ...(d.nullable ? { nullable: true } : {}),
     ...(d.readonly || FIXED_KEYS.has(key) ? { read_only: true } : {}),
-    mode: d.mode,
     tooltip: d.tooltip,
   };
+}
+
+/** A change given by variant name ({"Bowden Standard": "2"}): the whole list, others as they were. */
+async function byVariant(ctx: ToolContext, type: PresetType, key: string, v: unknown, values: Values): Promise<unknown> {
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return v;
+  const labels = variantLabels(type, values);
+  const cur = values[key];
+  if (!labels || !(await ctx.profiles.variantKeys(type)).has(key) || !Array.isArray(cur) || cur.length !== labels.length)
+    throw new Error(`${key}: give one value or a list, not an object`);
+  const out = [...cur];
+  for (const [label, x] of Object.entries(v)) {
+    const i = labels.indexOf(label);
+    if (i < 0) throw new Error(`${key}: no variant "${label}" (${labels.join(', ')})`);
+    out[i] = x as string;
+  }
+  return out;
 }
 
 export const TOOLS: Tool[] = [
@@ -139,23 +188,33 @@ export const TOOLS: Tool[] = [
     name: 'get_setup',
     title: 'Get my setup',
     description:
-      "The user's DolphinSlicer setup as last synced to Google Drive: the selected printer, filament and print settings, the printers and filaments in their library, their own presets by type, units and currency.",
+      "The user's DolphinSlicer setup as DolphinSlicer last saved it to Google Drive: the selected printer, filament and print settings (and the printer's extruder variants, which pick the value that applies of per-variant settings), the system printers and filaments in their library, their own presets by type, units and currency. `drive_updated` says when DolphinSlicer last wrote the settings and the presets there.",
     inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     annotations: { readOnlyHint: true, openWorldHint: false },
     async run(_args, ctx) {
-      const [settings, presets] = await Promise.all([ctx.user.settings(), ctx.user.presetNames()]);
+      const [settings, presets, updated] = await Promise.all([ctx.user.settings(), ctx.user.presetNames(), ctx.user.updated()]);
       if (!settings && !Object.values(presets).some((l) => l.length))
         return {
           note: 'No DolphinSlicer data in Google Drive. The user can turn on Google Drive sync in DolphinSlicer (Preferences) to share their setup.',
         };
       const sel = settings?.selection;
+      const printer = sel?.printer ? await loadPreset(ctx, 'printer', sel.printer).catch(() => null) : null;
+      const variants = printer?.values.printer_extruder_variant;
       return {
-        selected: sel ? { printer: sel.printer, filament: sel.filament, print: sel.process } : null,
+        selected: sel
+          ? {
+              printer: sel.printer,
+              ...(Array.isArray(variants) ? { printer_extruder_variants: variants } : {}),
+              filament: sel.filament,
+              print: sel.process,
+            }
+          : null,
         library: settings?.library ? { printers: settings.library.printers ?? [], filaments: settings.library.filaments ?? [] } : null,
         user_presets: presets,
         ...(settings?.units ? { units: settings.units } : {}),
         ...(settings?.currency ? { currency: settings.currency } : {}),
         ...(settings?.bedTypes ? { plate_types: settings.bedTypes } : {}),
+        drive_updated: updated,
       };
     },
   },
@@ -163,7 +222,7 @@ export const TOOLS: Tool[] = [
     name: 'get_preset',
     title: 'Get a preset',
     description:
-      'A printer, filament or print preset\'s settings, with every value resolved through its parents. For the user\'s own presets, `own` lists what they set themselves on top of the system preset they inherit from. Values are as in OrcaSlicer\'s preset files: strings, lists for per-extruder settings, booleans as "1"/"0".',
+      'A printer, filament or print preset\'s settings, with every value resolved through its parents. For the user\'s own presets, `own` lists what they set themselves on top of the preset they inherit from. Values are as in the preset files: strings, lists for some settings, booleans as "1"/"0". When a preset has several extruder variants, per-variant settings come as an object by variant name; the selected printer\'s variants (get_setup) are the ones that apply.',
     inputSchema: {
       type: 'object',
       properties: { type: TYPE_PROP, name: { type: 'string', description: 'The preset name' }, keys: KEYS_PROP },
@@ -180,8 +239,8 @@ export const TOOLS: Tool[] = [
         source: p.source,
         ...(p.inherits ? { inherits: p.inherits } : {}),
         ...(p.vendor ? { vendor: p.vendor } : {}),
-        ...(p.own ? { own: pick(p.own, keys) } : {}),
-        values: pick(p.values, keys),
+        ...(p.own ? { own: await labeled(ctx, p.type, pick(p.own, keys), p.values) } : {}),
+        values: await labeled(ctx, p.type, pick(p.values, keys), p.values),
       };
     },
   },
@@ -207,10 +266,11 @@ export const TOOLS: Tool[] = [
       const [a, b] = await Promise.all([mustLoad(ctx, type, str(args, 'a')), mustLoad(ctx, type, str(args, 'b'))]);
       const s = await ctx.profiles.schema();
       const differences = [];
+      const [av, bv] = await Promise.all([labeled(ctx, type, a.values), labeled(ctx, type, b.values)]);
       for (const k of keys ?? s[type]) {
         if (k === 'inherits' || k === SETTINGS_ID[type] || sameValue(a.values[k], b.values[k])) continue;
         const d = s.options[k];
-        differences.push({ key: k, label: d ? d.full_label || d.label : k, a: a.values[k], b: b.values[k] });
+        differences.push({ key: k, label: d ? d.full_label || d.label : k, a: av[k], b: bv[k] });
       }
       return { a: a.name, b: b.name, differences };
     },
@@ -219,7 +279,7 @@ export const TOOLS: Tool[] = [
     name: 'explain_setting',
     title: 'Explain a setting',
     description:
-      'What an OrcaSlicer setting does: its label, tooltip, unit, limits, default and options. Give `key` for one setting, or `search` to find settings by words in their key, label or tooltip.',
+      'What a setting does and where it is in DolphinSlicer: its label, its place on the settings pages (`location`) and the settings modes that show it, tooltip, unit, limits, default and options. Give `key` for one setting, or `search` to find settings by words in their key, label or tooltip.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -256,7 +316,7 @@ export const TOOLS: Tool[] = [
     name: 'find_profiles',
     title: 'Find system profiles',
     description:
-      'OrcaSlicer\'s built-in presets: printers, filaments and print settings by vendor. Without search or vendor, lists the vendors. Names of filaments and print settings end in "@<printer>" when they are made for one printer.',
+      'DolphinSlicer\'s built-in (system) presets: printers, filaments and print settings by vendor. Without search or vendor, lists the vendors. Names of filaments and print settings end in "@<printer>" when they are made for one printer.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -292,7 +352,7 @@ export const TOOLS: Tool[] = [
     name: 'save_preset',
     title: 'Save a preset',
     description:
-      "Save one of the user's own presets to their DolphinSlicer: change settings of an existing user preset (leave out `base`), or make a new one from `base`, a system or user preset. Only settings that differ from the system preset it inherits from are stored, as OrcaSlicer does. DolphinSlicer picks it up at its next Google Drive sync (when its tab is reopened or reloaded); the user still selects it there. Ask the user before saving.",
+      "Save one of the user's own presets to their DolphinSlicer: change settings of an existing user preset (leave out `base`), or make a new one from `base`, a system or user preset. Only settings that differ from the preset it inherits from are stored. DolphinSlicer picks it up at its next Google Drive sync (when its tab is reopened or reloaded); the user still selects it there. Ask the user before saving.",
     inputSchema: {
       type: 'object',
       properties: {
@@ -302,7 +362,7 @@ export const TOOLS: Tool[] = [
         changes: {
           type: 'object',
           description:
-            'Settings to change, by key: a value as text or number ("0.16", 215, "15%", true, an option value), or a list for per-extruder settings. One value for a list setting sets every element.',
+            'Settings to change, by key: a value as text or number ("0.16", 215, "15%", true, an option value), or a list for list settings. One value for a list setting sets every element. For per-variant settings, an object by variant name (as get_preset shows them) changes only those variants.',
           additionalProperties: true,
         },
       },
@@ -342,7 +402,7 @@ export const TOOLS: Tool[] = [
           continue;
         }
         try {
-          own[k] = checkValue(k, d, v, base.values[k]);
+          own[k] = checkValue(k, d, await byVariant(ctx, type, k, v, base.values), base.values[k]);
         } catch (e) {
           errors.push((e as Error).message);
         }
@@ -369,8 +429,12 @@ export const TOOLS: Tool[] = [
           .map((k) => [k, json[k]]),
       );
       const result = await ctx.user.savePreset(type, name, `${JSON.stringify(sorted, null, '\t')}\n`, !inherits);
-      const changed: Record<string, Value | undefined> = {};
-      for (const k of Object.keys(changes as object)) changed[k] = own[k] ?? parent?.values[k];
+      const after: Values = {};
+      for (const k of Object.keys(changes as object)) {
+        const v = own[k] ?? parent?.values[k];
+        if (v !== undefined) after[k] = v;
+      }
+      const changed = await labeled(ctx, type, after, { ...base.values, ...own });
       return {
         saved: name,
         type,

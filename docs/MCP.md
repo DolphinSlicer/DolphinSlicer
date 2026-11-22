@@ -30,8 +30,8 @@ account you use for Drive sync.
 | `get_setup` | Your selected printer, filament and print settings, your printer and filament list, your own presets |
 | `get_preset` | All settings of a preset, and what your own presets change |
 | `compare_presets` | The settings that differ between two presets |
-| `explain_setting` | What a setting does, its unit, limits and options |
-| `find_profiles` | OrcaSlicer's built-in printer, filament and print profiles |
+| `explain_setting` | What a setting does, where it is in DolphinSlicer, its unit, limits and options |
+| `find_profiles` | The built-in printer, filament and print profiles |
 | `save_preset` | Changes one of your presets, or makes a new one |
 
 A saved preset shows up in DolphinSlicer at its next sync: switch back to its tab or reload it,

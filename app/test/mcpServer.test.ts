@@ -23,8 +23,8 @@ const schema = {
     'print_settings_id',
     'compatible_printers',
   ],
-  filament: ['nozzle_temperature', 'filament_type', 'inherits', 'filament_settings_id', 'filament_flow_ratio'],
-  printer: ['nozzle_diameter', 'machine_start_gcode', 'inherits', 'printer_settings_id'],
+  filament: ['nozzle_temperature', 'filament_type', 'inherits', 'filament_settings_id', 'filament_flow_ratio', 'filament_extruder_variant'],
+  printer: ['nozzle_diameter', 'machine_start_gcode', 'inherits', 'printer_settings_id', 'printer_extruder_variant'],
   options: {
     layer_height: {
       type: 'float',
@@ -137,6 +137,26 @@ const schema = {
       mode: 'simple',
       tooltip: '',
     },
+    filament_extruder_variant: {
+      type: 'strings',
+      label: '',
+      full_label: '',
+      default: 'Direct Drive Standard',
+      sidetext: '',
+      category: '',
+      mode: 'develop',
+      tooltip: '',
+    },
+    printer_extruder_variant: {
+      type: 'strings',
+      label: '',
+      full_label: '',
+      default: 'Direct Drive Standard',
+      sidetext: '',
+      category: '',
+      mode: 'develop',
+      tooltip: '',
+    },
     filament_flow_ratio: {
       type: 'floats',
       nullable: true,
@@ -173,7 +193,8 @@ const schema = {
 const defaults = {
   print: { layer_height: '0.2', wall_loops: '2', sparse_infill_density: '20%', sparse_infill_pattern: 'grid', compatible_printers: [] },
   filament: { nozzle_temperature: ['200'], filament_type: ['PLA'], filament_flow_ratio: ['1'] },
-  printer: { nozzle_diameter: ['0.4'], machine_start_gcode: 'G28' },
+  printer: { nozzle_diameter: ['0.4'], machine_start_gcode: 'G28', printer_extruder_variant: ['Direct Drive Standard'] },
+  variants: { filament: ['nozzle_temperature'], print: [], printer: [] },
 };
 const presetFiles: Record<string, Record<string, object>> = {
   Acme: {
@@ -198,6 +219,13 @@ const presetFiles: Record<string, Record<string, object>> = {
   },
   OrcaFilamentLibrary: {
     'Generic PLA @System': { type: 'filament', name: 'Generic PLA @System', instantiation: 'true', nozzle_temperature: ['210'] },
+    'Two PLA @System': {
+      type: 'filament',
+      name: 'Two PLA @System',
+      instantiation: 'true',
+      filament_extruder_variant: ['Direct Drive Standard', 'Bowden Standard'],
+      nozzle_temperature: ['210', '220'],
+    },
   },
 };
 const shards: Record<number, Record<string, Record<string, string>>> = {};
@@ -626,6 +654,40 @@ describe('tools', () => {
     expect(drive.find((x) => x.name === 'Copy.json')!.parents[0]).toBe(base);
     await tool(token, 'save_preset', { type: 'printer', name: 'Custom', changes: { nozzle_diameter: '0.4' } });
     expect(JSON.parse(drive.find((x) => x.name === 'Custom.json')!.content).nozzle_diameter).toEqual(['0.4']);
+  });
+
+  it('says where settings are, when Drive changed, and which variant applies', async () => {
+    userData();
+    const info = await tool(token, 'explain_setting', { key: 'sparse_infill_density' });
+    expect(info.data).toMatchObject({
+      location: 'Settings → Print settings → Strength → Infill',
+      shown_in_modes: 'Simple, Advanced and Expert',
+    });
+    const setup = await tool(token, 'get_setup');
+    expect(setup.data.drive_updated).toEqual({ settings: '2026-01-01T00:00:00Z', presets: '2026-01-01T00:00:00Z' });
+    expect(setup.data.selected.printer_extruder_variants).toEqual(['Direct Drive Standard']);
+  });
+
+  it('labels per-variant values and saves them by variant', async () => {
+    const { data } = await tool(token, 'get_preset', {
+      type: 'filament',
+      name: 'Two PLA @System',
+      keys: ['nozzle_temperature', 'filament_type'],
+    });
+    expect(data.values).toEqual({
+      nozzle_temperature: { 'Direct Drive Standard': '210', 'Bowden Standard': '220' },
+      filament_type: ['PLA'],
+    });
+    const r = await tool(token, 'save_preset', {
+      type: 'filament',
+      name: 'My Two',
+      base: 'Two PLA @System',
+      changes: { nozzle_temperature: { 'Bowden Standard': 230 } },
+    });
+    expect(r.data.changed).toEqual({ nozzle_temperature: { 'Direct Drive Standard': '210', 'Bowden Standard': '230' } });
+    expect(JSON.parse(drive.find((x) => x.name === 'My Two.json')!.content).nozzle_temperature).toEqual(['210', '230']);
+    const bad = await tool(token, 'save_preset', { type: 'filament', name: 'My Two', changes: { nozzle_temperature: { Hotend: 230 } } });
+    expect(bad.text).toMatch(/no variant "Hotend" \(Direct Drive Standard, Bowden Standard\)/);
   });
 
   it('says when nothing is synced', async () => {
