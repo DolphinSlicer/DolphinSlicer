@@ -14,13 +14,13 @@ To edit the Orca series:
 | # | Patch | Why | Upstreamable | Credit |
 |---|-------|-----|--------------|--------|
 | 0001 | libslic3r: optional OpenCASCADE (`SLIC3R_NO_OCCT`) | Build libslic3r without OCCT. STEP import moves to a separate lazily loaded module. | Yes (opt-in) | — |
-| 0002 | Platform: recognise Emscripten/WebAssembly | `detect_platform()` hit a `static_assert` on unknown platforms. Reports `Unknown`. | Yes | Same idea as OrcaWeb `apply.py` §5 |
-| 0003 | SLA/Hollowing: build without OpenVDB (`SLIC3R_NO_OPENVDB`) | `Hollowing.cpp` is always compiled but needs OpenVDB. SLA hollowing now raises an error instead; FFF is unaffected. | Yes | OrcaWeb replaced the whole file with stubs; ours is a guarded patch |
-| 0004 | Thread: no thread names under Emscripten | Emscripten has no `pthread_setname_np`/`getname_np`, which broke the link. Naming is diagnostics only. | Yes | Same issue as OrcaWeb `apply.py` §8g |
+| 0002 | Platform: recognise Emscripten/WebAssembly | `detect_platform()` hit a `static_assert` on unknown platforms. Reports `Unknown`. | Yes | Same idea as OrcaWasm `apply.py` §5 |
+| 0003 | SLA/Hollowing: build without OpenVDB (`SLIC3R_NO_OPENVDB`) | `Hollowing.cpp` is always compiled but needs OpenVDB. SLA hollowing now raises an error instead; FFF is unaffected. | Yes | OrcaWasm replaced the whole file with stubs; ours is a guarded patch |
+| 0004 | Thread: no thread names under Emscripten | Emscripten has no `pthread_setname_np`/`getname_np`, which broke the link. Naming is diagnostics only. | Yes | Same issue as OrcaWasm `apply.py` §8g |
 | 0005 | Use portable random distributions so seeded results match on all platforms | `std::` distributions and `std::shuffle` are implementation-defined. Mirrored monotonic fill, different seam samples and decimation order. Adds `PortableRandom.hpp` (exact libstdc++ algorithms). | Yes | — |
 | 0006 | BridgeDetector: order tied bridge directions the same on all platforms | `std::sort` tie order is implementation-defined. Adds `PortableSort.hpp` (exact libstdc++ introsort). | Yes | — |
 | 0007 | detect_bridging_direction: platform-independent order of candidate directions | `unordered_map` iteration order picked the bridge direction on ties. Adds `PortableHashOrder.hpp` (exact libstdc++ order for `double` keys). | Yes (a plain deterministic tie-break may suit upstream better) | — |
-| 0008 | Arachne: `interpolate()` must not depend on the width of `size_t` | `coord_t(v.size() - 1)` on an empty vector is −1 with a 64-bit `size_t` but 2³²−1 on wasm32, so `SkeletalTrapezoidation::interpolate` indexed far out of bounds ("memory access out of bounds" on a finely tessellated sphere). Convert before subtracting; 64-bit behaviour unchanged. Regression fixture: `sphere`. | Yes (32-bit portability) | OrcaWeb `apply.py` §8d guards the same spot with an `empty()` check |
+| 0008 | Arachne: `interpolate()` must not depend on the width of `size_t` | `coord_t(v.size() - 1)` on an empty vector is −1 with a 64-bit `size_t` but 2³²−1 on wasm32, so `SkeletalTrapezoidation::interpolate` indexed far out of bounds ("memory access out of bounds" on a finely tessellated sphere). Convert before subtracting; 64-bit behaviour unchanged. Regression fixture: `sphere`. | Yes (32-bit portability) | OrcaWasm `apply.py` §8d guards the same spot with an `empty()` check |
 | 0009 | Model: no backup manager in the destructor under Emscripten | A model that was given a backup folder (3MF import) hands its removal to the autosave manager in `~Model()`, which starts a thread. When the 3MF reader throws on a cut-off file, that happens while the exception unwinds; the destructor threw and the engine terminated instead of reporting the file. Under Emscripten the folder is removed directly. | No (WebAssembly only) | — |
 
 ## Dependencies (`engine/patches/deps/`)
@@ -29,7 +29,7 @@ To edit the Orca series:
 |-----|-------|-----|--------|
 | Boost 1.84.0 | `boost/0001-asio-drop-context-coroutine.patch` | Boost.Context has no wasm backend. Asio's CMake links it although libslic3r only uses one Beast base64 header. | — |
 | Boost 1.84.0 | `boost/0002-interval-wasm-rounding-control.patch` | WebAssembly has no rounding-mode control. Boost.Interval gets a backend that aborts on directed rounding instead of failing to compile or being silently unsound. See also `CGAL_ALWAYS_ROUND_TO_NEAREST`. | — |
-| oneTBB 2021.13.0 | `onetbb/wasm-exceptions.cmake` (CMake script, unmodified) | oneTBB's Emscripten profile forces legacy JS exceptions. We need native Wasm EH. | OrcaWeb (AGPL-3.0) @60a09e0 |
+| oneTBB 2021.13.0 | `onetbb/wasm-exceptions.cmake` (CMake script, unmodified) | oneTBB's Emscripten profile forces legacy JS exceptions. We need native Wasm EH. | OrcaWasm (AGPL-3.0) @60a09e0 |
 
 ## Toolchain (`engine/docker/`)
 

@@ -106,7 +106,7 @@ preview deployment.
 
 DolphinSlicer is built on [OrcaSlicer](https://github.com/OrcaSlicer/OrcaSlicer) by SoftFever and
 contributors, itself based on Bambu Studio, PrusaSlicer and Slic3r. Build recipes and several fixes
-come from [OrcaWeb](https://github.com/Hiosdra/OrcaWeb). See [NOTICE](NOTICE) for all credits.
+come from [OrcaWasm](https://github.com/Hiosdra/OrcaWasm). See [NOTICE](NOTICE) for all credits.
 
 The models in the screenshots are OrcaSlicer's sample and calibration models, among them the
 Stanford Bunny by the Stanford Computer Graphics Laboratory and 3DBenchy by Creative Tools.
