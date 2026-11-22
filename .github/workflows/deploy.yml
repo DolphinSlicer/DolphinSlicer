@@ -122,7 +122,7 @@ jobs:
         run: |
           # The branch's own address, else this deployment's.
           url=$(grep -oE 'https://[a-z0-9-]+\.dolphinslicer\.pages\.dev' deploy.log | tail -1)
-          body="Preview: $url (commit ${COMMIT:0:7}). Google Drive sign-in works only on dolphinslicer.app."
+          body="Preview: $url (commit ${COMMIT:0:7})"
           gh pr comment "$PR" -R "$GITHUB_REPOSITORY" --edit-last --body "$body" 2>/dev/null ||
             gh pr comment "$PR" -R "$GITHUB_REPOSITORY" --body "$body"
       - name: Check the live site
