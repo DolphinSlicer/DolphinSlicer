@@ -4,8 +4,9 @@
 
 <h1 align="center">DolphinSlicer</h1>
 
+<h3 align="center">OrcaSlicer in your browser.</h3>
+
 <p align="center">
-  <strong>OrcaSlicer in your browser.</strong><br>
   Slice 3D models right in the browser, with nothing to install and nothing uploaded.
 </p>
 
@@ -19,12 +20,16 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-blue" alt="License: AGPL-3.0"></a>
 </p>
 
+<br>
+
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/prepare-dark.png">
     <img src="docs/images/prepare-light.png" alt="The Stanford Bunny on the plate of a Voron 2.4, ready to slice">
   </picture>
 </p>
+
+<br>
 
 ## Why DolphinSlicer?
 
@@ -33,56 +38,45 @@ compiled to WebAssembly. You get the same G-code as the desktop app, on any comp
 browser.
 
 - **Nothing to install.** Open [dolphinslicer.app](https://dolphinslicer.app) and start slicing.
-- **Private.** Your models are sliced on your own computer and never leave it.
-- **The same results as the desktop app.** Same engine, same settings, same printer profiles.
-- **Free and open source**, under the GNU AGPL v3.0.
+- **Private.** Your models never leave your computer. No accounts, no ads, no tracking
+  ([privacy policy](https://dolphinslicer.app/privacy)).
+- **Same results as the desktop app.** Same engine, settings and printer profiles.
+- **Free and open source** under the GNU AGPL v3.0.
 
 ## Features
 
-- **Prepare your plate**: import STL, 3MF, OBJ and AMF, then move, rotate, scale, arrange and paint
-  supports.
+- **Prepare your plate**: import STL, 3MF, OBJ and AMF, then arrange, rotate, scale and paint supports.
 - **Preview the G-code** layer by layer, with print time, filament use and cost.
-- **OrcaSlicer's settings and printer profiles** for 70+ brands, plus your own printers. Import your
-  OrcaSlicer and PrusaSlicer presets.
+- **Printer profiles** for 70+ brands, plus your own printers and OrcaSlicer presets.
 - **Calibration tests**: temperature, flow, pressure advance, retraction and more.
 - **Send to your printer** over Klipper or OctoPrint, or export the G-code.
-- **Model library** and optional **Google Drive sync** across your devices.
+- **Model library** with optional **Google Drive sync** across your devices.
 - **"Slice now" links** that open a model from your website ([how to add one](docs/QUICK_LINK.md)).
 
-<table>
-  <tr>
-    <td width="50%" align="center">
-      <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="docs/images/preview-dark.png">
-        <img src="docs/images/preview-light.png" alt="The sliced bunny in the G-code preview, colored by line type, with print time, filament and cost">
-      </picture>
-      <br>G-code preview
-    </td>
-    <td width="50%" align="center">
-      <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="docs/images/settings-dark.png">
-        <img src="docs/images/settings-light.png" alt="The print settings, with the same pages and options as OrcaSlicer desktop">
-      </picture>
-      <br>Print settings
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" align="center">
-      <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="docs/images/library-dark.png">
-        <img src="docs/images/library-light.png" alt="The model library with the Stanford Bunny, 3DBenchy and calibration models">
-      </picture>
-      <br>Model library
-    </td>
-    <td width="50%" align="center">
-      <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="docs/images/calibration-dark.png">
-        <img src="docs/images/calibration-light.png" alt="A temperature tower on the plate and the menu of calibration tests">
-      </picture>
-      <br>Calibration tests
-    </td>
-  </tr>
-</table>
+<br>
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/preview-dark.png">
+    <img src="docs/images/preview-light.png" width="49%" alt="The sliced bunny in the G-code preview, colored by line type, with print time, filament and cost">
+  </picture>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/settings-dark.png">
+    <img src="docs/images/settings-light.png" width="49%" alt="The print settings, with the same pages and options as OrcaSlicer desktop">
+  </picture>
+</p>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/library-dark.png">
+    <img src="docs/images/library-light.png" width="49%" alt="The model library with the Stanford Bunny, 3DBenchy and calibration models">
+  </picture>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/calibration-dark.png">
+    <img src="docs/images/calibration-light.png" width="49%" alt="A temperature tower on the plate and the menu of calibration tests">
+  </picture>
+</p>
+
+<br>
 
 ## Getting started
 
@@ -91,18 +85,10 @@ browser.
 2. Drop your models onto the plate.
 3. Click **Slice plate**, check the preview, then **Export G-code** or **Send** it to your printer.
 
-Use a recent desktop browser such as Chrome, Edge or Firefox. Slicing uses all your CPU cores when
-the browser allows it.
-
-## Run it on your printer
+Use a recent desktop browser such as Chrome, Edge or Firefox.
 
 You can also host DolphinSlicer yourself, for example on the Raspberry Pi that runs your printer
-next to Mainsail or Fluidd. See [Running DolphinSlicer on your printer](docs/SELF_HOST_PI.md).
-
-## Privacy
-
-DolphinSlicer has no accounts, no ads and no tracking. Read the
-[privacy policy](https://dolphinslicer.app/privacy).
+([how to](docs/SELF_HOST_PI.md)).
 
 ## Development
 
