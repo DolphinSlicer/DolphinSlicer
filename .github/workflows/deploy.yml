@@ -1,23 +1,28 @@
-# Deploys main to Cloudflare Pages (dolphinslicer.app). The engines are cached by their sources:
+# Deploys main to Cloudflare Pages (dolphinslicer.app), and each pull request from this repository
+# to a preview (<branch>.dolphinslicer.pages.dev, linked in a PR comment). Pull requests from forks
+# get no preview: their workflows have no secrets. The engines are cached by their sources:
 # a commit that leaves engine/ alone reuses them, one that changes it builds them (cold: hours,
 # with warm dependency and compiler caches: much less).
 name: deploy
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
 
-# One deploy at a time, in order; a newer push waits rather than cancels a running one.
+# main: one deploy at a time, in order (a newer push waits). A pull request: a newer push cancels
+# its running preview.
 concurrency:
-  group: deploy
-  cancel-in-progress: false
+  group: ${{ github.event_name == 'pull_request' && format('deploy-pr-{0}', github.event.pull_request.number) || 'deploy' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   engine:
     name: Engine (${{ matrix.variant }})
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
     timeout-minutes: 340
     strategy:
@@ -73,6 +78,13 @@ jobs:
     needs: engine
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: write
+    env:
+      PREVIEW: ${{ github.event_name == 'pull_request' }}
+      BRANCH: ${{ github.event_name == 'pull_request' && github.head_ref || 'main' }}
+      COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -98,8 +110,23 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: npx --yes wrangler@4.166.0 pages deploy dist --project-name dolphinslicer --branch main --commit-hash ${{ github.sha }}
+        run: |
+          set -o pipefail
+          npx --yes wrangler@4.166.0 pages deploy dist --project-name dolphinslicer --branch "$BRANCH" \
+            --commit-hash "$COMMIT" | tee ../deploy.log
+      - name: Link the preview
+        if: env.PREVIEW == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          # The branch's own address, else this deployment's.
+          url=$(grep -oE 'https://[a-z0-9-]+\.dolphinslicer\.pages\.dev' deploy.log | tail -1)
+          body="Preview: $url (commit ${COMMIT:0:7}). Google Drive sign-in works only on dolphinslicer.app."
+          gh pr comment "$PR" -R "$GITHUB_REPOSITORY" --edit-last --body "$body" 2>/dev/null ||
+            gh pr comment "$PR" -R "$GITHUB_REPOSITORY" --body "$body"
       - name: Check the live site
+        if: env.PREVIEW != 'true'
         working-directory: app
         run: |
           built=$(ls dist/assets | grep -E '^index-.*\.js$')
