@@ -2,12 +2,12 @@
 # Light on purpose: no engine build (engine.yml, run by hand) and no end-to-end tests. Without
 # the engine, the unit tests that need its settings schema are skipped.
 name: ci
+# Every pull request: main requires these checks, so they must report even when app/ is untouched.
 on:
   push:
     branches: [main]
     paths: ['app/**', '.github/workflows/ci.yml']
   pull_request:
-    paths: ['app/**', '.github/workflows/ci.yml']
   workflow_dispatch:
 
 permissions:
