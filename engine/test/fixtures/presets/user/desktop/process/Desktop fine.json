@@ -1,0 +1,11 @@
+{
+    "from": "User",
+    "inherits": "0.20mm Standard @MyKlipper",
+    "layer_height": "0.12",
+    "name": "Desktop fine",
+    "print_settings_id": "Desktop fine",
+    "sparse_infill_density": "25%",
+    "sparse_infill_pattern": "gyroid",
+    "version": "2.5.0.0",
+    "wall_loops": "3"
+}

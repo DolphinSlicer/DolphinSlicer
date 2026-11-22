@@ -1,0 +1,16 @@
+{
+    "deretraction_speed": [
+        "35"
+    ],
+    "from": "User",
+    "inherits": "MyKlipper 0.4 nozzle",
+    "name": "Desktop Klipper",
+    "printer_settings_id": "Desktop Klipper",
+    "retraction_length": [
+        "0.5"
+    ],
+    "version": "2.5.0.0",
+    "z_hop": [
+        "0.25"
+    ]
+}

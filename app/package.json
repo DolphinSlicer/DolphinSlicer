@@ -1,0 +1,41 @@
+{
+  "name": "dolphin-slicer-app",
+  "private": true,
+  "version": "0.1.0",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "scripts": {
+    "assets": "node scripts/copy-engine.mjs && node scripts/bundle-profiles.mjs && node scripts/copy-calib.mjs && node scripts/dump-schema.mjs && node scripts/build-i18n.mjs",
+    "dev": "npm run assets && vite",
+    "build": "npm run assets && npm run typecheck && vite build && node scripts/check-dist.mjs",
+    "build:app": "npm run typecheck && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.node.json",
+    "lint": "biome ci .",
+    "check": "biome check --write .",
+    "test": "vitest run",
+    "e2e": "playwright test",
+    "build:pi": "npm run assets && npm run typecheck && VITE_TARGET=pi vite build --base ./ --outDir dist-pi"
+  },
+  "dependencies": {
+    "dompurify": "3.4.17",
+    "lucide-react": "1.61.0",
+    "marked": "18.1.2",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "three": "0.186.1",
+    "zustand": "5.0.16"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.6.8",
+    "@playwright/test": "1.64.1",
+    "@types/node": "22.19.1",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@types/three": "0.186.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "typescript": "7.0.2",
+    "vite": "8.3.5",
+    "vitest": "4.1.12"
+  }
+}

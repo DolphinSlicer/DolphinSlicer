@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DolphinSlicer <build@localhost>
+Date: Sun, 8 Nov 2026 13:56:38 +0000
+Subject: [PATCH 8/9] Arachne: interpolate() must not depend on the width of
+ size_t
+
+SkeletalTrapezoidation::interpolate(left, ratio, right, switching_radius)
+starts its search at coord_t(left.toolpath_locations.size() - 1). For an
+empty vector the unsigned subtraction wraps; with a 64-bit size_t the
+conversion to the 64-bit coord_t gives -1 and the loop is skipped, but
+with a 32-bit size_t (WebAssembly wasm32, other 32-bit targets) it gives
+4294967295 and the loop reads toolpath_locations[2^32 - 1], far out of
+bounds ("memory access out of bounds" in WebAssembly; seen slicing a
+finely tessellated sphere and reported by OrcaWeb for the Voron Design
+Cube and the Stanford Bunny).
+
+Convert to coord_t before subtracting. Behaviour on 64-bit platforms is
+unchanged.
+
+Upstreamable: yes (32-bit portability).
+---
+ src/libslic3r/Arachne/SkeletalTrapezoidation.cpp | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/src/libslic3r/Arachne/SkeletalTrapezoidation.cpp b/src/libslic3r/Arachne/SkeletalTrapezoidation.cpp
+index 077ffd1a..72903148 100644
+--- a/src/libslic3r/Arachne/SkeletalTrapezoidation.cpp
++++ b/src/libslic3r/Arachne/SkeletalTrapezoidation.cpp
+@@ -1676,7 +1676,9 @@ SkeletalTrapezoidation::Beading SkeletalTrapezoidation::interpolate(const Beadin
+     // TODO: don't use toolpath locations past the middle!
+     // TODO: stretch bead widths and locations of the higher bead count beading to fit in the left over space
+     coord_t next_inset_idx;
+-    for (next_inset_idx = left.toolpath_locations.size() - 1; next_inset_idx >= 0; next_inset_idx--)
++    // Convert before subtracting: with an empty vector, size() - 1 wraps around, and only a
++    // 64-bit size_t wraps to -1 when converted to coord_t (with a 32-bit size_t it becomes 2^32-1).
++    for (next_inset_idx = coord_t(left.toolpath_locations.size()) - 1; next_inset_idx >= 0; next_inset_idx--)
+     {
+         if (switching_radius > left.toolpath_locations[next_inset_idx])
+         {

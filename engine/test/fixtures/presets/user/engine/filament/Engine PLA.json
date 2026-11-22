@@ -1,0 +1,33 @@
+{
+	"filament_extruder_variant": [
+		"Direct Drive Standard",
+		"Direct Drive High Flow",
+		"Direct Drive Extra High Flow",
+		"Bowden Standard",
+		"Bowden High Flow",
+		"Bowden Extra High Flow"
+	],
+	"filament_flow_ratio": [
+		"0.97",
+		"nil",
+		"nil",
+		"nil",
+		"nil",
+		"nil"
+	],
+	"filament_settings_id": [
+		"Engine PLA"
+	],
+	"from": "User",
+	"inherits": "Generic PLA @System",
+	"name": "Engine PLA",
+	"nozzle_temperature": [
+		"205",
+		"220",
+		"220",
+		"220",
+		"220",
+		"220"
+	],
+	"version": "2.4.0.26"
+}

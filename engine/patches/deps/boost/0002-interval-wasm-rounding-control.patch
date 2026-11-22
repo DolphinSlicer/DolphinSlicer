@@ -1,0 +1,73 @@
+Boost 1.84.0: give Boost.Interval a WebAssembly rounding backend that refuses directed rounding.
+
+Why: WebAssembly has no rounding-mode control (Emscripten's fesetround is a no-op stub, and
+Boost's platform/wasm.hpp defines BOOST_NO_FENV_H), so hw_rounding.hpp hits its #error. CGAL
+headers pulled in by libslic3r (Surface_sweep_2 → Arr_rational_function_traits_2 →
+Algebraic_kernel_d_1) include boost/numeric/interval.hpp, but libslic3r never instantiates the
+interval code. Rather than a silently unsound no-op, upward()/downward() abort with a message if
+anything ever does use them. (CGAL's own Interval_nt is made sound separately by compiling with
+CGAL_ALWAYS_ROUND_TO_NEAREST; see engine/CMakeLists.txt.)
+Upstreamable: possibly (as an opt-in); wasm-specific today. Applies with: patch -p1
+--- a/libs/numeric/interval/include/boost/numeric/interval/hw_rounding.hpp
++++ b/libs/numeric/interval/include/boost/numeric/interval/hw_rounding.hpp
+@@ -33,6 +33,8 @@
+ #  include <boost/numeric/interval/detail/alpha_rounding_control.hpp>
+ #elif defined(ia64) || defined(__ia64) || defined(__ia64__)
+ #  include <boost/numeric/interval/detail/ia64_rounding_control.hpp>
++#elif defined(__wasm__)
++#  include <boost/numeric/interval/detail/wasm_rounding_control.hpp>
+ #endif
+ 
+ #if defined(BOOST_NUMERIC_INTERVAL_NO_HARDWARE) && !defined(BOOST_NO_FENV_H)
+--- /dev/null
++++ b/libs/numeric/interval/include/boost/numeric/interval/detail/wasm_rounding_control.hpp
+@@ -0,0 +1,49 @@
++/* Boost interval/detail/wasm_rounding_control.hpp file (DolphinSlicer addition)
++ *
++ * WebAssembly always rounds to nearest and cannot switch rounding modes. Directed rounding is
++ * therefore unavailable; any attempt aborts loudly instead of producing unsound intervals.
++ *
++ * Distributed under the Boost Software License, Version 1.0.
++ */
++#ifndef BOOST_NUMERIC_INTERVAL_DETAIL_WASM_ROUNDING_CONTROL_HPP
++#define BOOST_NUMERIC_INTERVAL_DETAIL_WASM_ROUNDING_CONTROL_HPP
++
++#include <cmath>
++#include <cstdio>
++#include <cstdlib>
++
++namespace boost {
++namespace numeric {
++namespace interval_lib {
++namespace detail {
++
++struct wasm_rounding_control
++{
++  typedef int rounding_mode;
++  static void get_rounding_mode(rounding_mode& m) { m = 0; }
++  static void set_rounding_mode(rounding_mode) {}
++  static void to_nearest() {}
++  [[noreturn]] static void unsupported() {
++    std::fputs("Boost.Interval: directed rounding is not available on WebAssembly\n", stderr);
++    std::abort();
++  }
++  static void downward()    { unsupported(); }
++  static void upward()      { unsupported(); }
++  static void toward_zero() { unsupported(); }
++  template<class T> static T to_int(const T& x) { return std::nearbyint(x); }
++  template<class T> static T force_rounding(const T& r) { return r; }
++};
++
++} // namespace detail
++
++template<> struct rounding_control<float>       : detail::wasm_rounding_control {};
++template<> struct rounding_control<double>      : detail::wasm_rounding_control {};
++template<> struct rounding_control<long double> : detail::wasm_rounding_control {};
++
++} // namespace interval_lib
++} // namespace numeric
++} // namespace boost
++
++#undef BOOST_NUMERIC_INTERVAL_NO_HARDWARE
++
++#endif // BOOST_NUMERIC_INTERVAL_DETAIL_WASM_ROUNDING_CONTROL_HPP

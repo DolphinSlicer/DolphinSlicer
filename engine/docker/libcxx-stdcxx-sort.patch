@@ -1,0 +1,174 @@
+DolphinSlicer toolchain patch for libc++ (Emscripten 6.0.13): make std::sort order equal elements
+exactly like libstdc++, so WebAssembly builds of OrcaSlicer match the Linux desktop app.
+Apply in libcxx/include with: patch -p1
+
+--- a/__algorithm/sort.h	2026-11-08 04:35:16.337802437 +0000
++++ b/__algorithm/sort.h	2026-11-08 04:35:16.349267562 +0000
+@@ -939,10 +939,166 @@
+   std::__check_strict_weak_ordering_sorted(std::__unwrap_iter(__first), std::__unwrap_iter(__last), __comp);
+ }
+ 
++// ---- DolphinSlicer: libstdc++-compatible std::sort -------------------------------------------
++// std::sort leaves equal elements in an unspecified order and every standard library picks a
++// different one. OrcaSlicer's output depends on that order in places (ties between candidate
++// directions, connection costs, ...), and the reference desktop builds use libstdc++. This makes
++// libc++'s std::sort reproduce libstdc++'s introsort exactly (GCC 11-15: median-of-3 pivot to
++// first, unguarded partition, threshold 16, heap-sort fallback at depth 2*log2(n), final
++// insertion sort), so a WebAssembly build orders ties the way the Linux desktop app does.
++// Verified against libstdc++ 15 on tie-heavy and adversarial inputs (engine/test/toolchain).
++// Results for valid strict weak orderings are unchanged; only the order of ties differs.
++template <class _It, class _Comp>
++_LIBCPP_HIDE_FROM_ABI void __stdcxx_push_heap(_It __first, long __hole, long __top,
++    typename iterator_traits<_It>::value_type __value, _Comp& __comp) {
++  long __parent = (__hole - 1) / 2;
++  while (__hole > __top && __comp(*(__first + __parent), __value)) {
++    *(__first + __hole) = std::move(*(__first + __parent));
++    __hole = __parent;
++    __parent = (__hole - 1) / 2;
++  }
++  *(__first + __hole) = std::move(__value);
++}
++template <class _It, class _Comp>
++_LIBCPP_HIDE_FROM_ABI void __stdcxx_adjust_heap(_It __first, long __hole, long __len,
++    typename iterator_traits<_It>::value_type __value, _Comp& __comp) {
++  const long __top = __hole;
++  long __second = __hole;
++  while (__second < (__len - 1) / 2) {
++    __second = 2 * (__second + 1);
++    if (__comp(*(__first + __second), *(__first + (__second - 1))))
++      --__second;
++    *(__first + __hole) = std::move(*(__first + __second));
++    __hole = __second;
++  }
++  if ((__len & 1) == 0 && __second == (__len - 2) / 2) {
++    __second = 2 * (__second + 1);
++    *(__first + __hole) = std::move(*(__first + (__second - 1)));
++    __hole = __second - 1;
++  }
++  std::__stdcxx_push_heap(__first, __hole, __top, std::move(__value), __comp);
++}
++template <class _It, class _Comp>
++_LIBCPP_HIDE_FROM_ABI void __stdcxx_pop_heap(_It __first, _It __last, _It __result, _Comp& __comp) {
++  typename iterator_traits<_It>::value_type __value = std::move(*__result);
++  *__result = std::move(*__first);
++  std::__stdcxx_adjust_heap(__first, long(0), long(__last - __first), std::move(__value), __comp);
++}
++template <class _It, class _Comp>
++_LIBCPP_HIDE_FROM_ABI void __stdcxx_heap_sort_all(_It __first, _It __last, _Comp& __comp) {
++  // libstdc++ __partial_sort(first, last, last): __heap_select (make_heap only) + __sort_heap.
++  const long __len = __last - __first;
++  if (__len >= 2) {
++    long __parent = (__len - 2) / 2;
++    for (;;) {
++      typename iterator_traits<_It>::value_type __value = std::move(*(__first + __parent));
++      std::__stdcxx_adjust_heap(__first, __parent, __len, std::move(__value), __comp);
++      if (__parent == 0)
++        break;
++      --__parent;
++    }
++  }
++  while (__last - __first > 1) {
++    --__last;
++    std::__stdcxx_pop_heap(__first, __last, __last, __comp);
++  }
++}
++template <class _It, class _Comp>
++_LIBCPP_HIDE_FROM_ABI void __stdcxx_move_median_to_first(_It __result, _It __a, _It __b, _It __c, _Comp& __comp) {
++  if (__comp(*__a, *__b)) {
++    if (__comp(*__b, *__c))
++      std::iter_swap(__result, __b);
++    else if (__comp(*__a, *__c))
++      std::iter_swap(__result, __c);
++    else
++      std::iter_swap(__result, __a);
++  } else if (__comp(*__a, *__c))
++    std::iter_swap(__result, __a);
++  else if (__comp(*__b, *__c))
++    std::iter_swap(__result, __c);
++  else
++    std::iter_swap(__result, __b);
++}
++template <class _It, class _Comp>
++_LIBCPP_HIDE_FROM_ABI _It __stdcxx_unguarded_partition(_It __first, _It __last, _It __pivot, _Comp& __comp) {
++  for (;;) {
++    while (__comp(*__first, *__pivot))
++      ++__first;
++    --__last;
++    while (__comp(*__pivot, *__last))
++      --__last;
++    if (!(__first < __last))
++      return __first;
++    std::iter_swap(__first, __last);
++    ++__first;
++  }
++}
++template <class _It, class _Comp>
++_LIBCPP_HIDE_FROM_ABI void __stdcxx_introsort_loop(_It __first, _It __last, long __depth_limit, _Comp& __comp) {
++  while (__last - __first > 16) {
++    if (__depth_limit == 0) {
++      std::__stdcxx_heap_sort_all(__first, __last, __comp);
++      return;
++    }
++    --__depth_limit;
++    _It __mid = __first + (__last - __first) / 2;
++    std::__stdcxx_move_median_to_first(__first, __first + 1, __mid, __last - 1, __comp);
++    _It __cut = std::__stdcxx_unguarded_partition(__first + 1, __last, __first, __comp);
++    std::__stdcxx_introsort_loop(__cut, __last, __depth_limit, __comp);
++    __last = __cut;
++  }
++}
++template <class _It, class _Comp>
++_LIBCPP_HIDE_FROM_ABI void __stdcxx_unguarded_linear_insert(_It __last, _Comp& __comp) {
++  typename iterator_traits<_It>::value_type __val = std::move(*__last);
++  _It __next = __last;
++  --__next;
++  while (__comp(__val, *__next)) {
++    *__last = std::move(*__next);
++    __last = __next;
++    --__next;
++  }
++  *__last = std::move(__val);
++}
++template <class _It, class _Comp>
++_LIBCPP_HIDE_FROM_ABI void __stdcxx_insertion_sort(_It __first, _It __last, _Comp& __comp) {
++  if (__first == __last)
++    return;
++  for (_It __i = __first + 1; __i != __last; ++__i) {
++    if (__comp(*__i, *__first)) {
++      typename iterator_traits<_It>::value_type __val = std::move(*__i);
++      for (_It __j = __i; __j != __first; --__j)  // move_backward(first, i, i + 1)
++        *__j = std::move(*(__j - 1));
++      *__first = std::move(__val);
++    } else
++      std::__stdcxx_unguarded_linear_insert(__i, __comp);
++  }
++}
++template <class _It, class _Comp>
++_LIBCPP_HIDE_FROM_ABI void __stdcxx_sort(_It __first, _It __last, _Comp& __comp) {
++  if (__first == __last)
++    return;
++  long __lg = 0;
++  for (long __n = __last - __first; __n >>= 1;)
++    ++__lg;
++  std::__stdcxx_introsort_loop(__first, __last, __lg * 2, __comp);
++  if (__last - __first > 16) {
++    std::__stdcxx_insertion_sort(__first, __first + 16, __comp);
++    for (_It __i = __first + 16; __i != __last; ++__i)
++      std::__stdcxx_unguarded_linear_insert(__i, __comp);
++  } else
++    std::__stdcxx_insertion_sort(__first, __last, __comp);
++}
++// ---- end DolphinSlicer ------------------------------------------------------------------------
++
+ template <class _RandomAccessIterator, class _Comp>
+ inline _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_SINCE_CXX20 void
+ sort(_RandomAccessIterator __first, _RandomAccessIterator __last, _Comp __comp) {
+-  std::__sort_impl<_ClassicAlgPolicy>(std::move(__first), std::move(__last), __comp);
++  if (__libcpp_is_constant_evaluated()) {
++    std::__sort_impl<_ClassicAlgPolicy>(std::move(__first), std::move(__last), __comp);
++    return;
++  }
++  std::__stdcxx_sort(std::__unwrap_iter(__first), std::__unwrap_iter(__last), __comp);
+ }
+ 
+ template <class _RandomAccessIterator>

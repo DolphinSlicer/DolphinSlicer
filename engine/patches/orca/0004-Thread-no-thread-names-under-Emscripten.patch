@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DolphinSlicer <build@localhost>
+Date: Sun, 8 Nov 2026 04:20:20 +0000
+Subject: [PATCH 4/9] Thread: no thread names under Emscripten
+
+Emscripten does not provide pthread_setname_np/pthread_getname_np, so linking a
+WebAssembly build failed. Thread naming is diagnostics only; report it as unsupported
+there, as the macOS branch already does for other threads.
+Upstreamable: yes.
+---
+ src/libslic3r/Thread.cpp | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/src/libslic3r/Thread.cpp b/src/libslic3r/Thread.cpp
+index 12978499..d793a884 100644
+--- a/src/libslic3r/Thread.cpp
++++ b/src/libslic3r/Thread.cpp
+@@ -169,6 +169,14 @@ std::optional<std::string> get_current_thread_name()
+ 	return std::nullopt;
+ }
+ 
++#elif defined(__EMSCRIPTEN__)
++
++// Emscripten has no pthread_setname_np/pthread_getname_np: thread names are not supported.
++bool set_thread_name(std::thread &, const char *) { return false; }
++bool set_thread_name(boost::thread &, const char *) { return false; }
++bool set_current_thread_name(const char *) { return false; }
++std::optional<std::string> get_current_thread_name() { return std::nullopt; }
++
+ #else
+ 
+ // posix

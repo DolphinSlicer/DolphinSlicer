@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DolphinSlicer</title>
+<style>body { font: 15px/1.5 system-ui, sans-serif; display: grid; place-items: center; height: 100vh; margin: 0; color: #334155; }</style>
+<body>
+<p id="msg">Signing in…</p>
+<script>
+  // Google's OAuth redirect lands here in the sign-in popup. The app's page is cross-origin
+  // isolated, so this popup has no opener to talk to: hand the result over on a
+  // BroadcastChannel (same origin) and close. SPDX-License-Identifier: AGPL-3.0-or-later
+  const params = new URLSearchParams(location.hash.slice(1) || location.search.slice(1));
+  history.replaceState(null, '', location.pathname);
+  new BroadcastChannel('dolphin-slicer-oauth').postMessage(Object.fromEntries(params));
+  window.close();
+  document.getElementById('msg').textContent = 'Signed in. You can close this window.';
+</script>
+</body>
+</html>

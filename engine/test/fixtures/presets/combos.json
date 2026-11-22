@@ -1,0 +1,1526 @@
+{
+  "_comment": "System preset combinations for presets-parity.mjs, chosen by presets-pick.mjs. Desktop references: engine/scripts/make-preset-refs.py.",
+  "model": "cube.stl",
+  "slots": [
+    {
+      "vendor": "Anker",
+      "candidates": [
+        {
+          "printer": "Anker M5 0.4 nozzle",
+          "process": "0.25mm Draft @Anker",
+          "filament": "Bambu PLA Marble @System"
+        },
+        {
+          "printer": "Anker M5C 0.4 nozzle",
+          "process": "0.05mm Ultradetail @Anker",
+          "filament": "Elegoo PLA Sparkle @System"
+        },
+        {
+          "printer": "Anker M5 All-Metal 0.4 nozzle",
+          "process": "0.15mm Fast @Anker",
+          "filament": "Overture Matte PLA @System"
+        },
+        {
+          "printer": "Anker M5 All-Metal 0.2 nozzle",
+          "process": "0.10mm Standard 0.2 nozzle @Anker",
+          "filament": "FilAr PETG Amarillo Radiante"
+        },
+        {
+          "printer": "Anker M5 0.2 nozzle",
+          "process": "0.10mm Standard 0.2 nozzle @Anker",
+          "filament": "Bambu PA-CF @System"
+        }
+      ]
+    },
+    {
+      "vendor": "Anycubic",
+      "candidates": [
+        {
+          "printer": "Anycubic Chiron 0.4 nozzle",
+          "process": "0.20mm Standard @Anycubic Chiron",
+          "filament": "Eolas Prints PLA Matte @System"
+        },
+        {
+          "printer": "Anycubic Kobra 0.4 nozzle",
+          "process": "0.20mm Standard @Anycubic Kobra",
+          "filament": "Bambu PLA Basic @System"
+        },
+        {
+          "printer": "Anycubic Kobra 3 0.4 nozzle",
+          "process": "0.20mm Standard @Anycubic Kobra 3 0.4 nozzle",
+          "filament": "FilAr PLA Gris Pizarra"
+        },
+        {
+          "printer": "Anycubic Kobra 2 0.4 nozzle",
+          "process": "0.15mm Optimal @Anycubic Kobra2",
+          "filament": "Generic ASA @Anycubic"
+        },
+        {
+          "printer": "Anycubic Kobra 2 Pro 0.4 nozzle",
+          "process": "0.20mm Standard @Anycubic Kobra 2 Pro 0.4 nozzle",
+          "filament": "Elegoo PLA Glow @System"
+        }
+      ]
+    },
+    {
+      "vendor": "Artillery",
+      "candidates": [
+        {
+          "printer": "Artillery Sidewinder X4 Pro 0.4 nozzle",
+          "process": "0.12mm Fine @Artillery X4Pro 0.4 nozzle",
+          "filament": "Bambu PLA Translucent @System"
+        },
+        {
+          "printer": "Artillery Genius Pro 0.4 nozzle",
+          "process": "0.25mm Draft @Artillery Genius Pro",
+          "filament": "EverLoop rPETG Premium @System"
+        },
+        {
+          "printer": "Artillery Sidewinder X1 0.4 nozzle",
+          "process": "0.24mm Draft @Artillery X1",
+          "filament": "Eolas Prints ABS @System"
+        },
+        {
+          "printer": "Artillery M1 Pro 0.4 nozzle",
+          "process": "0.16mm High Quality @Artillery M1 Pro 0.4 nozzle",
+          "filament": "PolyLite Dual PLA @System"
+        },
+        {
+          "printer": "Artillery Sidewinder X4 Plus 0.4 nozzle",
+          "process": "0.16mm Optimal @Artillery X4Plus 0.4 nozzle",
+          "filament": "Panchroma PLA Neon @System"
+        }
+      ]
+    },
+    {
+      "vendor": "BBL",
+      "candidates": [
+        {
+          "printer": "Bambu Lab P1P 0.4 nozzle",
+          "process": "0.20mm Standard @BBL P1P",
+          "filament": "FilAr PETG Azul Boreal"
+        },
+        {
+          "printer": "Bambu Lab A1 mini 0.4 nozzle",
+          "process": "0.20mm Standard @BBL A1M",
+          "filament": "Eolas Prints PLA INGEO 850 @System"
+        },
+        {
+          "printer": "Bambu Lab X1 Carbon 0.4 nozzle",
+          "process": "0.28mm Extra Draft @BBL X1C",
+          "filament": "BETA TPU Matte @BBL X1C"
+        },
+        {
+          "printer": "Bambu Lab P2S 0.4 nozzle",
+          "process": "0.12mm High Quality @BBL P2S",
+          "filament": "addnorth PA Adura FDA"
+        },
+        {
+          "printer": "Bambu Lab H2S 0.4 nozzle",
+          "process": "0.16mm Standard @BBL H2S",
+          "filament": "FilAr PLA-mate Chocolate"
+        }
+      ]
+    },
+    {
+      "vendor": "BenFab",
+      "candidates": [
+        {
+          "printer": "BenFab 450 0.4 nozzle",
+          "process": "0.24mm Draft @BenFab 450 0.4 nozzle",
+          "filament": "FilAr PETG Magenta"
+        },
+        {
+          "printer": "BenFab 450 0.8 nozzle",
+          "process": "0.40mm Standard @BenFab 450 0.8 nozzle",
+          "filament": "Bambu PPA-CF @System"
+        },
+        {
+          "printer": "BenFab 450 1.0 nozzle",
+          "process": "0.60mm Draft @BenFab 450 1.0 nozzle",
+          "filament": "Generic ABS @System"
+        },
+        {
+          "printer": "BenFab 450 0.6 nozzle",
+          "process": "0.24mm Optimal @BenFab 450 0.6 nozzle",
+          "filament": "Generic PLA High Speed @System"
+        }
+      ]
+    },
+    {
+      "vendor": "Blocks",
+      "candidates": [
+        {
+          "printer": "BLOCKS RD50 V2 0.4 nozzle",
+          "process": "0.16mm Optimal 0.4 nozzle @Blocks_RD50_V2",
+          "filament": "3D-Fuel Pro PCTG Refuel @System"
+        },
+        {
+          "printer": "BLOCKS Pro S100 0.4 nozzle",
+          "process": "0.24mm Draft 0.4 nozzle @Blocks_Pro_S100",
+          "filament": "EverLoop rPLA Premium @System"
+        },
+        {
+          "printer": "BLOCKS RF50 0.4 nozzle",
+          "process": "0.20mm Standard 0.4 nozzle @Blocks_RF50",
+          "filament": "Elegoo PLA Wood @System"
+        },
+        {
+          "printer": "BLOCKS RF50 0.6 nozzle",
+          "process": "0.32mm Draft 0.6 nozzle @Blocks_RF50",
+          "filament": "Bambu ASA-CF @System"
+        },
+        {
+          "printer": "BLOCKS RD50 V2 0.8 nozzle",
+          "process": "0.46mm Draft 0.8 nozzle @Blocks_RD50_V2",
+          "filament": "Elegoo PAHT-CF @System"
+        }
+      ]
+    },
+    {
+      "vendor": "Chuanying",
+      "candidates": [
+        {
+          "printer": "Chuanying X1 0.4 Nozzle",
+          "process": "0.20mm Standard @Chuanying X1 0.4 Nozzle",
+          "filament": "Generic PLA Matte @System"
+        },
+        {
+          "printer": "Chuanying X1 0.8 Nozzle",
+          "process": "0.40mm Standard @Chuanying X1 0.8 Nozzle",
+          "filament": "FilAr PETG Coral"
+        },
+        {
+          "printer": "Chuanying X1 0.6 Nozzle",
+          "process": "0.30mm Standard @Chuanying X1 0.6 Nozzle",
+          "filament": "PolyTerra Dual PLA @System"
+        },
+        {
+          "printer": "Chuanying X1 0.25 Nozzle",
+          "process": "0.12mm Standard @Chuanying X1 0.25 Nozzle",
+          "filament": "FilAr PLA Dorado"
+        }
+      ]
+    },
+    {
+      "vendor": "Co Print",
+      "candidates": [
+        {
+          "printer": "Co Print ChromaSet 0.4 nozzle",
+          "process": "0.2mm Standard @Co Print ChromaSet 0.4",
+          "filament": "Elegoo PETG @System"
+        },
+        {
+          "printer": "Co Print ChromaSet 0.4 nozzle - Ender-3 V3 Plus",
+          "process": "0.2mm Fast @Co Print ChromaSet 0.4",
+          "filament": "Generic HIPS @System"
+        },
+        {
+          "printer": "Co Print ChromaSet 0.4 nozzle - Ender-3 V3",
+          "process": "0.2mm Fast @Co Print ChromaSet 0.4",
+          "filament": "Overture ASA @System"
+        },
+        {
+          "printer": "Co Print ChromaSet 0.4 nozzle fast",
+          "process": "0.2mm Fast @Co Print ChromaSet 0.4",
+          "filament": "Generic PE-CF @System"
+        }
+      ]
+    },
+    {
+      "vendor": "CoLiDo",
+      "candidates": [
+        {
+          "printer": "CoLiDo 160 V2 0.4 nozzle",
+          "process": "0.24mm Draft @CoLiDo 160 V2",
+          "filament": "Fiberon PETG-rCF @System"
+        },
+        {
+          "printer": "CoLiDo SR1 0.4 nozzle",
+          "process": "0.32mm Standard @CoLiDo SR1",
+          "filament": "Bambu PETG Basic @System"
+        },
+        {
+          "printer": "CoLiDo DIY 4.0 V2 0.4 nozzle",
+          "process": "0.20mm Standard @CoLiDo DIY 4.0 V2",
+          "filament": "FilAr PLA-mate Amarillo"
+        },
+        {
+          "printer": "CoLiDo DIY 4.0 0.4 nozzle",
+          "process": "0.12mm Fine @CoLiDo DIY 4.0",
+          "filament": "Elegoo PETG-CF @System"
+        },
+        {
+          "printer": "CoLiDo X16 0.4 nozzle",
+          "process": "0.24mm Draft @CoLiDo X16",
+          "filament": "Elegoo PAHT-CF @System"
+        }
+      ]
+    },
+    {
+      "vendor": "Comgrow",
+      "candidates": [
+        {
+          "printer": "Comgrow T500 0.4 nozzle",
+          "process": "0.20mm Standard @Comgrow T500",
+          "filament": "FDplast HIPS @System"
+        },
+        {
+          "printer": "Comgrow T300 0.4 nozzle",
+          "process": "0.20mm Optimal @Comgrow T300 0.4 - official",
+          "filament": "eSUN PETG @System"
+        },
+        {
+          "printer": "Comgrow T500 0.8 nozzle",
+          "process": "0.48mm Draft @Comgrow T500 0.8",
+          "filament": "Bambu Support For PA/PET @System"
+        },
+        {
+          "printer": "Comgrow T500 0.6 nozzle",
+          "process": "0.24mm Draft @Comgrow T500 0.6",
+          "filament": "Generic SBS @System"
+        }
+      ]
+    },
+    {
+      "vendor": "Creality",
+      "candidates": [
+        {
+          "printer": "Creality K1 Max (0.4 nozzle)",
+          "process": "0.08mm SuperDetail @Creality K1Max (0.4 nozzle)",
+          "filament": "Overture Super PLA+ @System"
+        },
+        {
+          "printer": "Creality Ender-2 Pro 0.4 nozzle",
+          "process": "0.08mm Extra Fine @Creality Ender-2 Pro 0.4 nozzle",
+          "filament": "COEX TPE 60D @System"
+        },
+        {
+          "printer": "Creality K2 SE 0.4 nozzle",
+          "process": "0.24mm Standard @Creality K2 SE 0.4 nozzle",
+          "filament": "Bambu Support for ABS @System"
+        },
+        {
+          "printer": "Creality Ender-3 V2 Neo 0.4 nozzle",
+          "process": "0.20mm Standard @Creality Ender3V2Neo",
+          "filament": "FilAr PLA Gris Pizarra"
+        },
+        {
+          "printer": "Creality Ender-5 Max 0.4 nozzle",
+          "process": "0.20mm Standard @Creality Ender-5 Max 0.4mm nozzle",
+          "filament": "FILL3D PETG CF @System"
+        }
+      ]
+    },
+    {
+      "vendor": "Custom",
+      "candidates": [
+        {
+          "printer": "MyMarlin 0.4 nozzle",
+          "process": "0.08mm Extra Fine @MyMarlin",
+          "filament": "Elegoo PLA Marble @System"
+        },
+        {
+          "printer": "MyBeltPrinter 0.4 nozzle",
+          "process": "0.12mm Fine @MyBeltPrinter",
+          "filament": "3D-Fuel Pro PETG Refuel @System"
+        },
+        {
+          "printer": "MyKlipper 0.4 nozzle",
+          "process": "0.08mm Extra Fine @MyKlipper",
+          "filament": "Bambu PLA Sparkle @System"
+        },
+        {
+          "printer": "MyRRF 0.4 nozzle",
+          "process": "0.28mm Extra Draft @MyRRF",
+          "filament": "FilAr PLA Verde Pixel"
+        },
+        {
+          "printer": "MyRepetier 0.4 nozzle",
+          "process": "0.20mm Standard @MyRepetier",
+          "filament": "eSUN PLA+ @System"
+        }
+      ]
+    },
+    {
+      "vendor": "Elegoo",
+      "candidates": [
+        {
+          "printer": "Elegoo Neptune 4 0.4 nozzle",
+          "process": "0.28mm Extra Draft @Elegoo N4 0.4 nozzle",
+          "filament": "Elegoo PETG HF @System"
+        },
+        {
+          "printer": "Elegoo Neptune X 0.4 nozzle",
+          "process": "0.16mm Optimal @Elegoo Neptune 0.4 nozzle",
+          "filament": "FilAr PLA-mate Amarillo"
+        },
+        {
+          "printer": "Elegoo Neptune 0.4 nozzle",
+          "process": "0.16mm Optimal @Elegoo Neptune 0.4 nozzle",
+          "filament": "3D-Fuel Pro PCTG Refuel @System"
+        },
+        {
+          "printer": "Elegoo Centauri 2 0.4 nozzle",
+          "process": "0.16mm Optimal @Elegoo C2 0.4 nozzle",
+          "filament": "3D-Fuel Standard PLA @System"
+        },
+        {
+          "printer": "Elegoo Neptune 4 Pro 0.4 nozzle",
+          "process": "0.20mm Standard @Elegoo N4Pro 0.4 nozzle",
+          "filament": "Generic PLA Matte @Elegoo"
+        }
+      ]
+    },
+    {
+      "vendor": "Eryone",
+      "candidates": [
+        {
+          "printer": "Eryone ER20 0.4 nozzle",
+          "process": "0.20mm Standard @Eryone ER20",
+          "filament": "Overture ABS Basic @System"
+        },
+        {
+          "printer": "Eryone ER20 Klipper 0.4 nozzle",
+          "process": "0.28mm Extra Draft @Eryone ER20 Klipper",
+          "filament": "Goofoo PETG-CF @System"
+        },
+        {
+          "printer": "Thinker X400 0.4 nozzle",
+          "process": "0.12mm Standard @Thinker X400",
+          "filament": "Eryone PETG-Matte @Thinker X400 0.4 nozzle"
+        },
+        {
+          "printer": "Eryone ER20 Klipper 0.5 nozzle",
+          "process": "0.15mm Optimal @Eryone ER20 Klipper 0.5 nozzle",
+          "filament": "AliZ PETG @System"
+        },
+        {
+          "printer": "Eryone ER20 0.8 nozzle",
+          "process": "0.56mm Extra Draft @Eryone ER20 0.8 nozzle",
+          "filament": "COEX ABS @System"
+        }
+      ]
+    },
+    {
+      "vendor": "FELIX Printers",
+      "candidates": [
+        {
+          "printer": "FELIX Food Single 4.00mm nozzle",
+          "process": "FELIX Food Coarse @ 4.00mm",
+          "filament": "School House Spools Transparent PETG @System"
+        },
+        {
+          "printer": "FELIX Food Switch 4.00mm nozzle",
+          "process": "FELIX Food Coarse @ 4.00mm",
+          "filament": "COEX TPE 60D @System"
+        },
+        {
+          "printer": "FELIX Tec 4 0.35mm nozzle",
+          "process": "FELIX Plastic Slightly Coarse @ 0.35mm",
+          "filament": "Eolas Prints PLA Neon @System"
+        },
+        {
+          "printer": "FELIX Food Switch 2.00mm nozzle",
+          "process": "FELIX Food Normal @ 2.00mm",
+          "filament": "Eolas Prints PLA Premium @System"
+        },
+        {
+          "printer": "FELIX Food Single 1.00mm nozzle",
+          "process": "FELIX Food Normal @ 1.00mm",
+          "filament": "School House Spools Marble PLA @System"
+        }
+      ]
+    },
+    {
+      "vendor": "Flashforge",
+      "candidates": [
+        {
+          "printer": "Flashforge Adventurer 5M Pro 0.4 Nozzle",
+          "process": "0.24mm Draft @Flashforge AD5M Pro 0.4 Nozzle",
+          "filament": "Bambu PLA Tough @System"
+        },
+        {
+          "printer": "Flashforge Creator 5 Pro 0.4 nozzle",
+          "process": "0.12mm Standard @FF C5",
+          "filament": "FDplast HIPS @System"
+        },
+        {
+          "printer": "Flashforge Guider4 Pro 0.4 nozzle",
+          "process": "0.16mm Standard @FF G4P",
+          "filament": "3D-Fuel Pro PCTG Refuel @System"
+        },
+        {
+          "printer": "Flashforge Adventurer 3 Series 0.4 Nozzle",
+          "process": "0.20mm Standard @Flashforge AD3 0.4 Nozzle",
+          "filament": "FDplast HIPS @System"
+        },
+        {
+          "printer": "Flashforge Adventurer A5 0.4 nozzle",
+          "process": "0.12mm Fine @FF Adventurer A5 0.4 nozzle",
+          "filament": "PolyLite ABS @System"
+        }
+      ]
+    },
+    {
+      "vendor": "FLSun",
+      "candidates": [
+        {
+          "printer": "FLSun QQ-S Pro 0.4 nozzle",
+          "process": "0.30mm Extra Draft @FLSun QQSPro",
+          "filament": "Elegoo PLA-CF @System"
+        },
+        {
+          "printer": "FLSun Q5 0.4 nozzle",
+          "process": "0.08mm Fine @FLSun Q5",
+          "filament": "Fiberon PA6-GF @System"
+        },
+        {
+          "printer": "FLSun Super Racer 0.4 nozzle",
+          "process": "0.20mm Standard @FLSun SR",
+          "filament": "eSUN PLA+ @System"
+        },
+        {
+          "printer": "FLSun S1 0.4 nozzle",
+          "process": "0.12mm Fine @FLSun S1",
+          "filament": "COEX PETG @System"
+        },
+        {
+          "printer": "FLSun V400 0.4 nozzle",
+          "process": "0.20mm Standard @FLSun V400",
+          "filament": "Valment PLA Galaxy @System"
+        }
+      ]
+    },
+    {
+      "vendor": "FlyingBear",
+      "candidates": [
+        {
+          "printer": "FlyingBear Ghost 6 0.4 nozzle",
+          "process": "0.24mm Draft @FlyingBear Ghost 6 0.4 nozzle",
+          "filament": "Elegoo ASA @System"
+        },
+        {
+          "printer": "FlyingBear Ghost7 0.4 nozzle",
+          "process": "0.24mm Draft @FlyingBear Ghost7",
+          "filament": "FilAr PLA Blanco Calido"
+        },
+        {
+          "printer": "FlyingBear Reborn3 0.4 nozzle",
+          "process": "0.12mm Fine @FlyingBear Reborn3",
+          "filament": "FilAr PLA Tabaco"
+        },
+        {
+          "printer": "FlyingBear S1 0.4 nozzle",
+          "process": "0.20mm Standard @FlyingBear S1",
+          "filament": "Bambu TPU for AMS @System"
+        }
+      ]
+    },
+    {
+      "vendor": "Folgertech",
+      "candidates": [
+        {
+          "printer": "Folgertech FT-6 0.4 nozzle",
+          "process": "0.12mm Fine @FT 0.4 nozzle",
+          "filament": "Eolas Prints PLA Matte @System"
+        },
+        {
+          "printer": "Folgertech i3 0.4 nozzle",
+          "process": "0.24mm Draft @FT 0.4 nozzle",
+          "filament": "DREMC ASA GF @System"
+        },
+        {
+          "printer": "Folgertech FT-5 0.4 nozzle",
+          "process": "0.20mm Standard @FT 0.4 nozzle",
+          "filament": "eSUN PETG @System"
+        },
+        {
+          "printer": "Folgertech FT-6 0.6 nozzle",
+          "process": "0.30mm Strength @FT 0.6 nozzle",
+          "filament": "Elegoo TPU 95A @System"
+        },
+        {
+          "printer": "Folgertech FT-5 0.6 nozzle",
+          "process": "0.30mm Standard @FT 0.6 nozzle",
+          "filament": "Elegoo PLA @System"
+        }
+      ]
+    },
+    {
+      "vendor": "Geeetech",
+      "candidates": [
+        {
+          "printer": "Geeetech Mizar M 0.4 nozzle",
+          "process": "0.20mm Standard @Geeetech common",
+          "filament": "Goofoo PHA @System"
+        },
+        {
+          "printer": "Geeetech A10 M 0.4 nozzle",
+          "process": "0.20mm Standard @Geeetech common",
+          "filament": "Bambu TPU 90A @System"
+        },
+        {
+          "printer": "Geeetech A20 M 0.4 nozzle",
+          "process": "0.16mm Optimal @Geeetech common",
+          "filament": "FilAr PLA-mate Violeta"
+        },
+        {
+          "printer": "Geeetech A30 Pro 0.4 nozzle",
+          "process": "0.28mm Extra Draft @Geeetech common",
+          "filament": "Bambu PVA @System"
+        },
+        {
+          "printer": "Geeetech Mizar 0.4 nozzle",
+          "process": "0.24mm Draft @Geeetech common",
+          "filament": "Generic PA @System"
+        }
+      ]
+    },
+    {
+      "vendor": "Ginger Additive",
+      "candidates": [
+        {
+          "printer": "Ginger G1 8.0 nozzle",
+          "process": "4.00mm Standard",
+          "filament": "Eolas Prints PLA Neon @System"
+        },
+        {
+          "printer": "Ginger G1 5.0 nozzle",
+          "process": "2.50mm Standard",
+          "filament": "Elegoo PC @System"
+        },
+        {
+          "printer": "Ginger G1 3.0 nozzle",
+          "process": "1.50mm Standard",
+          "filament": "DREMC PETG @System"
+        },
+        {
+          "printer": "Ginger G1 1.2 nozzle",
+          "process": "0.60mm Standard",
+          "filament": "FilAr PLA Verde Manzana"
+        }
+      ]
+    },
+    {
+      "vendor": "Goofoo",
+      "candidates": [
+        {
+          "printer": "Goofoo GP1 0.4 nozzle",
+          "process": "0.20mm Standard @Goofoo GP1",
+          "filament": "Bambu PLA Silk @System"
+        },
+        {
+          "printer": "Goofoo TurboM 0.4 nozzle",
+          "process": "0.20mm Standard @Goofoo TurboM",
+          "filament": "Bambu ABS-GF @System"
+        },
+        {
+          "printer": "Goofoo Velo+ 0.4 nozzle",
+          "process": "0.20mm Standard @Goofoo Velo+",
+          "filament": "Bambu PLA Aero @System"
+        },
+        {
+          "printer": "Goofoo Velo+ Tool 0.4",
+          "process": "0.20mm Standard @Goofoo Velo+",
+          "filament": "PolyTerra Dual PLA @System"
+        },
+        {
+          "printer": "Goofoo Velo+ 0.2 nozzle",
+          "process": "0.10mm Standard @Goofoo Velo+",
+          "filament": "FilAr PLA Blanco Calido"
+        }
+      ]
+    },
+    {
+      "vendor": "InfiMech",
+      "candidates": [
+        {
+          "printer": "InfiMech TX 0.4 nozzle",
+          "process": "0.08mm Extra Fine @InfiMech TX",
+          "filament": "3D-Fuel Pro PETG @System"
+        },
+        {
+          "printer": "InfiMech EX 0.4 nozzle",
+          "process": "0.20mm Standard @InfiMech EX",
+          "filament": "Generic EVA @System"
+        },
+        {
+          "printer": "InfiMech EX+APS 0.4 nozzle",
+          "process": "0.24mm Draft @InfiMech EX+APS",
+          "filament": "DREMC PET-CF @System"
+        },
+        {
+          "printer": "InfiMech TX HSN 0.4 nozzle",
+          "process": "0.20mm Standard @InfiMech TX HSN",
+          "filament": "COEX TPE 60D @System"
+        }
+      ]
+    },
+    {
+      "vendor": "iQ",
+      "candidates": [
+        {
+          "printer": "iQ TiQ8 0.4 Nozzle",
+          "process": "0.20mm Standard @iQ TiQ8 P1 - ABS Natur Material4Print (0.4 Nozzle)",
+          "filament": "Panchroma PLA Silk @System"
+        },
+        {
+          "printer": "iQ TiQ2 0.4 Nozzle",
+          "process": "0.20mm Standard @iQ TiQ2 P2 - PACF Pro Fiberthree + VXL90 Xioneer (0.4 Nozzle)",
+          "filament": "Elas PETG Basic @System"
+        },
+        {
+          "printer": "iQ TiQ8 0.25 Nozzle",
+          "process": "0.15mm Standard @iQ TiQ8 (0.25 Nozzle)",
+          "filament": "JAYO PLA @System"
+        },
+        {
+          "printer": "iQ TiQ8 0.6 Nozzle",
+          "process": "0.30mm Standard @iQ TiQ8 (0.6 Nozzle)",
+          "filament": "PolyLite PETG @System"
+        },
+        {
+          "printer": "iQ TiQ8 0.8 Nozzle",
+          "process": "0.40mm Standard @iQ TiQ8 (0.8 Nozzle)",
+          "filament": "FilAr PLA-mate Rojo"
+        }
+      ]
+    },
+    {
+      "vendor": "Kingroon",
+      "candidates": [
+        {
+          "printer": "Kingroon KP3S V1 0.4 nozzle",
+          "process": "0.20mm Standard @Kingroon KP3S V1",
+          "filament": "Elegoo Rapid PETG @System"
+        },
+        {
+          "printer": "Kingroon KP3S PRO V2 0.4 nozzle",
+          "process": "0.20mm Standard @Kingroon KP3S PRO V2",
+          "filament": "PrintaLot ABS @System"
+        },
+        {
+          "printer": "Kingroon KP3S PRO S1 0.4 nozzle",
+          "process": "0.12mm Standard @Kingroon KP3S PRO S1",
+          "filament": "Elegoo PLA Wood @System"
+        },
+        {
+          "printer": "Kingroon KP3S 3.0 0.4 nozzle",
+          "process": "0.30mm Standard @Kingroon KP3S 3.0",
+          "filament": "FilAr PLA-mate Celeste Cielo"
+        },
+        {
+          "printer": "Kingroon KLP1 0.4 nozzle",
+          "process": "0.12mm Standard @Kingroon KLP1",
+          "filament": "Bambu Support G @System"
+        }
+      ]
+    },
+    {
+      "vendor": "LONGER",
+      "candidates": [
+        {
+          "printer": "LONGER LK10 (0.4 nozzle)",
+          "process": "0.20mm Standard @LONGER LK10 (0.4 nozzle)",
+          "filament": "Panchroma PLA Galaxy @System"
+        },
+        {
+          "printer": "LONGER LK10 Plus (0.4 nozzle)",
+          "process": "0.20mm Standard @LONGER LK10 Plus (0.4 nozzle)",
+          "filament": "Goofoo PETG @System"
+        },
+        {
+          "printer": "LONGER LK10 Plus (0.6 nozzle)",
+          "process": "0.12mm Fine @LONGER LK10 Plus (0.6 nozzle)",
+          "filament": "Bambu PLA Impact @System"
+        },
+        {
+          "printer": "LONGER LK10 (0.8 nozzle)",
+          "process": "0.12mm Fine @LONGER LK10 (0.8 nozzle)",
+          "filament": "PolyTerra PLA @System"
+        },
+        {
+          "printer": "LONGER LK10 (0.2 nozzle)",
+          "process": "0.20mm Standard @LONGER LK10 (0.2 nozzle)",
+          "filament": "FilAr PLA Verde Pixel"
+        }
+      ]
+    },
+    {
+      "vendor": "Lulzbot",
+      "candidates": [
+        {
+          "printer": "Lulzbot Taz Pro S 0.5 nozzle",
+          "process": "0.25mm Standard @Lulzbot Taz Pro S",
+          "filament": "Eolas Prints TPU Transition @System"
+        },
+        {
+          "printer": "Lulzbot Taz 6 0.5 nozzle",
+          "process": "0.25mm Standard @Lulzbot Taz 6",
+          "filament": "Bambu TPU 90A @System"
+        },
+        {
+          "printer": "Lulzbot Mini 1 0.5 nozzle",
+          "process": "0.18mm High Detail @Lulzbot Mini 1",
+          "filament": "FilAr PLA Verde FilAr"
+        },
+        {
+          "printer": "Lulzbot Taz 4 or 5 0.5 nozzle",
+          "process": "0.25mm Standard @Lulzbot Taz 4 or 5",
+          "filament": "FilAr PLA-mate Amarillo"
+        },
+        {
+          "printer": "Lulzbot Taz Pro Dual 0.5 nozzle",
+          "process": "0.18mm High Detail @Lulzbot Taz Pro Dual",
+          "filament": "Elegoo Rapid PETG @System"
+        }
+      ]
+    },
+    {
+      "vendor": "MagicMaker",
+      "candidates": [
+        {
+          "printer": "MM slb 0.4 nozzle",
+          "process": "0.30mm Draft @MM slb",
+          "filament": "Generic PA @System"
+        },
+        {
+          "printer": "MM hqs hj 0.4 nozzle",
+          "process": "0.20mm Standard @MM hqs hj",
+          "filament": "Elegoo PET-CF @System"
+        },
+        {
+          "printer": "MM hj SK 0.4 nozzle",
+          "process": "0.30mm Draft Fast @MM hj SK",
+          "filament": "FilAr PLA Rosa Flamenco"
+        },
+        {
+          "printer": "MM hqs SF 0.4 nozzle",
+          "process": "0.30mm Draft @MM hqs SF",
+          "filament": "SUNLU PLA+ @System"
+        },
+        {
+          "printer": "MM BoneKing 0.4 nozzle",
+          "process": "0.10mm Fine @MM BoneKing",
+          "filament": "FilAr PLA Cobre"
+        }
+      ]
+    },
+    {
+      "vendor": "Mellow",
+      "candidates": [
+        {
+          "printer": "M1 0.4 nozzle",
+          "process": "0.12mm Fine @M1",
+          "filament": "COEX TPE 40D @System"
+        },
+        {
+          "printer": "M1 0.8 nozzle",
+          "process": "0.24mm Draft @M1",
+          "filament": "eSUN PLA+ @System"
+        },
+        {
+          "printer": "M1 0.6 nozzle",
+          "process": "0.20mm Standard @M1",
+          "filament": "Overture PLA @System"
+        },
+        {
+          "printer": "M1 0.2 nozzle",
+          "process": "0.08mm Extra Fine @M1",
+          "filament": "3D-Fuel Standard PLA Refuel @System"
+        }
+      ]
+    },
+    {
+      "vendor": "Meltingplot",
+      "candidates": [
+        {
+          "printer": "Meltingplot MBL 480 0.4 nozzle",
+          "process": "0.18mm Fine 0.4 nozzle @Meltingplot MBL",
+          "filament": "Panchroma CoPE @System"
+        },
+        {
+          "printer": "Meltingplot MBL 133 0.4 nozzle",
+          "process": "0.18mm Fine 0.4 nozzle @Meltingplot MBL",
+          "filament": "Elegoo Rapid PLA+ @System"
+        },
+        {
+          "printer": "Meltingplot MBL 308 0.4 nozzle",
+          "process": "0.18mm Fine 0.4 nozzle @Meltingplot MBL",
+          "filament": "Bambu PLA Matte @System"
+        },
+        {
+          "printer": "Meltingplot MBL 136 0.4 nozzle",
+          "process": "0.18mm Fine 0.4 nozzle @Meltingplot MBL",
+          "filament": "PolyLite ASA @System"
+        },
+        {
+          "printer": "Meltingplot CHX 350 0.4 nozzle",
+          "process": "0.18mm Fine 0.4 nozzle @Meltingplot CHX 350",
+          "filament": "3D-Fuel Tough Pro Refuel @System"
+        }
+      ]
+    },
+    {
+      "vendor": "Pragostroj",
+      "candidates": [
+        {
+          "printer": "KINARB 1HB 0.4 nozzle",
+          "process": "0.2mm Draft @Pragostroj 0.4",
+          "filament": "Eolas Prints PLA Premium @System"
+        },
+        {
+          "printer": "KINARB 2HB 0.4 nozzle",
+          "process": "0.40mm quality @Pragostroj 0.8",
+          "filament": "3D-Fuel Pro PCTG ESD @System"
+        },
+        {
+          "printer": "KINARB 1HB 1.2 nozzle",
+          "process": "0.40mm quality @Pragostroj 0.8",
+          "filament": "FilAr PLA-mate Negro"
+        },
+        {
+          "printer": "KINARB 1HB 0.5 nozzle",
+          "process": "0.15mm PETG fine @Pragostroj 0.5",
+          "filament": "PolyLite PETG @System"
+        },
+        {
+          "printer": "KINARB 1HB 0.6 nozzle",
+          "process": "0.40mm quality @Pragostroj 0.8",
+          "filament": "Goofoo PE-CF @System"
+        }
+      ]
+    },
+    {
+      "vendor": "Prusa",
+      "candidates": [
+        {
+          "printer": "Prusa MK4S 0.4 nozzle",
+          "process": "0.10mm FAST DETAIL @MK4S 0.4",
+          "filament": "FILL3D PP @System"
+        },
+        {
+          "printer": "Prusa CORE One HF 0.4 nozzle",
+          "process": "0.28mm DRAFT @CORE One HF 0.4",
+          "filament": "Recycling Fabrik rPETG @System"
+        },
+        {
+          "printer": "Prusa MK4 MMU3 HF0.4 nozzle",
+          "process": "0.20mm SPEED @MK4 MMU3 HF0.4",
+          "filament": "Generic PA-CF @System"
+        },
+        {
+          "printer": "Prusa CORE One 0.4 nozzle",
+          "process": "0.15mm STRUCTURAL @CORE One 0.4",
+          "filament": "Eolas Prints PLA Silk @System"
+        },
+        {
+          "printer": "Prusa CORE One INDX 4T HF 0.4 nozzle",
+          "process": "0.20mm Balanced @Prusa CORE One INDX HF 0.4",
+          "filament": "FilAr PLA-mate Amarillo"
+        }
+      ]
+    },
+    {
+      "vendor": "Qidi",
+      "candidates": [
+        {
+          "printer": "Qidi Q2 0.4 nozzle",
+          "process": "0.12mm Fine @Qidi Q2",
+          "filament": "Generic BVOH @System"
+        },
+        {
+          "printer": "Qidi X-Max 0.4 nozzle",
+          "process": "0.20mm Standard @Qidi XMax",
+          "filament": "PolyLite ABS @Qidi"
+        },
+        {
+          "printer": "Qidi X-Smart 5 0.4 nozzle",
+          "process": "0.12mm High Quality @X-Smart 5",
+          "filament": "Bambu PLA Aero @System"
+        },
+        {
+          "printer": "Qidi Q2C 0.4 nozzle",
+          "process": "0.25mm Draft @Qidi Q2C",
+          "filament": "QIDI ASA-CF @Qidi Q2C 0.4 nozzle"
+        },
+        {
+          "printer": "Qidi X-Plus 4 0.4 nozzle",
+          "process": "0.24mm Draft @Qidi XPlus4",
+          "filament": "School House Spools Matte PETG @System"
+        }
+      ]
+    },
+    {
+      "vendor": "Raise3D",
+      "candidates": [
+        {
+          "printer": "Raise3D Pro3 0.4 nozzle (Right)",
+          "process": "0.25mm Draft @Raise3D Pro3",
+          "filament": "PrintaLot ABS @System"
+        },
+        {
+          "printer": "Raise3D Pro3 Plus 0.4 nozzle (Right)",
+          "process": "0.20mm Standard @Raise3D Pro3Plus",
+          "filament": "FilAr PETG Azul Imperial"
+        },
+        {
+          "printer": "Raise3D Pro3 Plus 0.4 nozzle (Dual)",
+          "process": "0.25mm Draft @Raise3D Pro3Plus",
+          "filament": "Eolas Prints PLA Silk @System"
+        },
+        {
+          "printer": "Raise3D Pro3 Plus 0.4 nozzle (Left)",
+          "process": "0.25mm Draft @Raise3D Pro3Plus",
+          "filament": "Generic PVA @System"
+        },
+        {
+          "printer": "Raise3D Pro3 0.4 nozzle (Dual)",
+          "process": "0.20mm Standard @Raise3D Pro3",
+          "filament": "Eolas Prints PLA Antibacterial @System"
+        }
+      ]
+    },
+    {
+      "vendor": "Ratrig",
+      "candidates": [
+        {
+          "printer": "RatRig V-Core 4 IDEX 300 0.4 nozzle",
+          "process": "0.25mm Quality Speed @RatRig V-Core 4 IDEX 0.4",
+          "filament": "Generic SBS @System"
+        },
+        {
+          "printer": "RatRig V-Core 4 IDEX 500 COPY MODE 0.4 nozzle",
+          "process": "0.20mm Quality @RatRig V-Core 4 IDEX 0.4",
+          "filament": "Panchroma PLA @System"
+        },
+        {
+          "printer": "RatRig V-Core 4 IDEX 300 COPY MODE 0.4 nozzle",
+          "process": "0.20mm Quality @RatRig V-Core 4 IDEX 0.4",
+          "filament": "3D-Fuel Tough Pro PLA @System"
+        },
+        {
+          "printer": "RatRig V-Core 4 HYBRID 400 0.4 nozzle",
+          "process": "0.25mm Speed @RatRig V-Core 4 HYBRID 0.4",
+          "filament": "School House Spools Silk PLA @System"
+        },
+        {
+          "printer": "RatRig V-Core 4 IDEX 500 MIRROR MODE 0.4 nozzle",
+          "process": "0.25mm Speed @RatRig V-Core 4 IDEX 0.4",
+          "filament": "FilAr PLA Manteca"
+        }
+      ]
+    },
+    {
+      "vendor": "re3D",
+      "candidates": [
+        {
+          "printer": "re3D Terabot 4 0.4 nozzle",
+          "process": "0.32 Draft",
+          "filament": "Elegoo PLA Basic @System"
+        },
+        {
+          "printer": "re3D Gigabot 4 0.4 nozzle",
+          "process": "0.2 Fine",
+          "filament": "Generic PCTG @System"
+        },
+        {
+          "printer": "re3D Gigabot 4 XLT 0.4 nozzle",
+          "process": "0.2 Fine",
+          "filament": "Eolas Prints TPU D60 UV Resistant @System"
+        },
+        {
+          "printer": "re3D TerabotX 2 0.8 nozzle",
+          "process": "0.6 Standard",
+          "filament": "Valment PLA Silk @System"
+        },
+        {
+          "printer": "re3D GigabotX 2 1.75 nozzle",
+          "process": "1.0 Standard",
+          "filament": "FilAr PETG Rojo Carmesi"
+        }
+      ]
+    },
+    {
+      "vendor": "RH3D",
+      "candidates": [
+        {
+          "printer": "E3NG v1.2S - 0.4 nozzle",
+          "process": "0.15mm Standard @E3NG v1.2S",
+          "filament": "Goofoo PE @System"
+        },
+        {
+          "printer": "VIRTU E3 - 0.4 nozzle",
+          "process": "0.20mm Standard @VIRTU E3",
+          "filament": "School House Spools Matte PLA @System"
+        },
+        {
+          "printer": "VIRTU E3 - 0.5 nozzle",
+          "process": "0.25mm Standard @VIRTU E3",
+          "filament": "Eolas Prints TPU Flex D53 @System"
+        },
+        {
+          "printer": "E3NG v1.2S - 0.3 nozzle",
+          "process": "0.15mm Standard @E3NG v1.2S",
+          "filament": "FilAr PLA Blanco Antartida"
+        },
+        {
+          "printer": "VIRTU E3 - 0.3 nozzle",
+          "process": "0.20mm Slow @VIRTU E3",
+          "filament": "Generic PLA Matte @System"
+        }
+      ]
+    },
+    {
+      "vendor": "RolohaunDesign",
+      "candidates": [
+        {
+          "printer": "Rook MK1 LDO 0.4 nozzle",
+          "process": "0.32mm Standard @Rook MK1 LDO",
+          "filament": "Goofoo PETG @System"
+        },
+        {
+          "printer": "Rolohaun Delta Flyer Refit 0.4 nozzle",
+          "process": "0.20mm Standard @Delta Flyer Refit",
+          "filament": "Eolas Prints PLA Antibacterial @System"
+        },
+        {
+          "printer": "Rook MK1 LDO 0.8 nozzle",
+          "process": "0.24mm Draft @Rook MK1 LDO",
+          "filament": "DREMC PA6-CF @System"
+        },
+        {
+          "printer": "Rook MK1 LDO 0.2 nozzle",
+          "process": "0.16mm Optimal @Rook MK1 LDO",
+          "filament": "Bambu PLA Sparkle @System"
+        },
+        {
+          "printer": "Rook MK1 LDO 0.6 nozzle",
+          "process": "0.24mm Draft @Rook MK1 LDO",
+          "filament": "Generic ABS @System"
+        }
+      ]
+    },
+    {
+      "vendor": "SeeMeCNC",
+      "candidates": [
+        {
+          "printer": "SeeMeCNC RostockMAX v4 0.4 nozzle",
+          "process": "0.20mm Standard @SeeMeCNC RostockMAX v4 0.4",
+          "filament": "FDplast SBS @System"
+        },
+        {
+          "printer": "SeeMeCNC BOSSdelta 300 0.4 nozzle",
+          "process": "0.16mm Fine @SeeMeCNC BOSSdelta 300 0.4",
+          "filament": "SeeMeCNC ABS"
+        },
+        {
+          "printer": "SeeMeCNC BOSSdelta 500 0521 0.4 nozzle",
+          "process": "0.16mm Fine @SeeMeCNC BOSSdelta 500 0521 0.4",
+          "filament": "AliZ PETG-Metal @System"
+        },
+        {
+          "printer": "SeeMeCNC BOSSdelta 500 0505 0.4 nozzle",
+          "process": "0.24mm Draft @SeeMeCNC BOSSdelta 500 0505 0.4",
+          "filament": "eSUN ePLA-LW @System"
+        },
+        {
+          "printer": "SeeMeCNC BOSSdelta 500 0510 0.4 nozzle",
+          "process": "0.16mm Fine @SeeMeCNC BOSSdelta 500 0510 0.4",
+          "filament": "FilAr PLA Verde Manzana"
+        }
+      ]
+    },
+    {
+      "vendor": "Snapmaker",
+      "candidates": [
+        {
+          "printer": "Snapmaker J1 (0.4 nozzle)",
+          "process": "0.20 Standard @Snapmaker J1 (0.4 nozzle)",
+          "filament": "FilAr PLA Rosa Amaranto"
+        },
+        {
+          "printer": "Snapmaker A250 Dual QS+B Kit (0.4 nozzle)",
+          "process": "0.20 Strength @Snapmaker (0.4 nozzle)",
+          "filament": "JAYO PETG @System"
+        },
+        {
+          "printer": "Snapmaker A350 Dual BKit (0.4 nozzle)",
+          "process": "0.24 Draft @Snapmaker (0.4 nozzle)",
+          "filament": "FILL3D PA @System"
+        },
+        {
+          "printer": "Snapmaker A350 Dual QS+B Kit (0.4 nozzle)",
+          "process": "0.16 Optimal @Snapmaker (0.4 nozzle)",
+          "filament": "Bambu PETG Basic @System"
+        },
+        {
+          "printer": "Snapmaker A250 Dual QSKit (0.4 nozzle)",
+          "process": "0.12 Fine @Snapmaker (0.4 nozzle)",
+          "filament": "Panchroma PLA Temp Shift @System"
+        }
+      ]
+    },
+    {
+      "vendor": "Sovol",
+      "candidates": [
+        {
+          "printer": "Sovol SV07 Plus 0.4 nozzle",
+          "process": "0.18mm Optimal @Sovol SV07 Plus",
+          "filament": "Elegoo PLA Marble @System"
+        },
+        {
+          "printer": "Sovol SV01 Pro 0.4 nozzle",
+          "process": "0.20mm Standard @Sovol SV01Pro",
+          "filament": "DREMC ABS-GF @System"
+        },
+        {
+          "printer": "Sovol SV08 MAX 0.4 nozzle",
+          "process": "0.20mm Standard @Sovol SV08 MAX 0.4 nozzle",
+          "filament": "Elegoo PETG @System"
+        },
+        {
+          "printer": "Sovol SV06 Plus ACE 0.4 nozzle",
+          "process": "0.20mm Standard @Sovol SV06 Plus ACE",
+          "filament": "Fiberon PA6-GF @System"
+        },
+        {
+          "printer": "Sovol SV01 0.4 nozzle",
+          "process": "0.20mm Standard @Sovol SV01",
+          "filament": "3D-Fuel PET CF @System"
+        }
+      ]
+    },
+    {
+      "vendor": "Tiertime",
+      "candidates": [
+        {
+          "printer": "Tiertime UP300 HS 0.4 nozzle",
+          "process": "0.28mm Extra Draft @Tiertime UP300 HS",
+          "filament": "DREMC ABS-GF @System"
+        },
+        {
+          "printer": "Tiertime UP310 Pro 0.4 nozzle",
+          "process": "0.16mm Optimal @Tiertime UP310 Pro",
+          "filament": "Eolas Prints PLA Premium @System"
+        },
+        {
+          "printer": "Tiertime UP400 Pro 0.4 nozzle",
+          "process": "0.12mm Fine @Tiertime UP400 Pro",
+          "filament": "Overture PLA @System"
+        },
+        {
+          "printer": "Tiertime UP600 HS 0.4 nozzle",
+          "process": "0.28mm Extra Draft @Tiertime UP600 HS",
+          "filament": "Bambu PLA Tough @System"
+        },
+        {
+          "printer": "Tiertime UP400 Pro 0.6 nozzle",
+          "process": "0.18mm Fine @Tiertime UP400 Pro 0.6 nozzle",
+          "filament": "eSUN ePLA-LW @System"
+        }
+      ]
+    },
+    {
+      "vendor": "UltiMaker",
+      "candidates": [
+        {
+          "printer": "UltiMaker 2 extended+ 0.4 nozzle",
+          "process": "0.20mm Draft @UltiMaker 2 extended+",
+          "filament": "PolyTerra Dual PLA @System"
+        },
+        {
+          "printer": "UltiMaker S5 0.4 nozzle",
+          "process": "0.2mm Fast @UltiMaker S5",
+          "filament": "Bambu PLA Silk @System"
+        },
+        {
+          "printer": "UltiMaker 2+ 0.4 nozzle",
+          "process": "0.10mm Fine @UltiMaker 2+",
+          "filament": "FilAr PLA Rojo de Carreras"
+        },
+        {
+          "printer": "UltiMaker 2 0.4 nozzle",
+          "process": "0.20mm Draft @UltiMaker 2",
+          "filament": "3D-Fuel Tough Pro PLA @System"
+        },
+        {
+          "printer": "UltiMaker S5 0.4 nozzle - Single Extruder",
+          "process": "0.2mm Fast @UltiMaker S5",
+          "filament": "Overture Silk PLA @System"
+        }
+      ]
+    },
+    {
+      "vendor": "Vivedino",
+      "candidates": [
+        {
+          "printer": "Xplorer Single 0.4 nozzle",
+          "process": "0.32mm Extra Draft @Xplorer 0.4",
+          "filament": "Generic PPA-CF @System"
+        },
+        {
+          "printer": "Troodon 2.0 RRF 0.4 nozzle",
+          "process": "0.24mm Draft @Troodon2",
+          "filament": "Generic PETG HF @System"
+        },
+        {
+          "printer": "Xplorer IQEX 0.4 nozzle",
+          "process": "0.08mm Extra Fine @Xplorer 0.4",
+          "filament": "FilAr PLA Rosa Flamenco"
+        },
+        {
+          "printer": "Xplorer IDEX 0.4 nozzle",
+          "process": "0.28mm Draft @Xplorer 0.4",
+          "filament": "Panchroma PLA Starlight @System"
+        },
+        {
+          "printer": "Xplorer Dual Gantry 0.4 nozzle",
+          "process": "0.08mm Extra Fine @Xplorer 0.4",
+          "filament": "Bambu ABS-GF @System"
+        }
+      ]
+    },
+    {
+      "vendor": "Volumic",
+      "candidates": [
+        {
+          "printer": "EXO42 IDRE (0.4 nozzle)",
+          "process": "Compatible speed - 0.30mm",
+          "filament": "Fiberon PET-CF @System"
+        },
+        {
+          "printer": "EXO42 Performance (0.4 nozzle)",
+          "process": "Normal performance - 0.15mm",
+          "filament": "DREMC PA12-CF @System"
+        },
+        {
+          "printer": "EXO42 Stage 2 (0.4 nozzle)",
+          "process": "Normal speed (Stage 2) - 0.10mm",
+          "filament": "Elegoo PLA Translucent2 @System"
+        },
+        {
+          "printer": "EXO65 IDRE (0.4 nozzle)",
+          "process": "Normal performance DUAL - 0.30mm",
+          "filament": "AliZ PETG @System"
+        },
+        {
+          "printer": "VS30SC2 Performance (0.4 nozzle)",
+          "process": "High performance VS30 - 0.20mm",
+          "filament": "FILL3D PETG @System"
+        }
+      ]
+    },
+    {
+      "vendor": "Voron",
+      "candidates": [
+        {
+          "printer": "Voron 2.4 250 0.4 nozzle",
+          "process": "0.08mm Extra Fine @Voron",
+          "filament": "Overture Rock PLA @System"
+        },
+        {
+          "printer": "Voron Switchwire 250 0.4 nozzle",
+          "process": "0.28mm Extra Draft @Voron",
+          "filament": "Eolas Prints TPU D60 UV Resistant @System"
+        },
+        {
+          "printer": "Voron 2.4 300 0.4 nozzle",
+          "process": "0.24mm Draft @Voron",
+          "filament": "FilAr PLA Gris Plata"
+        },
+        {
+          "printer": "Voron Trident 250 0.4 nozzle",
+          "process": "0.24mm Draft @Voron",
+          "filament": "FilAr PLA Piel"
+        },
+        {
+          "printer": "Voron 2.4 350 0.4 nozzle",
+          "process": "0.12mm Fine @Voron",
+          "filament": "FilAr PETG Gris Plata"
+        }
+      ]
+    },
+    {
+      "vendor": "Vzbot",
+      "candidates": [
+        {
+          "printer": "Vzbot 235 AWD 0.4 nozzle",
+          "process": "0.24mm Draft @Vzbot",
+          "filament": "FILL3D PETG @System"
+        },
+        {
+          "printer": "Vzbot 330 AWD 0.4 nozzle",
+          "process": "0.08mm Extra Fine @Vzbot",
+          "filament": "Bambu PETG HF @System"
+        },
+        {
+          "printer": "Vzbot 235 AWD 0.5 nozzle",
+          "process": "0.24mm Draft @Vzbot 0.5nozzle",
+          "filament": "Eolas Prints TPU Transition @System"
+        },
+        {
+          "printer": "Vzbot 330 AWD 0.5 nozzle",
+          "process": "0.12mm Fine @Vzbot 0.5nozzle",
+          "filament": "3D-Fuel Pro PCTG-CF @System"
+        },
+        {
+          "printer": "Vzbot 235 AWD 0.6 nozzle",
+          "process": "0.24mm Draft @Vzbot 0.6nozzle",
+          "filament": "Bambu PA-CF @System"
+        }
+      ]
+    },
+    {
+      "vendor": "Wanhao",
+      "candidates": [
+        {
+          "printer": "Wanhao D9-400 MK2 0.4 nozzle",
+          "process": "0.12mm Fine @Wanhao D9",
+          "filament": "Bambu PLA Marble @System"
+        },
+        {
+          "printer": "Wanhao D12-300 0.4 nozzle",
+          "process": "0.12mm Fine @Wanhao D12-400",
+          "filament": "FilAr PLA-mate Bordo"
+        },
+        {
+          "printer": "Wanhao D9-500 MK2 0.4 nozzle",
+          "process": "0.28mm Draft @Wanhao D9",
+          "filament": "Bambu PVA @System"
+        },
+        {
+          "printer": "Wanhao D9-300 MK2 0.4 nozzle",
+          "process": "0.12mm Fine @Wanhao D9",
+          "filament": "Bambu TPU 95A @System"
+        },
+        {
+          "printer": "Wanhao D9-300 MK1 BLTouch kit 0.4 nozzle",
+          "process": "0.20mm Standard @Wanhao D9",
+          "filament": "FilAr PLA Bronce"
+        }
+      ]
+    },
+    {
+      "vendor": "Wanhao France",
+      "candidates": [
+        {
+          "printer": "D12 300 PRO SMARTPAD MONO DUAL 0.4 nozzle",
+          "process": "0.15mm Standard @Wanhao-D12-300",
+          "filament": "JAYO PLA Classic @System"
+        },
+        {
+          "printer": "D12 230 PRO SMARTPAD MONO DUAL 0.4 nozzle",
+          "process": "0.15mm Standard @Wanhao-D12-230",
+          "filament": "AliZ PETG @System"
+        },
+        {
+          "printer": "D12 300 PRO SMARTPAD DIRECT 0.4 nozzle",
+          "process": "0.24mm Standard @Wanhao-D12-300",
+          "filament": "Eolas Prints PETG Transition @System"
+        },
+        {
+          "printer": "D12 500 PRO M2 MONO DUAL PoopTool 0.4 nozzle",
+          "process": "0.20mm Standard @Wanhao-D12-500 PoopTool",
+          "filament": "Elegoo PLA Translucent2 @System"
+        },
+        {
+          "printer": "D12 230 PRO M2 MONO DUAL 0.4 nozzle PoopTool",
+          "process": "0.20mm Standard @Wanhao-D12-230 PoopTool",
+          "filament": "Bambu PA6-GF @System"
+        }
+      ]
+    },
+    {
+      "vendor": "WEMAKE3D",
+      "candidates": [
+        {
+          "printer": "WEMAKE3D PhoenixProV1 0.4mm nozzle",
+          "process": "0.2mm Standard @WEMAKE3D PhoenixProV1 0.4mm nozzle",
+          "filament": "Generic EVA @System"
+        },
+        {
+          "printer": "WEMAKE3D TinyBotV1 0.4mm nozzle",
+          "process": "0.2mm Standard @WEMAKE3D TinyBotV1 0.4mm nozzle",
+          "filament": "Elegoo PLA @System"
+        },
+        {
+          "printer": "WEMAKE3D PhoenixProV1 0.2mm nozzle",
+          "process": "0.08mm Fine @WEMAKE3D PhoenixProV1 0.2mm nozzle",
+          "filament": "FilAr PLA Oro"
+        },
+        {
+          "printer": "WEMAKE3D TinyBotV1 0.3mm nozzle",
+          "process": "0.12mm Fine @WEMAKE3D TinyBotV1 0.3mm nozzle",
+          "filament": "FilAr PLA-mate Marron"
+        },
+        {
+          "printer": "WEMAKE3D PhoenixProV1 0.3mm nozzle",
+          "process": "0.15mm Standard @WEMAKE3D PhoenixProV1 0.3mm nozzle",
+          "filament": "COEX TPE 60D @System"
+        }
+      ]
+    },
+    {
+      "vendor": "WonderMaker",
+      "candidates": [
+        {
+          "printer": "WonderMaker ZR Ultra 0.4 nozzle",
+          "process": "0.24mm Draft @WonderMaker ZR Ultra",
+          "filament": "School House Spools Matte PETG @System"
+        },
+        {
+          "printer": "WonderMaker ZR Ultra S 0.4 nozzle",
+          "process": "0.28mm Extra Draft @WonderMaker ZR Ultra",
+          "filament": "Fiberon PA6-CF @System"
+        },
+        {
+          "printer": "WonderMaker ZR 0.4 nozzle",
+          "process": "0.08mm Extra Fine @WonderMaker ZR",
+          "filament": "Generic TPU @System"
+        },
+        {
+          "printer": "WonderMaker ZR Ultra 0.8 nozzle",
+          "process": "0.24mm Fine @WonderMaker ZR Ultra 0.8 nozzle",
+          "filament": "Bambu Support G @System"
+        },
+        {
+          "printer": "WonderMaker ZR 0.8 nozzle",
+          "process": "0.24mm Fine @WonderMaker ZR 0.8 nozzle",
+          "filament": "FilAr PLA-mate Naranja"
+        }
+      ]
+    },
+    {
+      "vendor": "Z-Bolt",
+      "candidates": [
+        {
+          "printer": "Z-Bolt S800 Dual 0.4 nozzle",
+          "process": "0.12mm Fine @Z-Bolt 0.4 nozzle",
+          "filament": "FilAr PLA Violeta Jacaranda"
+        },
+        {
+          "printer": "Z-Bolt S1000 0.4 nozzle",
+          "process": "0.12mm High Quality @Z-Bolt 0.4 nozzle",
+          "filament": "Elegoo Rapid PETG @System"
+        },
+        {
+          "printer": "Z-Bolt S600 Dual 0.4 nozzle",
+          "process": "0.16mm High Quality @Z-Bolt 0.4 nozzle",
+          "filament": "Bambu PA6-GF @System"
+        },
+        {
+          "printer": "Z-Bolt S400 Dual 0.4 nozzle",
+          "process": "0.24mm Draft @Z-Bolt 0.4 nozzle",
+          "filament": "FilAr PETG Cian"
+        },
+        {
+          "printer": "Z-Bolt S300 0.4 nozzle",
+          "process": "0.08mm High Quality @Z-Bolt 0.4 nozzle",
+          "filament": "Bambu TPU 95A @System"
+        }
+      ]
+    }
+  ]
+}

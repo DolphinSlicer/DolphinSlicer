@@ -1,0 +1,233 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DolphinSlicer <build@localhost>
+Date: Sun, 8 Nov 2026 04:32:25 +0000
+Subject: [PATCH 7/9] detect_bridging_direction: platform-independent order of
+ candidate directions
+
+Candidate bridge directions are collected in a std::unordered_map<double, Vec2d> and the
+first minimal-cost one in iteration order is chosen. Costs often tie (opposite and
+perpendicular edges of a square overhang), and unordered_map iteration order depends on
+the standard library, so Linux, macOS and Windows chose different bridge directions.
+
+Add PortableHashOrder.hpp, which reproduces the iteration order of libstdc++'s
+unordered_map<double, T> (hash, prime rehash policy and node linking; verified against
+libstdc++ 15 on 12000 randomized key sets), and iterate the candidates in that order.
+Linux results are unchanged; other platforms now match Linux.
+Upstreamable: yes, though a simpler deterministic tie-break may be preferred upstream.
+---
+ src/libslic3r/BridgeDetector.hpp    |  12 ++-
+ src/libslic3r/CMakeLists.txt        |   1 +
+ src/libslic3r/PortableHashOrder.hpp | 156 ++++++++++++++++++++++++++++
+ 3 files changed, 166 insertions(+), 3 deletions(-)
+ create mode 100644 src/libslic3r/PortableHashOrder.hpp
+
+diff --git a/src/libslic3r/BridgeDetector.hpp b/src/libslic3r/BridgeDetector.hpp
+index 85982ed9..1a62a637 100644
+--- a/src/libslic3r/BridgeDetector.hpp
++++ b/src/libslic3r/BridgeDetector.hpp
+@@ -1,6 +1,7 @@
+ #ifndef slic3r_BridgeDetector_hpp_
+ #define slic3r_BridgeDetector_hpp_
+ 
++#include "PortableHashOrder.hpp"
+ #include "ClipperUtils.hpp"
+ #include "Line.hpp"
+ #include "Point.hpp"
+@@ -93,15 +94,20 @@ inline std::tuple<Vec2d, double> detect_bridging_direction(const Lines &floating
+ 
+     // Overhang is not fully surrounded by anchors, in that case, find such direction that will minimize the number of bridge ends/180turns in the air
+     std::unordered_map<double, Vec2d> directions{};
++    // Equal-cost directions are common (e.g. a square overhang), and the first one in iteration
++    // order wins. Iterate in a platform-independent order (libstdc++'s) so the choice is the
++    // same on every platform.
++    UnorderedOrderDouble directions_order;
+     for (const Line &l : floating_edges) {
+         Vec2d normal = l.normal().cast<double>().normalized();
+         double quantized_angle = std::ceil(std::atan2(normal.y(),normal.x()) * 1000.0);
+-        directions.emplace(quantized_angle, normal);
++        if (directions.emplace(quantized_angle, normal).second)
++            directions_order.insert(quantized_angle);
+     }
+     std::vector<std::pair<Vec2d, double>> direction_costs{};
+     // it is acutally cost of a perpendicular bridge direction - we find the minimal cost and then return the perpendicular dir
+-    for (const auto& d : directions) {
+-        direction_costs.emplace_back(d.second, 0.0);
++    for (double key : directions_order.keys()) {
++        direction_costs.emplace_back(directions.at(key), 0.0);
+     }
+ 
+     for (const Line &l : floating_edges) {
+diff --git a/src/libslic3r/CMakeLists.txt b/src/libslic3r/CMakeLists.txt
+index 07213c6e..070020b1 100644
+--- a/src/libslic3r/CMakeLists.txt
++++ b/src/libslic3r/CMakeLists.txt
+@@ -406,6 +406,7 @@ set(lisbslic3r_sources
+     Platform.hpp
+     PNGReadWrite.cpp
+     PNGReadWrite.hpp
++    PortableHashOrder.hpp
+     PortableRandom.hpp
+     PortableSort.hpp
+     Point.cpp
+diff --git a/src/libslic3r/PortableHashOrder.hpp b/src/libslic3r/PortableHashOrder.hpp
+new file mode 100644
+index 00000000..33d092ee
+--- /dev/null
++++ b/src/libslic3r/PortableHashOrder.hpp
+@@ -0,0 +1,156 @@
++#pragma once
++// Platform-independent iteration order for small hash maps keyed by double.
++//
++// The iteration order of std::unordered_map depends on the standard library (hash function,
++// bucket growth policy, node linking). Code that iterates such a map and keeps the first of
++// several equal candidates therefore picks different winners on Linux, macOS and Windows.
++// UnorderedOrderDouble records unique keys in the order a libstdc++ (GCC 11 to 15, 64-bit)
++// std::unordered_map<double, T> would iterate them, so every platform makes the Linux choice.
++
++#include <algorithm>
++#include <cmath>
++#include <iterator>
++#include <cstdint>
++#include <cstring>
++#include <vector>
++
++namespace Slic3r {
++
++class UnorderedOrderDouble
++{
++public:
++    // Returns false if the key was already present (like unordered_map::emplace).
++    bool insert(double key)
++    {
++        for (const Node &n : m_nodes)
++            if (n.key == key)
++                return false;
++        // _Prime_rehash_policy::_M_need_rehash(bucket_count, size, 1)
++        const size_t n_elt = m_nodes.size();
++        if (n_elt + 1 > m_next_resize) {
++            // The first insertion sizes the table for at least 11 elements.
++            const double min_bkts = double(std::max<size_t>(n_elt + 1, m_next_resize ? 0 : 11));
++            if (min_bkts >= double(m_bucket_count))
++                rehash(next_bkt(std::max<size_t>(size_t(std::floor(min_bkts)) + 1, m_bucket_count * 2)));
++            else
++                m_next_resize = size_t(std::floor(double(m_bucket_count)));
++        }
++        m_nodes.push_back({key, hash(key), -1});
++        insert_bucket_begin(int(m_nodes.size()) - 1);
++        return true;
++    }
++
++    // Keys in libstdc++ iteration order.
++    std::vector<double> keys() const
++    {
++        std::vector<double> out;
++        for (int i = m_begin; i >= 0; i = m_nodes[i].next)
++            out.push_back(m_nodes[i].key);
++        return out;
++    }
++
++    // std::hash<double> of libstdc++ on 64-bit targets.
++    static uint64_t hash(double v)
++    {
++        if (v == 0.0)
++            return 0;
++        uint64_t data;
++        std::memcpy(&data, &v, 8);
++        const uint64_t mul  = (uint64_t(0xc6a4a793UL) << 32) + uint64_t(0x5bd1e995UL);
++        uint64_t       h    = uint64_t(0xc70f6907UL) ^ (8 * mul);
++        h ^= shift_mix(data * mul) * mul;
++        h *= mul;
++        h = shift_mix(h) * mul;
++        return shift_mix(h);
++    }
++
++private:
++    struct Node { double key; uint64_t code; int next; };
++    // Bucket entry: index of the node *before* the first node of the bucket, kBeforeBegin, or kEmpty.
++    static constexpr int kEmpty       = -2;
++    static constexpr int kBeforeBegin = -1;
++
++    static uint64_t shift_mix(uint64_t v) { return v ^ (v >> 47); }
++
++    size_t next_bkt(size_t n)
++    {
++        static const unsigned char fast_bkt[] = {2, 2, 2, 3, 5, 5, 7, 7, 11, 11, 11, 11, 13, 13};
++        if (n < sizeof(fast_bkt)) {
++            if (n == 0)
++                return 1;
++            m_next_resize = size_t(std::floor(double(fast_bkt[n])));
++            return fast_bkt[n];
++        }
++        // Prime list of libstdc++ (prefix; ample for the small maps this is used for).
++        static const uint64_t primes[] = {2ul, 3ul, 5ul, 7ul, 11ul, 13ul, 17ul, 19ul, 23ul, 29ul, 31ul, 37ul, 41ul, 43ul, 47ul, 53ul, 59ul,
++            61ul, 67ul, 71ul, 73ul, 79ul, 83ul, 89ul, 97ul, 103ul, 109ul, 113ul, 127ul, 137ul, 139ul, 149ul, 157ul, 167ul, 179ul, 193ul,
++            199ul, 211ul, 227ul, 241ul, 257ul, 277ul, 293ul, 313ul, 337ul, 359ul, 383ul, 409ul, 439ul, 467ul, 503ul, 541ul, 577ul, 619ul,
++            661ul, 709ul, 761ul, 823ul, 887ul, 953ul, 1031ul, 1109ul, 1193ul, 1289ul, 1381ul, 1493ul, 1613ul, 1741ul, 1879ul, 2029ul,
++            2179ul, 2357ul, 2549ul, 2753ul, 2971ul, 3209ul, 3469ul, 3739ul, 4027ul, 4349ul, 4703ul, 5087ul, 5503ul, 5953ul, 6427ul,
++            6949ul, 7517ul, 8123ul, 8783ul, 9497ul, 10273ul, 11113ul, 12011ul, 12983ul, 14033ul, 15173ul, 16411ul, 17749ul, 19183ul,
++            20753ul, 22447ul, 24281ul, 26267ul, 28411ul, 30727ul, 33223ul, 35933ul, 38873ul, 42043ul, 45481ul, 49201ul, 53201ul,
++            57557ul, 62233ul, 67307ul, 72817ul, 78779ul, 85229ul, 92203ul, 99733ul, 107897ul, 116731ul, 126271ul, 136607ul,
++            147793ul, 159871ul, 172933ul, 187091ul, 202409ul, 218971ul, 236897ul, 256279ul, 277261ul, 299951ul, 324503ul,
++            351061ul, 379787ul, 410857ul, 444487ul, 480881ul, 520241ul, 562841ul, 608903ul, 658753ul, 712697ul, 771049ul,
++            834181ul, 902483ul, 976369ul, 1056323ul};
++        const uint64_t *p = std::lower_bound(std::begin(primes), std::end(primes), uint64_t(n));
++        if (p == std::end(primes))
++            p = std::end(primes) - 1;  // beyond the supported size: order is no longer exact
++        m_next_resize = size_t(std::floor(double(*p)));
++        return size_t(*p);
++    }
++
++    size_t bucket(const Node &n) const { return size_t(n.code % m_bucket_count); }
++
++    void insert_bucket_begin(int idx)
++    {
++        Node        &node = m_nodes[idx];
++        const size_t bkt  = bucket(node);
++        if (m_buckets[bkt] != kEmpty) {
++            int &prev_next = m_buckets[bkt] == kBeforeBegin ? m_begin : m_nodes[m_buckets[bkt]].next;
++            node.next      = prev_next;
++            prev_next      = idx;
++        } else {
++            node.next = m_begin;
++            m_begin   = idx;
++            if (node.next >= 0)
++                m_buckets[bucket(m_nodes[node.next])] = idx;
++            m_buckets[bkt] = kBeforeBegin;
++        }
++    }
++
++    void rehash(size_t n_bkt)
++    {
++        std::vector<int> buckets(n_bkt, kEmpty);
++        int              p          = m_begin;
++        m_begin                     = -1;
++        size_t           bbegin_bkt = 0;
++        while (p >= 0) {
++            const int    next = m_nodes[p].next;
++            const size_t bkt  = size_t(m_nodes[p].code % n_bkt);
++            if (buckets[bkt] == kEmpty) {
++                m_nodes[p].next = m_begin;
++                m_begin         = p;
++                buckets[bkt]    = kBeforeBegin;
++                if (m_nodes[p].next >= 0)
++                    buckets[bbegin_bkt] = p;
++                bbegin_bkt = bkt;
++            } else {
++                int &prev_next  = buckets[bkt] == kBeforeBegin ? m_begin : m_nodes[buckets[bkt]].next;
++                m_nodes[p].next = prev_next;
++                prev_next       = p;
++            }
++            p = next;
++        }
++        m_buckets      = std::move(buckets);
++        m_bucket_count = n_bkt;
++    }
++
++    std::vector<Node> m_nodes;
++    std::vector<int>  m_buckets{kEmpty};
++    size_t            m_bucket_count = 1;
++    size_t            m_next_resize  = 0;
++    int               m_begin        = -1;
++};
++
++} // namespace Slic3r

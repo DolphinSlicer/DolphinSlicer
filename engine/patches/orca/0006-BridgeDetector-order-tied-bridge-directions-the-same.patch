@@ -1,0 +1,247 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DolphinSlicer <build@localhost>
+Date: Sun, 8 Nov 2026 04:28:58 +0000
+Subject: [PATCH 6/9] BridgeDetector: order tied bridge directions the same on
+ all platforms
+
+std::sort is not stable and each standard library orders equal elements differently.
+Bridge direction candidates sorted by coverage often tie (0 and 90 degrees over a square
+overhang), and the first candidate wins, so the bridge direction (and the G-code) differed
+between Linux, macOS and Windows builds.
+
+Add PortableSort.hpp, an exact port of libstdc++'s std::sort introsort (verified to order
+ties identically to libstdc++ 15, including the heap-sort fallback), and use it here.
+Linux results are unchanged; other platforms now match Linux.
+Upstreamable: yes.
+---
+ src/libslic3r/BridgeDetector.cpp |   5 +-
+ src/libslic3r/CMakeLists.txt     |   1 +
+ src/libslic3r/PortableSort.hpp   | 187 +++++++++++++++++++++++++++++++
+ 3 files changed, 192 insertions(+), 1 deletion(-)
+ create mode 100644 src/libslic3r/PortableSort.hpp
+
+diff --git a/src/libslic3r/BridgeDetector.cpp b/src/libslic3r/BridgeDetector.cpp
+index ad1b8bb6..c334f1d3 100644
+--- a/src/libslic3r/BridgeDetector.cpp
++++ b/src/libslic3r/BridgeDetector.cpp
+@@ -1,3 +1,4 @@
++#include "PortableSort.hpp"
+ #include "BridgeDetector.hpp"
+ #include "BoundingBox.hpp"
+ #include "ClipperUtils.hpp"
+@@ -166,7 +167,9 @@ bool BridgeDetector::detect_angle(double bridge_direction_override)
+         return false;
+     
+     // sort directions by coverage - most coverage first
+-    std::sort(candidates.begin(), candidates.end());
++    // Directions often tie (e.g. 0 and 90 degrees over a square); a portable sort keeps the
++    // order of ties, and therefore the chosen direction, the same on every platform.
++    portable_sort(candidates.begin(), candidates.end());
+     
+     // if any other direction is within extrusion width of coverage, prefer it if shorter
+     // TODO: There are two options here - within width of the angle with most coverage, or within width of the currently perferred?
+diff --git a/src/libslic3r/CMakeLists.txt b/src/libslic3r/CMakeLists.txt
+index b6a41507..07213c6e 100644
+--- a/src/libslic3r/CMakeLists.txt
++++ b/src/libslic3r/CMakeLists.txt
+@@ -407,6 +407,7 @@ set(lisbslic3r_sources
+     PNGReadWrite.cpp
+     PNGReadWrite.hpp
+     PortableRandom.hpp
++    PortableSort.hpp
+     Point.cpp
+     Point.hpp
+     Polygon.cpp
+diff --git a/src/libslic3r/PortableSort.hpp b/src/libslic3r/PortableSort.hpp
+new file mode 100644
+index 00000000..ea89ae25
+--- /dev/null
++++ b/src/libslic3r/PortableSort.hpp
+@@ -0,0 +1,187 @@
++#pragma once
++// Platform-independent std::sort.
++//
++// std::sort is not stable, and the order it leaves equal elements in depends on the standard
++// library: libstdc++, libc++ and the MSVC STL implement different algorithms. Where elements
++// can compare equal and their order affects the output (e.g. ties between candidate bridge
++// directions), Linux, macOS and Windows builds produce different G-code.
++// portable_sort reproduces libstdc++'s introsort exactly (pivot selection, partitioning,
++// insertion-sort threshold and heap-sort fallback), so every platform orders ties the way
++// Linux builds already do.
++
++#include <functional>
++#include <iterator>
++#include <utility>
++
++namespace Slic3r {
++
++namespace portable_sort_detail {
++
++constexpr long threshold = 16;
++
++template<class It, class Cmp> void push_heap(It first, long hole, long top, typename std::iterator_traits<It>::value_type value, Cmp &comp)
++{
++    long parent = (hole - 1) / 2;
++    while (hole > top && comp(*(first + parent), value)) {
++        *(first + hole) = std::move(*(first + parent));
++        hole            = parent;
++        parent          = (hole - 1) / 2;
++    }
++    *(first + hole) = std::move(value);
++}
++
++template<class It, class Cmp> void adjust_heap(It first, long hole, long len, typename std::iterator_traits<It>::value_type value, Cmp &comp)
++{
++    const long top    = hole;
++    long       second = hole;
++    while (second < (len - 1) / 2) {
++        second = 2 * (second + 1);
++        if (comp(*(first + second), *(first + (second - 1))))
++            --second;
++        *(first + hole) = std::move(*(first + second));
++        hole            = second;
++    }
++    if ((len & 1) == 0 && second == (len - 2) / 2) {
++        second          = 2 * (second + 1);
++        *(first + hole) = std::move(*(first + (second - 1)));
++        hole            = second - 1;
++    }
++    portable_sort_detail::push_heap(first, hole, top, std::move(value), comp);
++}
++
++template<class It, class Cmp> void make_heap(It first, It last, Cmp &comp)
++{
++    const long len = long(last - first);
++    if (len < 2)
++        return;
++    long parent = (len - 2) / 2;
++    for (;;) {
++        auto value = std::move(*(first + parent));
++        portable_sort_detail::adjust_heap(first, parent, len, std::move(value), comp);
++        if (parent == 0)
++            return;
++        --parent;
++    }
++}
++
++template<class It, class Cmp> void pop_heap(It first, It last, It result, Cmp &comp)
++{
++    auto value = std::move(*result);
++    *result    = std::move(*first);
++    portable_sort_detail::adjust_heap(first, 0, long(last - first), std::move(value), comp);
++}
++
++template<class It, class Cmp> void partial_sort(It first, It middle, It last, Cmp &comp)
++{
++    portable_sort_detail::make_heap(first, middle, comp);
++    for (It i = middle; i < last; ++i)
++        if (comp(*i, *first))
++            portable_sort_detail::pop_heap(first, middle, i, comp);
++    while (middle - first > 1) {
++        --middle;
++        portable_sort_detail::pop_heap(first, middle, middle, comp);
++    }
++}
++
++template<class It, class Cmp> void move_median_to_first(It result, It a, It b, It c, Cmp &comp)
++{
++    if (comp(*a, *b)) {
++        if (comp(*b, *c))
++            std::iter_swap(result, b);
++        else if (comp(*a, *c))
++            std::iter_swap(result, c);
++        else
++            std::iter_swap(result, a);
++    } else if (comp(*a, *c))
++        std::iter_swap(result, a);
++    else if (comp(*b, *c))
++        std::iter_swap(result, c);
++    else
++        std::iter_swap(result, b);
++}
++
++template<class It, class Cmp> It unguarded_partition(It first, It last, It pivot, Cmp &comp)
++{
++    for (;;) {
++        while (comp(*first, *pivot))
++            ++first;
++        --last;
++        while (comp(*pivot, *last))
++            --last;
++        if (!(first < last))
++            return first;
++        std::iter_swap(first, last);
++        ++first;
++    }
++}
++
++template<class It, class Cmp> void introsort_loop(It first, It last, long depth_limit, Cmp &comp)
++{
++    while (last - first > threshold) {
++        if (depth_limit == 0) {
++            portable_sort_detail::partial_sort(first, last, last, comp);
++            return;
++        }
++        --depth_limit;
++        It mid = first + (last - first) / 2;
++        portable_sort_detail::move_median_to_first(first, first + 1, mid, last - 1, comp);
++        It cut = portable_sort_detail::unguarded_partition(first + 1, last, first, comp);
++        portable_sort_detail::introsort_loop(cut, last, depth_limit, comp);
++        last = cut;
++    }
++}
++
++template<class It, class Cmp> void unguarded_linear_insert(It last, Cmp &comp)
++{
++    auto val  = std::move(*last);
++    It   next = last;
++    --next;
++    while (comp(val, *next)) {
++        *last = std::move(*next);
++        last  = next;
++        --next;
++    }
++    *last = std::move(val);
++}
++
++template<class It, class Cmp> void insertion_sort(It first, It last, Cmp &comp)
++{
++    if (first == last)
++        return;
++    for (It i = first + 1; i != last; ++i) {
++        if (comp(*i, *first)) {
++            auto val = std::move(*i);
++            std::move_backward(first, i, i + 1);
++            *first = std::move(val);
++        } else
++            portable_sort_detail::unguarded_linear_insert(i, comp);
++    }
++}
++
++inline long lg(long n)
++{
++    long k = 0;
++    while (n >>= 1)
++        ++k;
++    return k;
++}
++
++} // namespace portable_sort_detail
++
++template<class It, class Cmp> void portable_sort(It first, It last, Cmp comp)
++{
++    namespace d = portable_sort_detail;
++    if (first == last)
++        return;
++    d::introsort_loop(first, last, d::lg(long(last - first)) * 2, comp);
++    if (last - first > d::threshold) {
++        d::insertion_sort(first, first + d::threshold, comp);
++        for (It i = first + d::threshold; i != last; ++i)
++            d::unguarded_linear_insert(i, comp);
++    } else
++        d::insertion_sort(first, last, comp);
++}
++
++template<class It> void portable_sort(It first, It last) { portable_sort(first, last, std::less<>()); }
++
++} // namespace Slic3r

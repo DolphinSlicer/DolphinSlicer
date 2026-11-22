@@ -1,0 +1,56 @@
+# Quick checks of the web app on every change: lint and format, type check and bundle, unit tests.
+# Light on purpose: no engine build (engine.yml, run by hand) and no end-to-end tests. Without
+# the engine, the unit tests that need its settings schema are skipped.
+name: ci
+on:
+  push:
+    branches: [main]
+    paths: ['app/**', '.github/workflows/ci.yml']
+  pull_request:
+    paths: ['app/**', '.github/workflows/ci.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: app
+
+jobs:
+  lint:
+    name: Lint and format
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: app/package-lock.json }
+      - run: npm ci
+      - run: npm run lint
+
+  build:
+    name: Type check and build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: app/package-lock.json }
+      - run: npm ci
+      - run: npm run build:app
+
+  test:
+    name: Unit tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: app/package-lock.json }
+      - run: npm ci
+      - run: npm test

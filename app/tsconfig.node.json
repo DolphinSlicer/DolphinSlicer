@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": [
+      "ES2023",
+      "DOM"
+    ],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "exactOptionalPropertyTypes": false,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "types": [
+      "node",
+      "vite/client"
+    ],
+    "resolveJsonModule": true,
+    "noEmit": true
+  },
+  "include": [
+    "src/env.d.ts",
+    "test",
+    "e2e",
+    "vite.config.ts",
+    "server",
+    "functions",
+    "playwright.config.ts",
+    "vitest.config.ts"
+  ]
+}

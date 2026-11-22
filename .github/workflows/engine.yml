@@ -1,0 +1,96 @@
+# Builds the WASM engine (ST + MT), runs the desktop-parity test, then builds and tests the web
+# app against those engines.
+name: engine
+# Manual only for now: on a private repository a cold engine build uses hours of Actions minutes.
+# To run on every change, restore:
+#   push:         { paths: ['engine/**', 'app/**', '.github/workflows/engine.yml'] }
+#   pull_request: { paths: ['engine/**', 'app/**', '.github/workflows/engine.yml'] }
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [st, mt]
+    env:
+      DEPS_JOBS: 4
+      ENGINE_JOBS: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      # Dependency prefix is ~300 MB per variant and only changes with the recipes/patches/toolchain.
+      - name: Cache WASM dependencies
+        uses: actions/cache@v4
+        with:
+          path: .work/deps-${{ matrix.variant }}
+          key: deps-${{ matrix.variant }}-${{ hashFiles('engine/versions.env', 'engine/deps/**', 'engine/patches/deps/**', 'engine/docker/Dockerfile', 'engine/docker/*.patch') }}
+      - name: Cache ccache
+        uses: actions/cache@v4
+        with:
+          path: .work/ccache
+          key: ccache-${{ matrix.variant }}-${{ github.sha }}
+          restore-keys: ccache-${{ matrix.variant }}-
+      - name: Build dependencies
+        run: |
+          if [ ! -f .work/deps-${{ matrix.variant }}/include/boost/version.hpp ]; then
+            engine/scripts/build-deps.sh ${{ matrix.variant }}
+          fi
+      - name: Build engine
+        run: engine/scripts/build-engine.sh ${{ matrix.variant }} orca_engine
+      - name: Toolchain compatibility checks
+        if: matrix.variant == 'st'
+        run: engine/test/toolchain/run.sh
+      - name: Desktop parity
+        run: node engine/test/parity.mjs ${{ matrix.variant }} --repeat=3 --write-report
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: engine-${{ matrix.variant }}
+          path: |
+            .work/build-engine-${{ matrix.variant }}/dist/
+            .work/parity-${{ matrix.variant }}.json
+            .work/parity/
+
+  app:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - uses: actions/download-artifact@v4
+        with: { name: engine-st, path: .work/artifact-st }
+      - uses: actions/download-artifact@v4
+        with: { name: engine-mt, path: .work/artifact-mt }
+      # The profiles come from the pinned OrcaSlicer checkout (same commit check as the engine).
+      - name: Fetch OrcaSlicer sources (profiles)
+        run: bash -c 'source engine/scripts/common.sh && fetch_orca'
+      - name: Install
+        working-directory: app
+        run: npm ci && npx playwright install --with-deps chrome firefox
+      - name: Build
+        working-directory: app
+        env:
+          ENGINE_DIST_ST: ${{ github.workspace }}/.work/artifact-st/build-engine-st/dist
+          ENGINE_DIST_MT: ${{ github.workspace }}/.work/artifact-mt/build-engine-mt/dist
+          ORCA_SOURCE_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: npm run build
+      - name: Unit tests (need the schema dumped by the build)
+        working-directory: app
+        run: npm test
+      - name: End-to-end (Chrome MT/ST, Firefox)
+        working-directory: app
+        run: npm run e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: app
+          path: |
+            app/dist/
+            app/playwright-report/

@@ -1,0 +1,38 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DolphinSlicer <build@localhost>
+Date: Thu, 12 Nov 2026 02:25:48 +0000
+Subject: [PATCH 9/9] Model: no backup manager in the destructor under
+ Emscripten
+
+Loading a 3MF gives the model a backup folder (Model::get_backup_path()), and ~Model() hands
+its removal to the autosave manager, whose constructor starts a thread. When the 3MF reader
+throws (a truncated file), the model inside Model::read_from_file() is destroyed while the
+exception unwinds; starting the thread fails in a single-threaded WebAssembly build, the
+destructor throws and the program terminates instead of reporting the broken file.
+
+There is no project autosave in the browser: under Emscripten remove the folder directly.
+
+Upstreamable: no (WebAssembly only).
+---
+ src/libslic3r/Model.cpp | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/src/libslic3r/Model.cpp b/src/libslic3r/Model.cpp
+index d1265ccf..b243a464 100644
+--- a/src/libslic3r/Model.cpp
++++ b/src/libslic3r/Model.cpp
+@@ -235,8 +235,14 @@ Model::~Model()
+     this->clear_objects();
+     this->clear_materials();
+     // BBS: clear backup dir of temparary model
++#ifdef __EMSCRIPTEN__
++    // No project autosave in the browser: remove the folder here instead of handing it to the
++    // backup manager, whose thread cannot be started from a destructor that must not throw.
++    try { this->remove_backup_path_if_exist(); } catch (...) {}
++#else
+     if (!backup_path.empty())
+         Slic3r::remove_backup(*this, true);
++#endif
+ }
+ 
+ Model Model::read_from_step(const std::string&                                      input_file,

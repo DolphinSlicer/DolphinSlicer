@@ -1,0 +1,476 @@
+{
+  "combos": [
+    {
+      "nn": "01",
+      "vendor": "Anker",
+      "printer": "Anker M5 0.4 nozzle",
+      "process": "0.25mm Draft @Anker",
+      "filament": "Bambu PLA Marble @System"
+    },
+    {
+      "nn": "02",
+      "vendor": "Anycubic",
+      "printer": "Anycubic Chiron 0.4 nozzle",
+      "process": "0.20mm Standard @Anycubic Chiron",
+      "filament": "Eolas Prints PLA Matte @System"
+    },
+    {
+      "nn": "03",
+      "vendor": "Artillery",
+      "printer": "Artillery Sidewinder X4 Pro 0.4 nozzle",
+      "process": "0.12mm Fine @Artillery X4Pro 0.4 nozzle",
+      "filament": "Bambu PLA Translucent @System"
+    },
+    {
+      "nn": "04",
+      "vendor": "BBL",
+      "printer": "Bambu Lab P1P 0.4 nozzle",
+      "process": "0.20mm Standard @BBL P1P",
+      "filament": "FilAr PETG Azul Boreal"
+    },
+    {
+      "nn": "05",
+      "vendor": "BenFab",
+      "printer": "BenFab 450 0.4 nozzle",
+      "process": "0.24mm Draft @BenFab 450 0.4 nozzle",
+      "filament": "FilAr PETG Magenta"
+    },
+    {
+      "nn": "06",
+      "vendor": "Blocks",
+      "printer": "BLOCKS RD50 V2 0.4 nozzle",
+      "process": "0.16mm Optimal 0.4 nozzle @Blocks_RD50_V2",
+      "filament": "3D-Fuel Pro PCTG Refuel @System"
+    },
+    {
+      "nn": "07",
+      "vendor": "Chuanying",
+      "printer": "Chuanying X1 0.4 Nozzle",
+      "process": "0.20mm Standard @Chuanying X1 0.4 Nozzle",
+      "filament": "Generic PLA Matte @System"
+    },
+    {
+      "nn": "08",
+      "vendor": "Co Print",
+      "printer": "Co Print ChromaSet 0.4 nozzle",
+      "process": "0.2mm Standard @Co Print ChromaSet 0.4",
+      "filament": "Elegoo PETG @System"
+    },
+    {
+      "nn": "09",
+      "vendor": "CoLiDo",
+      "printer": "CoLiDo 160 V2 0.4 nozzle",
+      "process": "0.24mm Draft @CoLiDo 160 V2",
+      "filament": "Fiberon PETG-rCF @System"
+    },
+    {
+      "nn": "10",
+      "vendor": "Comgrow",
+      "printer": "Comgrow T500 0.4 nozzle",
+      "process": "0.20mm Standard @Comgrow T500",
+      "filament": "FDplast HIPS @System"
+    },
+    {
+      "nn": "11",
+      "vendor": "Creality",
+      "printer": "Creality K1 Max (0.4 nozzle)",
+      "process": "0.08mm SuperDetail @Creality K1Max (0.4 nozzle)",
+      "filament": "Overture Super PLA+ @System"
+    },
+    {
+      "nn": "12",
+      "vendor": "Custom",
+      "printer": "MyMarlin 0.4 nozzle",
+      "process": "0.08mm Extra Fine @MyMarlin",
+      "filament": "Elegoo PLA Marble @System"
+    },
+    {
+      "nn": "13",
+      "vendor": "Elegoo",
+      "printer": "Elegoo Neptune 4 0.4 nozzle",
+      "process": "0.28mm Extra Draft @Elegoo N4 0.4 nozzle",
+      "filament": "Elegoo PETG HF @System"
+    },
+    {
+      "nn": "14",
+      "vendor": "Eryone",
+      "printer": "Eryone ER20 0.4 nozzle",
+      "process": "0.20mm Standard @Eryone ER20",
+      "filament": "Overture ABS Basic @System"
+    },
+    {
+      "nn": "15",
+      "vendor": "FELIX Printers",
+      "printer": "FELIX Food Single 4.00mm nozzle",
+      "process": "FELIX Food Coarse @ 4.00mm",
+      "filament": "School House Spools Transparent PETG @System"
+    },
+    {
+      "nn": "16",
+      "vendor": "Flashforge",
+      "printer": "Flashforge Adventurer 5M Pro 0.4 Nozzle",
+      "process": "0.24mm Draft @Flashforge AD5M Pro 0.4 Nozzle",
+      "filament": "Bambu PLA Tough @System"
+    },
+    {
+      "nn": "17",
+      "vendor": "FLSun",
+      "printer": "FLSun QQ-S Pro 0.4 nozzle",
+      "process": "0.30mm Extra Draft @FLSun QQSPro",
+      "filament": "Elegoo PLA-CF @System"
+    },
+    {
+      "nn": "18",
+      "vendor": "FlyingBear",
+      "printer": "FlyingBear Ghost7 0.4 nozzle",
+      "process": "0.24mm Draft @FlyingBear Ghost7",
+      "filament": "FilAr PLA Blanco Calido"
+    },
+    {
+      "nn": "19",
+      "vendor": "Folgertech",
+      "printer": "Folgertech FT-6 0.4 nozzle",
+      "process": "0.12mm Fine @FT 0.4 nozzle",
+      "filament": "Eolas Prints PLA Matte @System"
+    },
+    {
+      "nn": "20",
+      "vendor": "Geeetech",
+      "printer": "Geeetech Mizar M 0.4 nozzle",
+      "process": "0.20mm Standard @Geeetech common",
+      "filament": "Goofoo PHA @System"
+    },
+    {
+      "nn": "21",
+      "vendor": "Ginger Additive",
+      "printer": "Ginger G1 8.0 nozzle",
+      "process": "4.00mm Standard",
+      "filament": "Eolas Prints PLA Neon @System",
+      "marked_system": true
+    },
+    {
+      "nn": "22",
+      "vendor": "Goofoo",
+      "printer": "Goofoo GP1 0.4 nozzle",
+      "process": "0.20mm Standard @Goofoo GP1",
+      "filament": "Bambu PLA Silk @System"
+    },
+    {
+      "nn": "23",
+      "vendor": "InfiMech",
+      "printer": "InfiMech TX 0.4 nozzle",
+      "process": "0.08mm Extra Fine @InfiMech TX",
+      "filament": "3D-Fuel Pro PETG @System"
+    },
+    {
+      "nn": "24",
+      "vendor": "iQ",
+      "printer": "iQ TiQ2 0.4 Nozzle",
+      "process": "0.20mm Standard @iQ TiQ2 P2 - PACF Pro Fiberthree + VXL90 Xioneer (0.4 Nozzle)",
+      "filament": "Elas PETG Basic @System"
+    },
+    {
+      "nn": "25",
+      "vendor": "Kingroon",
+      "printer": "Kingroon KP3S V1 0.4 nozzle",
+      "process": "0.20mm Standard @Kingroon KP3S V1",
+      "filament": "Elegoo Rapid PETG @System",
+      "marked_system": true
+    },
+    {
+      "nn": "26",
+      "vendor": "LONGER",
+      "printer": "LONGER LK10 (0.4 nozzle)",
+      "process": "0.20mm Standard @LONGER LK10 (0.4 nozzle)",
+      "filament": "Panchroma PLA Galaxy @System"
+    },
+    {
+      "nn": "27",
+      "vendor": "Lulzbot",
+      "printer": "Lulzbot Taz Pro S 0.5 nozzle",
+      "process": "0.25mm Standard @Lulzbot Taz Pro S",
+      "filament": "Eolas Prints TPU Transition @System"
+    },
+    {
+      "nn": "28",
+      "vendor": "MagicMaker",
+      "printer": "MM slb 0.4 nozzle",
+      "process": "0.30mm Draft @MM slb",
+      "filament": "Generic PA @System"
+    },
+    {
+      "nn": "29",
+      "vendor": "Mellow",
+      "printer": "M1 0.4 nozzle",
+      "process": "0.12mm Fine @M1",
+      "filament": "COEX TPE 40D @System"
+    },
+    {
+      "nn": "30",
+      "vendor": "Meltingplot",
+      "printer": "Meltingplot MBL 480 0.4 nozzle",
+      "process": "0.18mm Fine 0.4 nozzle @Meltingplot MBL",
+      "filament": "Panchroma CoPE @System"
+    },
+    {
+      "nn": "31",
+      "vendor": "Pragostroj",
+      "printer": "KINARB 1HB 0.4 nozzle",
+      "process": "0.2mm Draft @Pragostroj 0.4",
+      "filament": "Eolas Prints PLA Premium @System"
+    },
+    {
+      "nn": "32",
+      "vendor": "Prusa",
+      "printer": "Prusa MK4S 0.4 nozzle",
+      "process": "0.10mm FAST DETAIL @MK4S 0.4",
+      "filament": "FILL3D PP @System"
+    },
+    {
+      "nn": "33",
+      "vendor": "Qidi",
+      "printer": "Qidi Q2 0.4 nozzle",
+      "process": "0.12mm Fine @Qidi Q2",
+      "filament": "Generic BVOH @System"
+    },
+    {
+      "nn": "35",
+      "vendor": "Ratrig",
+      "printer": "RatRig V-Core 4 IDEX 300 0.4 nozzle",
+      "process": "0.25mm Quality Speed @RatRig V-Core 4 IDEX 0.4",
+      "filament": "Generic SBS @System"
+    },
+    {
+      "nn": "36",
+      "vendor": "re3D",
+      "printer": "re3D Terabot 4 0.4 nozzle",
+      "process": "0.32 Draft",
+      "filament": "Elegoo PLA Basic @System",
+      "marked_system": true
+    },
+    {
+      "nn": "38",
+      "vendor": "RolohaunDesign",
+      "printer": "Rook MK1 LDO 0.4 nozzle",
+      "process": "0.32mm Standard @Rook MK1 LDO",
+      "filament": "Goofoo PETG @System"
+    },
+    {
+      "nn": "39",
+      "vendor": "SeeMeCNC",
+      "printer": "SeeMeCNC RostockMAX v4 0.4 nozzle",
+      "process": "0.20mm Standard @SeeMeCNC RostockMAX v4 0.4",
+      "filament": "FDplast SBS @System",
+      "marked_system": true
+    },
+    {
+      "nn": "40",
+      "vendor": "Snapmaker",
+      "printer": "Snapmaker J1 (0.4 nozzle)",
+      "process": "0.20 Standard @Snapmaker J1 (0.4 nozzle)",
+      "filament": "FilAr PLA Rosa Amaranto"
+    },
+    {
+      "nn": "41",
+      "vendor": "Sovol",
+      "printer": "Sovol SV07 Plus 0.4 nozzle",
+      "process": "0.18mm Optimal @Sovol SV07 Plus",
+      "filament": "Elegoo PLA Marble @System"
+    },
+    {
+      "nn": "42",
+      "vendor": "Tiertime",
+      "printer": "Tiertime UP300 HS 0.4 nozzle",
+      "process": "0.28mm Extra Draft @Tiertime UP300 HS",
+      "filament": "DREMC ABS-GF @System"
+    },
+    {
+      "nn": "43",
+      "vendor": "UltiMaker",
+      "printer": "UltiMaker 2 extended+ 0.4 nozzle",
+      "process": "0.20mm Draft @UltiMaker 2 extended+",
+      "filament": "PolyTerra Dual PLA @System"
+    },
+    {
+      "nn": "44",
+      "vendor": "Vivedino",
+      "printer": "Xplorer Single 0.4 nozzle",
+      "process": "0.32mm Extra Draft @Xplorer 0.4",
+      "filament": "Generic PPA-CF @System"
+    },
+    {
+      "nn": "45",
+      "vendor": "Volumic",
+      "printer": "EXO42 IDRE (0.4 nozzle)",
+      "process": "Compatible speed - 0.30mm",
+      "filament": "Fiberon PET-CF @System"
+    },
+    {
+      "nn": "46",
+      "vendor": "Voron",
+      "printer": "Voron 2.4 250 0.4 nozzle",
+      "process": "0.08mm Extra Fine @Voron",
+      "filament": "Overture Rock PLA @System"
+    },
+    {
+      "nn": "47",
+      "vendor": "Vzbot",
+      "printer": "Vzbot 235 AWD 0.4 nozzle",
+      "process": "0.24mm Draft @Vzbot",
+      "filament": "FILL3D PETG @System"
+    },
+    {
+      "nn": "48",
+      "vendor": "Wanhao",
+      "printer": "Wanhao D9-400 MK2 0.4 nozzle",
+      "process": "0.12mm Fine @Wanhao D9",
+      "filament": "Bambu PLA Marble @System"
+    },
+    {
+      "nn": "49",
+      "vendor": "Wanhao France",
+      "printer": "D12 300 PRO SMARTPAD MONO DUAL 0.4 nozzle",
+      "process": "0.15mm Standard @Wanhao-D12-300",
+      "filament": "JAYO PLA Classic @System"
+    },
+    {
+      "nn": "50",
+      "vendor": "WEMAKE3D",
+      "printer": "WEMAKE3D PhoenixProV1 0.4mm nozzle",
+      "process": "0.2mm Standard @WEMAKE3D PhoenixProV1 0.4mm nozzle",
+      "filament": "Generic EVA @System",
+      "marked_system": true
+    },
+    {
+      "nn": "51",
+      "vendor": "WonderMaker",
+      "printer": "WonderMaker ZR 0.4 nozzle",
+      "process": "0.08mm Extra Fine @WonderMaker ZR",
+      "filament": "Generic TPU @System"
+    },
+    {
+      "nn": "52",
+      "vendor": "Z-Bolt",
+      "printer": "Z-Bolt S800 Dual 0.4 nozzle",
+      "process": "0.12mm Fine @Z-Bolt 0.4 nozzle",
+      "filament": "FilAr PLA Violeta Jacaranda"
+    }
+  ],
+  "refused": [
+    {
+      "nn": "18",
+      "vendor": "FlyingBear",
+      "printer": "FlyingBear Ghost 6 0.4 nozzle",
+      "process": "0.24mm Draft @FlyingBear Ghost 6 0.4 nozzle",
+      "filament": "Elegoo ASA @System",
+      "message": "Plate 1: Cool Plate does not support filament 1"
+    },
+    {
+      "nn": "34",
+      "vendor": "Raise3D",
+      "printer": "Raise3D Pro3 Plus 0.4 nozzle (Right)",
+      "process": "0.20mm Standard @Raise3D Pro3Plus",
+      "filament": "FilAr PETG Azul Imperial",
+      "message": "Relative extruder addressing requires resetting the extruder position at each layer to prevent loss of floating point accuracy. Add \"G92 E0\" to layer_gcode."
+    },
+    {
+      "nn": "34",
+      "vendor": "Raise3D",
+      "printer": "Raise3D Pro3 Plus 0.4 nozzle (Dual)",
+      "process": "0.25mm Draft @Raise3D Pro3Plus",
+      "filament": "Eolas Prints PLA Silk @System",
+      "message": "Relative extruder addressing requires resetting the extruder position at each layer to prevent loss of floating point accuracy. Add \"G92 E0\" to layer_gcode."
+    },
+    {
+      "nn": "34",
+      "vendor": "Raise3D",
+      "printer": "Raise3D Pro3 Plus 0.4 nozzle (Left)",
+      "process": "0.25mm Draft @Raise3D Pro3Plus",
+      "filament": "Generic PVA @System",
+      "message": "Relative extruder addressing requires resetting the extruder position at each layer to prevent loss of floating point accuracy. Add \"G92 E0\" to layer_gcode."
+    },
+    {
+      "nn": "51",
+      "vendor": "WonderMaker",
+      "printer": "WonderMaker ZR Ultra 0.4 nozzle",
+      "process": "0.24mm Draft @WonderMaker ZR Ultra",
+      "filament": "School House Spools Matte PETG @System",
+      "message": "Plate 1: Cool Plate does not support filament 1"
+    },
+    {
+      "nn": "51",
+      "vendor": "WonderMaker",
+      "printer": "WonderMaker ZR Ultra S 0.4 nozzle",
+      "process": "0.28mm Extra Draft @WonderMaker ZR Ultra",
+      "filament": "Fiberon PA6-CF @System",
+      "message": "Plate 1: Cool Plate does not support filament 1"
+    }
+  ],
+  "cli_only": [
+    {
+      "nn": "24",
+      "vendor": "iQ",
+      "printer": "iQ TiQ8 0.4 Nozzle",
+      "process": "0.20mm Standard @iQ TiQ8 P1 - ABS Natur Material4Print (0.4 Nozzle)",
+      "filament": "Panchroma PLA Silk @System",
+      "message": "Found G-code in unprintable area of multi-extruder printers after slicing. Please make sure the 3mf file can be successfully sliced in the latest Orca Slicer."
+    },
+    {
+      "nn": "37",
+      "vendor": "RH3D",
+      "printer": "E3NG v1.2S - 0.4 nozzle",
+      "process": "0.15mm Standard @E3NG v1.2S",
+      "filament": "Goofoo PE @System",
+      "message": "Param values in 3mf/config error: \nuse_firmware_retraction: --use-firmware-retraction is not compatible with --wipe"
+    },
+    {
+      "nn": "37",
+      "vendor": "RH3D",
+      "printer": "VIRTU E3 - 0.4 nozzle",
+      "process": "0.20mm Standard @VIRTU E3",
+      "filament": "School House Spools Matte PLA @System",
+      "message": "Param values in 3mf/config error: \nuse_firmware_retraction: --use-firmware-retraction is not compatible with --wipe"
+    },
+    {
+      "nn": "37",
+      "vendor": "RH3D",
+      "printer": "VIRTU E3 - 0.5 nozzle",
+      "process": "0.25mm Standard @VIRTU E3",
+      "filament": "Eolas Prints TPU Flex D53 @System",
+      "message": "Param values in 3mf/config error: \nuse_firmware_retraction: --use-firmware-retraction is not compatible with --wipe"
+    },
+    {
+      "nn": "37",
+      "vendor": "RH3D",
+      "printer": "E3NG v1.2S - 0.3 nozzle",
+      "process": "0.15mm Standard @E3NG v1.2S",
+      "filament": "FilAr PLA Blanco Antartida",
+      "message": "Param values in 3mf/config error: \nuse_firmware_retraction: --use-firmware-retraction is not compatible with --wipe"
+    },
+    {
+      "nn": "37",
+      "vendor": "RH3D",
+      "printer": "VIRTU E3 - 0.3 nozzle",
+      "process": "0.20mm Slow @VIRTU E3",
+      "filament": "Generic PLA Matte @System",
+      "message": "Param values in 3mf/config error: \nuse_firmware_retraction: --use-firmware-retraction is not compatible with --wipe"
+    }
+  ],
+  "nondeterministic": [
+    {
+      "nn": "34",
+      "vendor": "Raise3D",
+      "printer": "Raise3D Pro3 0.4 nozzle (Right)",
+      "process": "0.25mm Draft @Raise3D Pro3",
+      "filament": "PrintaLot ABS @System"
+    },
+    {
+      "nn": "34",
+      "vendor": "Raise3D",
+      "printer": "Raise3D Pro3 0.4 nozzle (Dual)",
+      "process": "0.20mm Standard @Raise3D Pro3",
+      "filament": "Eolas Prints PLA Antibacterial @System"
+    }
+  ],
+  "unloadable": []
+}

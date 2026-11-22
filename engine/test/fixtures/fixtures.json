@@ -1,0 +1,60 @@
+{
+  "_comment": "Reference fixtures. Regenerate with engine/scripts/make-fixtures.py.",
+  "machine": "MyKlipper 0.4 nozzle",
+  "filament": "Generic PLA @System",
+  "process_presets": [
+    {
+      "type": "process",
+      "name": "0.20mm Support @MyKlipper",
+      "inherits": "0.20mm Standard @MyKlipper",
+      "from": "system",
+      "instantiation": "true",
+      "enable_support": "1",
+      "support_type": "normal(auto)"
+    }
+  ],
+  "fixtures": [
+    {
+      "name": "cube",
+      "models": [
+        "cube.stl"
+      ],
+      "process": "0.20mm Standard @MyKlipper"
+    },
+    {
+      "name": "overhang",
+      "models": [
+        "mushroom.stl"
+      ],
+      "process": "0.20mm Support @MyKlipper"
+    },
+    {
+      "name": "multi",
+      "models": [
+        "cube.stl",
+        "cyl.stl",
+        "wedge.stl"
+      ],
+      "process": "0.20mm Standard @MyKlipper",
+      "per_object": {
+        "cyl.stl": {
+          "wall_loops": "5",
+          "sparse_infill_density": "40%"
+        }
+      }
+    },
+    {
+      "name": "sphere",
+      "models": [
+        "sphere.stl"
+      ],
+      "process": "0.20mm Standard @MyKlipper",
+      "known_difference": {
+        "numericOnly": 6,
+        "structural": 0,
+        "maxNumericDelta": 0.0010001,
+        "note": "Last-digit rounding flips in 6 of ~70k lines (5 wipe/extrusion E values, 1 coordinate). Suspected libm differences (musl vs glibc, e.g. sin/cos). Any other change fails."
+      }
+    }
+  ]
+}

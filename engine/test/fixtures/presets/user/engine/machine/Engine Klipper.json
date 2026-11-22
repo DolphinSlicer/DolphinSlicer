@@ -1,0 +1,27 @@
+{
+	"from": "User",
+	"inherits": "MyKlipper 0.4 nozzle",
+	"name": "Engine Klipper",
+	"printer_extruder_id": [
+		"1",
+		"1",
+		"1"
+	],
+	"printer_extruder_variant": [
+		"Direct Drive Standard",
+		"Direct Drive High Flow",
+		"Direct Drive Extra High Flow"
+	],
+	"printer_settings_id": "Engine Klipper",
+	"retraction_length": [
+		"0.6",
+		"0.8",
+		"0.8"
+	],
+	"version": "2.4.0.8",
+	"z_hop": [
+		"0.3",
+		"0.4",
+		"0.4"
+	]
+}

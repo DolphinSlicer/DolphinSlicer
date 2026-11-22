@@ -1,0 +1,121 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DolphinSlicer <build@localhost>
+Date: Sun, 8 Nov 2026 04:16:10 +0000
+Subject: [PATCH 3/9] SLA/Hollowing: build without OpenVDB (SLIC3R_NO_OPENVDB)
+
+SLA/Hollowing.cpp is compiled unconditionally but needs OpenVDB, which libslic3r
+otherwise treats as optional (OpenVDBUtils is only built when OpenVDB::openvdb exists).
+When OpenVDB is absent, define SLIC3R_NO_OPENVDB: interior generation and distance
+queries raise a RuntimeError, everything else in the file is unchanged. FFF slicing does
+not use this file.
+Upstreamable: yes (makes the existing 'optional OpenVDB' consistent).
+---
+ src/libslic3r/CMakeLists.txt    |  3 +++
+ src/libslic3r/SLA/Hollowing.cpp | 21 +++++++++++++++++++++
+ 2 files changed, 24 insertions(+)
+
+diff --git a/src/libslic3r/CMakeLists.txt b/src/libslic3r/CMakeLists.txt
+index 6f6db349..0a1c7e89 100644
+--- a/src/libslic3r/CMakeLists.txt
++++ b/src/libslic3r/CMakeLists.txt
+@@ -807,6 +807,9 @@ endif ()
+ 
+ if (TARGET OpenVDB::openvdb)
+     target_link_libraries(libslic3r PRIVATE OpenVDB::openvdb)
++else ()
++    # SLA hollowing (SLA/Hollowing.cpp) needs OpenVDB; without it, it raises an error.
++    target_compile_definitions(libslic3r PRIVATE SLIC3R_NO_OPENVDB)
+ endif()
+ 
+ if (SLIC3R_CAD)
+diff --git a/src/libslic3r/SLA/Hollowing.cpp b/src/libslic3r/SLA/Hollowing.cpp
+index db8402e6..ef816aec 100644
+--- a/src/libslic3r/SLA/Hollowing.cpp
++++ b/src/libslic3r/SLA/Hollowing.cpp
+@@ -14,10 +14,17 @@
+ #include <limits>
+ #include <mutex>
+ #include <numeric>
++// SLIC3R_NO_OPENVDB: built without OpenVDB (e.g. WebAssembly). SLA hollowing then raises an
++// error; FFF printing does not use this file.
++#ifndef SLIC3R_NO_OPENVDB
+ #include <openvdb/openvdb.h>
++#endif
+ #include <optional>
+ 
++#include <libslic3r/Exception.hpp>
++#ifndef SLIC3R_NO_OPENVDB
+ #include <libslic3r/OpenVDBUtils.hpp>
++#endif
+ #include <libslic3r/TriangleMesh.hpp>
+ #include <libslic3r/TriangleMeshSlicer.hpp>
+ #include <libslic3r/SLA/Hollowing.hpp>
+@@ -43,8 +50,10 @@ namespace sla {
+ 
+ struct Interior {
+     indexed_triangle_set mesh;
++#ifndef SLIC3R_NO_OPENVDB
+     openvdb::FloatGrid::Ptr gridptr;
+     mutable std::optional<openvdb::FloatGrid::ConstAccessor> accessor;
++#endif
+ 
+     double closing_distance = 0.;
+     double thickness = 0.;
+@@ -56,8 +65,10 @@ struct Interior {
+     void reset_accessor() const  // This resets the accessor and its cache
+     // Not a thread safe call!
+     {
++#ifndef SLIC3R_NO_OPENVDB
+         if (gridptr)
+             accessor = gridptr->getConstAccessor();
++#endif
+     }
+ };
+ 
+@@ -82,6 +93,9 @@ static InteriorPtr generate_interior_verbose(const TriangleMesh & mesh,
+                                              double voxel_scale,
+                                              double closing_dist)
+ {
++#ifdef SLIC3R_NO_OPENVDB
++    throw Slic3r::RuntimeError("SLA hollowing is not available in this build (no OpenVDB).");
++#else
+     double offset = voxel_scale * min_thickness;
+     double D = voxel_scale * closing_dist;
+     float  out_range = 0.1f * float(offset);
+@@ -125,6 +139,7 @@ static InteriorPtr generate_interior_verbose(const TriangleMesh & mesh,
+     interior->nb_out = narrowb;
+ 
+     return interior;
++#endif // SLIC3R_NO_OPENVDB
+ }
+ 
+ InteriorPtr generate_interior(const TriangleMesh &   mesh,
+@@ -332,8 +347,10 @@ void hollow_mesh(TriangleMesh &mesh, const Interior &interior, int flags)
+ {
+     if (mesh.empty() || interior.mesh.empty()) return;
+ 
++#ifndef SLIC3R_NO_OPENVDB
+     if (flags & hfRemoveInsideTriangles && interior.gridptr)
+         remove_inside_triangles(mesh, interior);
++#endif
+ 
+     mesh.merge(TriangleMesh{interior.mesh});
+ }
+@@ -343,6 +360,9 @@ void hollow_mesh(TriangleMesh &mesh, const Interior &interior, int flags)
+ // the model surface.
+ static double get_distance_raw(const Vec3f &p, const Interior &interior)
+ {
++#ifdef SLIC3R_NO_OPENVDB
++    throw Slic3r::RuntimeError("SLA hollowing is not available in this build (no OpenVDB).");
++#else
+     assert(interior.gridptr);
+ 
+     if (!interior.accessor) interior.reset_accessor();
+@@ -352,6 +372,7 @@ static double get_distance_raw(const Vec3f &p, const Interior &interior)
+         {v.x(), v.y(), v.z()});
+ 
+     return interior.accessor->getValue(grididx) ;
++#endif // SLIC3R_NO_OPENVDB
+ }
+ 
+ struct TriangleBubble { Vec3f center; double R; };

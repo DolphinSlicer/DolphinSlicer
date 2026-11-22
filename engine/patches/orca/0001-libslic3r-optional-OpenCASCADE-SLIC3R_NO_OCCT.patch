@@ -1,0 +1,167 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DolphinSlicer <build@localhost>
+Date: Sun, 8 Nov 2026 04:02:00 +0000
+Subject: [PATCH 1/9] libslic3r: optional OpenCASCADE (SLIC3R_NO_OCCT)
+
+Add a SLIC3R_NO_OCCT build option that compiles libslic3r without OpenCASCADE.
+STEP.hpp keeps only its OCCT-free declarations, STEP.cpp/svg.cpp are not built,
+and Model::read_from_step / SVG loading raise a RuntimeError instead.
+
+Why: the WebAssembly engine ships STEP import as a separate, lazily loaded module
+(OCCT alone would push the engine past the 25 MiB per-asset hosting limit), so the
+slicing core must build without it. Default builds are unchanged.
+Upstreamable: yes (opt-in, no behaviour change when the option is off).
+---
+ src/libslic3r/CMakeLists.txt  | 17 ++++++++++++++---
+ src/libslic3r/Format/STEP.hpp | 12 +++++++++++-
+ src/libslic3r/Model.cpp       | 10 ++++++++++
+ 3 files changed, 35 insertions(+), 4 deletions(-)
+
+diff --git a/src/libslic3r/CMakeLists.txt b/src/libslic3r/CMakeLists.txt
+index 034f8b57..6f6db349 100644
+--- a/src/libslic3r/CMakeLists.txt
++++ b/src/libslic3r/CMakeLists.txt
+@@ -609,6 +609,10 @@ if (APPLE)
+         )
+ endif ()
+ 
++if (SLIC3R_NO_OCCT)
++    list(REMOVE_ITEM lisbslic3r_sources Format/STEP.cpp Format/svg.cpp Format/svg.hpp)
++endif ()
++
+ add_library(libslic3r STATIC ${lisbslic3r_sources}
+     "${CMAKE_CURRENT_BINARY_DIR}/libslic3r_version.h"
+     ${OpenVDBUtils_SOURCES})
+@@ -682,14 +686,20 @@ endif()
+ target_include_directories(libslic3r PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/TextureToColor PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+ target_include_directories(libslic3r SYSTEM PUBLIC ${EXPAT_INCLUDE_DIRS})
+ 
++find_package(JPEG REQUIRED)
++find_package(Draco REQUIRED)
++
++# SLIC3R_NO_OCCT: build without OpenCASCADE (no STEP/SVG import), e.g. for WebAssembly.
++if (SLIC3R_NO_OCCT)
++    target_compile_definitions(libslic3r PUBLIC SLIC3R_NO_OCCT)
++    set(OCCT_LIBS "")
++else ()
++
+ # Find the OCCT and related libraries
+ set(OpenCASCADE_DIR "${CMAKE_PREFIX_PATH}/lib/cmake/occt")
+ find_package(OpenCASCADE REQUIRED)
+ target_include_directories(libslic3r SYSTEM PUBLIC ${OpenCASCADE_INCLUDE_DIR})
+ 
+-find_package(JPEG REQUIRED)
+-find_package(Draco REQUIRED)
+-
+ set(OCCT_LIBS
+     TKDESTEP
+     TKDE
+@@ -739,6 +749,7 @@ if (SLIC3R_CAD)
+ endif ()
+ # Published for the Windows packaging step in the top-level CMakeLists.txt.
+ set(OCCT_LIBS "${OCCT_LIBS}" CACHE INTERNAL "OCCT toolkits linked by libslic3r")
++endif () # SLIC3R_NO_OCCT
+ if (WIN32)
+     # OCCT installs RelWithDebInfo and Debug builds to bin/occti and bin/occtd, so each build
+     # type's DLL directory is read from the imported target, falling back to the first installed
+diff --git a/src/libslic3r/Format/STEP.hpp b/src/libslic3r/Format/STEP.hpp
+index 5d18f9e8..4c525c58 100644
+--- a/src/libslic3r/Format/STEP.hpp
++++ b/src/libslic3r/Format/STEP.hpp
+@@ -1,13 +1,17 @@
+ #ifndef slic3r_Format_STEP_hpp_
+ #define slic3r_Format_STEP_hpp_
++// SLIC3R_NO_OCCT: build without OpenCASCADE (e.g. WebAssembly). Only the OCCT-free declarations
++// below are kept; Model::read_from_step / load_svg then report that STEP/SVG import is unavailable.
++#ifndef SLIC3R_NO_OCCT
+ #include "XCAFDoc_DocumentTool.hxx"
+ #include "XCAFApp_Application.hxx"
+ #include "XCAFDoc_ShapeTool.hxx"
+ #include <Standard_TypeDef.hxx>
+ #include <Standard_Handle.hxx>
++#include <Message_ProgressIndicator.hxx>
++#endif
+ #include <boost/filesystem/path.hpp>
+ #include <boost/filesystem.hpp>
+-#include <Message_ProgressIndicator.hxx>
+ #include <atomic>
+ #include <functional>
+ #include <string>
+@@ -34,6 +38,9 @@ const int LOAD_STEP_STAGE_UNIT_NUM           = 5;
+ typedef std::function<void(int load_stage, int current, int total, bool& cancel)> ImportStepProgressFn;
+ typedef std::function<void(bool isUtf8)> StepIsUtf8Fn;
+ 
++#ifdef SLIC3R_NO_OCCT
++class Step;
++#else
+ struct NamedSolid
+ {
+     NamedSolid(const TopoDS_Shape& s,
+@@ -53,6 +60,7 @@ extern bool load_step(const char *path, Model *model,
+                       ImportStepProgressFn proFn = nullptr,
+                       StepIsUtf8Fn isUtf8Fn = nullptr,
+                       long& mesh_face_num = *(new long(-1)));
++#endif // SLIC3R_NO_OCCT
+ 
+ //BBS: Used to detect what kind of encoded type is used in name field of step
+ // If is encoded in UTF8, the file don't need to be handled, then return the original path directly.
+@@ -79,6 +87,7 @@ private:
+     EncodedType m_encode_type = EncodedType::UTF8;
+ };
+ 
++#ifndef SLIC3R_NO_OCCT
+ class StepProgressIncdicator : public Message_ProgressIndicator
+ {
+ public:
+@@ -127,6 +136,7 @@ private:
+     Handle(XCAFDoc_ShapeTool) m_shape_tool;
+     std::vector<NamedSolid> m_name_solids;
+ };
++#endif // SLIC3R_NO_OCCT
+ 
+ }; // namespace Slic3r
+ 
+diff --git a/src/libslic3r/Model.cpp b/src/libslic3r/Model.cpp
+index c4cff42a..d1265ccf 100644
+--- a/src/libslic3r/Model.cpp
++++ b/src/libslic3r/Model.cpp
+@@ -34,7 +34,9 @@
+ #include "MeshRepair.hpp"
+ 
+ #include "Format/AMF.hpp"
++#ifndef SLIC3R_NO_OCCT
+ #include "Format/svg.hpp"
++#endif
+ #include "Format/bbs_3mf.hpp"
+ #include "Format/DRC.hpp"
+ // BBS
+@@ -246,6 +248,9 @@ Model Model::read_from_step(const std::string&
+                             double                                                  angle_deflection,
+                             bool                                                   is_split_compound)
+ {
++#ifdef SLIC3R_NO_OCCT
++    throw Slic3r::RuntimeError("STEP import is not available in this build.");
++#else
+     Model model;
+     bool result = false;
+     bool is_cb_cancel = false;
+@@ -289,6 +294,7 @@ _finished:
+         model.add_default_instances();
+ 
+     return model;
++#endif // SLIC3R_NO_OCCT
+ }
+ 
+ // BBS: add part plate related logic
+@@ -456,7 +462,11 @@ Model Model::read_from_file(const std::string&
+         }
+     }
+     else if (boost::algorithm::iends_with(input_file, ".svg"))
++#ifdef SLIC3R_NO_OCCT
++        throw Slic3r::RuntimeError("SVG import is not available in this build.");
++#else
+         result = load_svg(input_file.c_str(), &model, message);
++#endif
+     //BBS: remove the old .amf.xml files
+     //else if (boost::algorithm::iends_with(input_file, ".amf") || boost::algorithm::iends_with(input_file, ".amf.xml"))
+     else if (boost::algorithm::iends_with(input_file, ".drc"))

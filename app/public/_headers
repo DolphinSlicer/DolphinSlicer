@@ -1,0 +1,26 @@
+# Cloudflare Pages response headers.
+# COOP/COEP make the page cross-origin isolated, which enables SharedArrayBuffer and the
+# multithreaded engine. Without them the app falls back to the single-threaded engine.
+/*
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: require-corp
+  X-Content-Type-Options: nosniff
+
+# Content-addressed engine and profile bundles and calibration models (directory name = content
+# hash) never change. Their manifests (/engine-manifest.json, /profiles-manifest.json,
+# /calib-manifest.json) use the default revalidation.
+/engine/*
+  Cache-Control: public, max-age=31536000, immutable
+/profiles/*
+  Cache-Control: public, max-age=31536000, immutable
+/calib/*
+  Cache-Control: public, max-age=31536000, immutable
+# The app's own scripts and styles: their file names hold a content hash.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# The "Slice now" button image (docs/QUICK_LINK.md) may be shown on any site, including
+# cross-origin isolated ones.
+/slice-now.svg
+  Cross-Origin-Resource-Policy: cross-origin
+  Cache-Control: public, max-age=86400

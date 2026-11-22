@@ -1,0 +1,18 @@
+Boost 1.84.0: let Boost.Asio configure without Boost.Context/Boost.Coroutine.
+
+Why: Boost.Context has only per-architecture assembly (no wasm32 backend), so we exclude it
+(and Coroutine, which needs it). Asio's generated CMake still links both, which makes the whole
+Boost configure fail. Asio itself is header-only and only needs Context for asio::spawn, which
+libslic3r never uses (its only Asio/Beast use is beast/core/detail/base64.hpp).
+Upstreamable: no (wasm-specific). Applies with: patch -p1
+--- a/libs/asio/CMakeLists.txt
++++ b/libs/asio/CMakeLists.txt
+@@ -17,8 +17,6 @@
+     Boost::align
+     Boost::assert
+     Boost::config
+-    Boost::context
+-    Boost::coroutine
+     Boost::date_time
+     Boost::system
+     Boost::throw_exception

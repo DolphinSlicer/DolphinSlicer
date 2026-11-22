@@ -1,0 +1,288 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DolphinSlicer <build@localhost>
+Date: Sun, 8 Nov 2026 04:25:36 +0000
+Subject: [PATCH 5/9] Use portable random distributions so seeded results match
+ on all platforms
+
+The C++ standard fixes the random engines but not the distribution algorithms or
+std::shuffle, so libstdc++, libc++ and the MSVC STL turn the same seed into different
+numbers. Code that seeds an engine for deterministic output therefore still differs
+between Linux, macOS and Windows (and WebAssembly):
+- monotonic fill (chain_monotonic_regions): libc++'s uniform_int_distribution(0, 0)
+  consumes no draw and libstdc++'s does, so the following zig-zag orientation draw
+  differs and the fill comes out mirrored;
+- seam placement samples (TriangleSetSampling) and mesh decimation order
+  (ShortEdgeCollapse) used std::uniform_real_distribution / std::shuffle;
+- filament grouping used std::shuffle.
+
+Add PortableRandom.hpp, which reproduces libstdc++'s algorithms exactly (verified
+bit-for-bit against libstdc++ 15 for mt19937, mt19937_64 and minstd_rand), and use it
+at those call sites. Linux results are unchanged; other platforms now match Linux.
+Upstreamable: yes.
+---
+ src/libslic3r/CMakeLists.txt           |   1 +
+ src/libslic3r/FilamentGroup.cpp        |   3 +-
+ src/libslic3r/Fill/FillRectilinear.cpp |   3 +-
+ src/libslic3r/PortableRandom.hpp       | 151 +++++++++++++++++++++++++
+ src/libslic3r/ShortEdgeCollapse.cpp    |   3 +-
+ src/libslic3r/TriangleSetSampling.cpp  |  12 +-
+ 6 files changed, 165 insertions(+), 8 deletions(-)
+ create mode 100644 src/libslic3r/PortableRandom.hpp
+
+diff --git a/src/libslic3r/CMakeLists.txt b/src/libslic3r/CMakeLists.txt
+index 0a1c7e89..b6a41507 100644
+--- a/src/libslic3r/CMakeLists.txt
++++ b/src/libslic3r/CMakeLists.txt
+@@ -406,6 +406,7 @@ set(lisbslic3r_sources
+     Platform.hpp
+     PNGReadWrite.cpp
+     PNGReadWrite.hpp
++    PortableRandom.hpp
+     Point.cpp
+     Point.hpp
+     Polygon.cpp
+diff --git a/src/libslic3r/FilamentGroup.cpp b/src/libslic3r/FilamentGroup.cpp
+index a3ac5040..ea7bab48 100644
+--- a/src/libslic3r/FilamentGroup.cpp
++++ b/src/libslic3r/FilamentGroup.cpp
+@@ -1,3 +1,4 @@
++#include "PortableRandom.hpp"
+ #include "FilamentGroup.hpp"
+ #include "FilamentGroupUtils.hpp"
+ #include "GCode/ToolOrderUtils.hpp"
+@@ -758,7 +759,7 @@ namespace Slic3r
+         // shuffle the filaments and transfer placeable,unplaceable limits
+         {
+             std::mt19937 rng(seed);
+-            std::shuffle(l_nodes.begin(), l_nodes.end(), rng);
++            portable_random::shuffle(l_nodes.begin(), l_nodes.end(), rng);
+ 
+             std::unordered_map<int, int>idx_transfer;
+             for (size_t idx = 0; idx < l_nodes.size(); ++idx){
+diff --git a/src/libslic3r/Fill/FillRectilinear.cpp b/src/libslic3r/Fill/FillRectilinear.cpp
+index 142afbae..b8e50915 100644
+--- a/src/libslic3r/Fill/FillRectilinear.cpp
++++ b/src/libslic3r/Fill/FillRectilinear.cpp
+@@ -10,6 +10,7 @@
+ #include <cmath>
+ #include <limits>
+ #include <random>
++#include "../PortableRandom.hpp"
+ 
+ #include <boost/container/small_vector.hpp>
+ #include <boost/log/trivial.hpp>
+@@ -2436,7 +2437,7 @@ static std::vector<MonotonicRegionLink> chain_monotonic_regions(
+             // Pick randomly the first from the queue at random orientation.
+             //FIXME picking the 1st monotonic region should likely be done based on accumulated pheromone level as well,
+             // but the inefficiency caused by the random pick of the 1st monotonic region is likely insignificant.
+-            int first_idx = std::uniform_int_distribution<>(0, int(queue.size()) - 1)(rng);
++            int first_idx = portable_random::uniform_int<int>(rng, 0, int(queue.size()) - 1);
+             path.emplace_back(MonotonicRegionLink{ queue[first_idx], rng() > rng.max() / 2 });
+             *(queue.begin() + first_idx) = std::move(queue.back());
+             queue.pop_back();
+diff --git a/src/libslic3r/PortableRandom.hpp b/src/libslic3r/PortableRandom.hpp
+new file mode 100644
+index 00000000..e67c974d
+--- /dev/null
++++ b/src/libslic3r/PortableRandom.hpp
+@@ -0,0 +1,151 @@
++#pragma once
++// Platform-independent random distributions and shuffle.
++//
++// The C++ standard fixes the random engines (std::mt19937, std::mt19937_64, ...) but leaves the
++// algorithms of the distributions and of std::shuffle to the implementation. libstdc++, libc++
++// and the MSVC STL therefore turn the same seeded engine into different numbers, so code that
++// seeds an engine "for deterministic results" still produces different G-code on Linux, macOS
++// and Windows. These helpers reproduce libstdc++'s algorithms (GCC 11 to 15) exactly, so every
++// platform gets the result Linux builds already produce.
++
++#include <cmath>
++#include <cstddef>
++#include <cstdint>
++#include <iterator>
++#include <type_traits>
++#include <utility>
++
++namespace Slic3r {
++namespace portable_random {
++
++namespace detail {
++
++template<class URBG> constexpr uint64_t urng_range()
++{
++    return uint64_t(std::remove_reference_t<URBG>::max()) - uint64_t(std::remove_reference_t<URBG>::min());
++}
++
++template<class URBG> uint64_t draw(URBG &g) { return uint64_t(g()) - uint64_t(std::remove_reference_t<URBG>::min()); }
++
++constexpr unsigned bit_width(uint64_t v)
++{
++    unsigned n = 0;
++    for (; v; v >>= 1) ++n;
++    return n;
++}
++
++} // namespace detail
++
++// Uniform integer in [0, urange], as libstdc++'s uniform_int_distribution computes it.
++template<class URBG> uint64_t uniform_uint(URBG &g, uint64_t urange)
++{
++    constexpr uint64_t urngrange = detail::urng_range<URBG>();
++    if (urngrange > urange) {
++        const uint64_t uerange = urange + 1;
++        if constexpr (urngrange == UINT64_MAX) {
++            // Lemire's nearly divisionless method with a 128-bit product.
++            unsigned __int128 product = (unsigned __int128) uint64_t(g()) * uerange;
++            uint64_t          low     = uint64_t(product);
++            if (low < uerange) {
++                const uint64_t threshold = (0 - uerange) % uerange;
++                while (low < threshold) {
++                    product = (unsigned __int128) uint64_t(g()) * uerange;
++                    low     = uint64_t(product);
++                }
++            }
++            return uint64_t(product >> 64);
++        } else if constexpr (urngrange == UINT32_MAX) {
++            const uint32_t range   = uint32_t(uerange);
++            uint64_t       product = uint64_t(uint32_t(g())) * range;
++            uint32_t       low     = uint32_t(product);
++            if (low < range) {
++                const uint32_t threshold = (0u - range) % range;
++                while (low < threshold) {
++                    product = uint64_t(uint32_t(g())) * range;
++                    low     = uint32_t(product);
++                }
++            }
++            return product >> 32;
++        } else {
++            const uint64_t scaling = urngrange / uerange;
++            const uint64_t past    = uerange * scaling;
++            uint64_t       ret;
++            do
++                ret = detail::draw(g);
++            while (ret >= past);
++            return ret / scaling;
++        }
++    } else if (urngrange < urange) {
++        // Upscaling: combine several draws.
++        uint64_t ret, tmp;
++        do {
++            const uint64_t uerngrange = urngrange + 1;
++            tmp = uerngrange * uniform_uint(g, urange / uerngrange);
++            ret = tmp + detail::draw(g);
++        } while (ret > urange || ret < tmp);
++        return ret;
++    } else
++        return detail::draw(g);
++}
++
++// Same as std::uniform_int_distribution<IntType>(a, b)(g) with libstdc++.
++template<class IntType, class URBG> IntType uniform_int(URBG &g, IntType a, IntType b)
++{
++    static_assert(std::is_integral_v<IntType>);
++    const uint64_t urange = uint64_t(b) - uint64_t(a);
++    return IntType(uniform_uint(g, urange) + uint64_t(a));
++}
++
++// Same as std::generate_canonical<Real, std::numeric_limits<Real>::digits>(g) with libstdc++.
++template<class Real, class URBG> Real canonical(URBG &g)
++{
++    constexpr unsigned digits = std::numeric_limits<Real>::digits;
++    constexpr uint64_t range  = detail::urng_range<URBG>();
++    // log2 of (max - min + 1): the number of random bits per draw.
++    constexpr unsigned log2r  = range == UINT64_MAX ? 64 : detail::bit_width(range + 1) - 1;
++    constexpr unsigned m      = (digits + log2r - 1) / log2r > 1 ? (digits + log2r - 1) / log2r : 1;
++    const Real         r      = Real(range) + Real(1);
++    Real               sum    = Real(0);
++    Real               tmp    = Real(1);
++    for (unsigned k = m; k != 0; --k) {
++        sum += Real(detail::draw(g)) * tmp;
++        tmp *= r;
++    }
++    Real ret = sum / tmp;
++    if (ret >= Real(1))
++        ret = std::nextafter(Real(1), Real(0));
++    return ret;
++}
++
++// Same as std::uniform_real_distribution<Real>(a, b)(g) with libstdc++.
++template<class Real, class URBG> Real uniform_real(URBG &g, Real a = Real(0), Real b = Real(1))
++{
++    return canonical<Real>(g) * (b - a) + a;
++}
++
++// Same as std::shuffle(first, last, g) with libstdc++.
++template<class RandomIt, class URBG> void shuffle(RandomIt first, RandomIt last, URBG &&g)
++{
++    if (first == last)
++        return;
++    constexpr uint64_t urngrange = detail::urng_range<URBG>();
++    const uint64_t     urange    = uint64_t(last - first);
++    if (urngrange / urange >= urange) {
++        // Two swap positions per draw.
++        RandomIt i = first + 1;
++        if ((urange % 2) == 0)
++            std::iter_swap(i++, first + uniform_uint(g, 1));
++        while (i != last) {
++            const uint64_t swap_range = uint64_t(i - first) + 1;
++            const uint64_t x          = uniform_uint(g, swap_range * (swap_range + 1) - 1);
++            std::iter_swap(i++, first + x / (swap_range + 1));
++            std::iter_swap(i++, first + x % (swap_range + 1));
++        }
++        return;
++    }
++    for (RandomIt i = first + 1; i != last; ++i)
++        std::iter_swap(i, first + uniform_uint(g, uint64_t(i - first)));
++}
++
++} // namespace portable_random
++} // namespace Slic3r
+diff --git a/src/libslic3r/ShortEdgeCollapse.cpp b/src/libslic3r/ShortEdgeCollapse.cpp
+index 59637b4d..c3460d25 100644
+--- a/src/libslic3r/ShortEdgeCollapse.cpp
++++ b/src/libslic3r/ShortEdgeCollapse.cpp
+@@ -1,4 +1,5 @@
+ #include "ShortEdgeCollapse.hpp"
++#include "PortableRandom.hpp"
+ #include "Point.hpp"
+ #include "TriangleMesh.hpp"
+ #include "libslic3r/NormalUtils.hpp"
+@@ -100,7 +101,7 @@ void its_short_edge_collpase(indexed_triangle_set &mesh, size_t target_triangle_
+         float max_edge_len_squared = edge_len * edge_len;
+ 
+         //shuffle the faces and traverse in random order, this MASSIVELY improves the quality of the result
+-        std::shuffle(face_indices.begin(), face_indices.end(), generator);
++        portable_random::shuffle(face_indices.begin(), face_indices.end(), generator);
+         
+         int allowed_face_removals = int(face_indices.size()) - int(target_triangle_count);
+         for (const size_t &face_idx : face_indices) {
+diff --git a/src/libslic3r/TriangleSetSampling.cpp b/src/libslic3r/TriangleSetSampling.cpp
+index 6ab4290e..d17f24d4 100644
+--- a/src/libslic3r/TriangleSetSampling.cpp
++++ b/src/libslic3r/TriangleSetSampling.cpp
+@@ -5,6 +5,7 @@
+ #include <cmath>
+ #include <map>
+ #include <random>
++#include "PortableRandom.hpp"
+ #include <tbb/parallel_for.h>
+ #include <tbb/blocked_range.h>
+ #include <vector>
+@@ -34,11 +35,12 @@ TriangleSetSamples sample_its_uniform_parallel(size_t samples_count, const index
+     }
+ 
+     std::mt19937_64 mersenne_engine { 27644437 };
+-    // random numbers on interval [0, 1)
+-    std::uniform_real_distribution<double> fdistribution;
+-
+-    auto get_random = [&fdistribution, &mersenne_engine]() {
+-        return Vec3d { fdistribution(mersenne_engine), fdistribution(mersenne_engine), fdistribution(mersenne_engine) };
++    // random numbers on interval [0, 1); portable so all platforms sample the same points
++    auto get_random = [&mersenne_engine]() {
++        const double x = portable_random::uniform_real<double>(mersenne_engine);
++        const double y = portable_random::uniform_real<double>(mersenne_engine);
++        const double z = portable_random::uniform_real<double>(mersenne_engine);
++        return Vec3d { x, y, z };
+     };
+ 
+     std::vector<Vec3d> random_samples(samples_count);

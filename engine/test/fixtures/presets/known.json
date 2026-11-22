@@ -1,0 +1,23 @@
+{
+  "_comment": "Pinned differences between the engine and desktop for presets-parity.mjs. A combination listed here passes only if its G-code differs from desktop's in exactly these lines, and fails once it matches (then remove the entry).",
+  "known": [
+    {
+      "combo": "Wanhao D9-400 MK2 0.4 nozzle | 0.12mm Fine @Wanhao D9 | Bambu PLA Marble @System",
+      "note": "One M73 progress line (remaining time 14 → 13 min) comes one short move (0.46 mm) earlier than on desktop; every move is identical. So the two print-time estimates differ slightly where they cross that minute boundary. Ruled out: FMA contraction (desktop's estimator has no FMA instructions, the engine builds with -ffp-contract=off) and libm (the estimator calls only sqrt here; this G-code has no arcs). Cause not yet found.",
+      "structural": 2,
+      "numericOnly": 0,
+      "samples": [
+        {
+          "line": 21623,
+          "ref": "G1 X193.396 Y203.496 E.00945",
+          "got": "M73 P56 R13"
+        },
+        {
+          "line": 21624,
+          "ref": "M73 P56 R13",
+          "got": "G1 X193.396 Y203.496 E.00945"
+        }
+      ]
+    }
+  ]
+}

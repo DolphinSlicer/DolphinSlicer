@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DolphinSlicer <build@localhost>
+Date: Sun, 8 Nov 2026 04:16:01 +0000
+Subject: [PATCH 2/9] Platform: recognise Emscripten/WebAssembly
+
+detect_platform() hit the 'Unknown platform detected' static_assert when compiled with
+Emscripten. Report Platform::Unknown / PlatformFlavor::Unknown there; libslic3r only
+consults the platform flavor for a ChromeOS (LinuxOnChromium) special case.
+Upstreamable: yes.
+---
+ src/libslic3r/Platform.cpp | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/src/libslic3r/Platform.cpp b/src/libslic3r/Platform.cpp
+index 35a30712..7bc75d53 100644
+--- a/src/libslic3r/Platform.cpp
++++ b/src/libslic3r/Platform.cpp
+@@ -91,6 +91,11 @@ void detect_platform()
+     BOOST_LOG_TRIVIAL(info) << "Platform: OpenBSD";
+ 	s_platform 		  = Platform::BSDUnix;
+ 	s_platform_flavor = PlatformFlavor::OpenBSD;
++#elif defined(__EMSCRIPTEN__)
++	// WebAssembly (browser or Node): no host OS to detect.
++    BOOST_LOG_TRIVIAL(info) << "Platform: WebAssembly";
++	s_platform 		  = Platform::Unknown;
++	s_platform_flavor = PlatformFlavor::Unknown;
+ #else
+ 	// This should not happen.
+     BOOST_LOG_TRIVIAL(info) << "Platform: Unknown";
