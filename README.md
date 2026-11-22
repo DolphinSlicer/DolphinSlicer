@@ -52,6 +52,7 @@ browser.
 - **Send to your printer** over Klipper or OctoPrint, or export the G-code.
 - **Model library** with optional **Google Drive sync** across your devices.
 - **"Slice now" links** that open a model from your website ([how to add one](docs/QUICK_LINK.md)).
+- **AI assistants** like Claude and ChatGPT can explain and change your settings ([how to connect](docs/MCP.md)).
 
 <br>
 

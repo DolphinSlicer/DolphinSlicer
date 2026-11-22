@@ -24,3 +24,11 @@
 /slice-now.svg
   Cross-Origin-Resource-Policy: cross-origin
   Cache-Control: public, max-age=86400
+
+# The app's icons, shown by other sites too (an AI assistant's list of connectors).
+/icon-512.png
+  Cross-Origin-Resource-Policy: cross-origin
+/dolphin-slicer-mark.svg
+  Cross-Origin-Resource-Policy: cross-origin
+/favicon.ico
+  Cross-Origin-Resource-Policy: cross-origin

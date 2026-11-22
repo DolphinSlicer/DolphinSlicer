@@ -15,6 +15,7 @@
 //   POST /api/auth/logout     revoke the refresh token and drop the cookie
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { CLIENT_ID, SCOPE } from '../src/drive/google';
+import { open, randomId, s256, seal, sealKey } from './crypto';
 
 export interface AuthEnv {
   GOOGLE_CLIENT_SECRET?: string;
@@ -24,7 +25,7 @@ export interface AuthEnv {
 
 export const GOOGLE_AUTH = 'https://accounts.google.com/o/oauth2/v2/auth';
 export const GOOGLE_TOKEN = 'https://oauth2.googleapis.com/token';
-const GOOGLE_REVOKE = 'https://oauth2.googleapis.com/revoke';
+export const GOOGLE_REVOKE = 'https://oauth2.googleapis.com/revoke';
 
 /** The refresh token. Strict: only sent with the app's own requests. */
 const RT_COOKIE = 'ds_rt';
@@ -53,8 +54,8 @@ export async function handleAuth(req: Request, env: AuthEnv): Promise<Response> 
 
   // The sign-in popup: to Google, remembering state and the PKCE verifier for the callback.
   const toGoogle = async (flow: Omit<Flow, 'verifier'>, extra: Headers = new Headers()) => {
-    const verifier = b64url(crypto.getRandomValues(new Uint8Array(32)));
-    const challenge = b64url(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))));
+    const verifier = randomId();
+    const challenge = await s256(verifier);
     const q = new URLSearchParams({
       client_id: clientId,
       redirect_uri: callbackUri,
@@ -188,46 +189,6 @@ function parseCookies(header: string): Record<string, string> {
   return out;
 }
 
-// Cookie contents are encrypted (AES-GCM) with a key derived from the client secret, so the
-// refresh token is unreadable outside the service, and changing the secret signs everyone out.
-async function cookieKey(secret: string): Promise<CryptoKey> {
-  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), 'HKDF', false, ['deriveKey']);
-  return crypto.subtle.deriveKey(
-    { name: 'HKDF', hash: 'SHA-256', salt: new Uint8Array(0), info: new TextEncoder().encode('dolphin-slicer auth cookie v1') },
-    base,
-    { name: 'AES-GCM', length: 256 },
-    false,
-    ['encrypt', 'decrypt'],
-  );
-}
-
-async function seal(key: CryptoKey, text: string): Promise<string> {
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(text)));
-  const out = new Uint8Array(iv.length + ct.length);
-  out.set(iv);
-  out.set(ct, iv.length);
-  return b64url(out);
-}
-
-async function open<T>(key: CryptoKey, sealed: string | undefined): Promise<T | null> {
-  if (!sealed) return null;
-  try {
-    const bytes = fromB64url(sealed);
-    const text = new TextDecoder().decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: bytes.slice(0, 12) }, key, bytes.slice(12)));
-    return (text.startsWith('{') ? JSON.parse(text) : text) as T;
-  } catch {
-    return null;
-  }
-}
-
-function b64url(bytes: Uint8Array): string {
-  let s = '';
-  for (const b of bytes) s += String.fromCharCode(b);
-  return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-
-function fromB64url(s: string): Uint8Array {
-  const bin = atob(s.replace(/-/g, '+').replace(/_/g, '/'));
-  return Uint8Array.from(bin, (c) => c.charCodeAt(0));
-}
+// Cookie contents are sealed with a key derived from the client secret, so the refresh token is
+// unreadable outside the service, and changing the secret signs everyone out.
+const cookieKey = (secret: string) => sealKey(secret, 'dolphin-slicer auth cookie v1');

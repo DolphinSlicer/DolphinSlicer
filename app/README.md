@@ -59,7 +59,7 @@ heap before slicing, to test out-of-memory handling.
 | `src/ui/` | React components |
 | `scripts/` | copy the engine, bundle OrcaSlicer's profiles, check the dist |
 | `public/_headers` | Cloudflare Pages headers (COOP/COEP, caching) |
-| `server/`, `functions/` | Google sign-in token service (Pages Function; also in `vite dev`/`preview`) |
+| `server/`, `functions/` | Google sign-in token service and MCP server (Pages Functions; also in `vite dev`/`preview`) |
 
 ## Deploy
 
@@ -83,3 +83,9 @@ keeps users signed in. It needs the OAuth client's secret:
   days.
 
 Without the secret, `/api/auth` is not served and the app falls back to the popup-only sign-in.
+
+### MCP server
+
+`server/mcp/` is an MCP server for AI assistants at `/mcp` ([docs/MCP.md](../docs/MCP.md)). It
+signs users in through Google with the same OAuth client and callback as the token service, so
+it needs nothing beyond the secret.

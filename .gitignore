@@ -15,4 +15,5 @@ app/public/profiles-manifest.json
 app/public/calib/
 app/public/calib-manifest.json
 app/public/settings-schema.json
+app/public/settings-defaults.json
 app/public/i18n/
