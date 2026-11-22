@@ -22,7 +22,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/prepare-dark.png">
-    <img src="docs/images/prepare-light.png" alt="Three models arranged on the plate of a Voron 2.4, ready to slice">
+    <img src="docs/images/prepare-light.png" alt="The Stanford Bunny on the plate of a Voron 2.4, ready to slice">
   </picture>
 </p>
 
@@ -42,7 +42,7 @@ browser.
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/preview-dark.png">
-    <img src="docs/images/preview-light.png" alt="The sliced plate in the G-code preview, colored by line type, with print time, filament and cost">
+    <img src="docs/images/preview-light.png" alt="The sliced bunny in the G-code preview, colored by line type, with print time, filament and cost">
   </picture>
 </p>
 
@@ -108,8 +108,8 @@ DolphinSlicer is built on [OrcaSlicer](https://github.com/OrcaSlicer/OrcaSlicer)
 contributors, itself based on Bambu Studio, PrusaSlicer and Slic3r. Build recipes and several fixes
 come from [OrcaWeb](https://github.com/Hiosdra/OrcaWeb). See [NOTICE](NOTICE) for all credits.
 
-The models in the screenshots come with OrcaSlicer: 3DBenchy by Creative Tools, the Voron Design
-Cube by Voron Design and the Stanford Bunny by the Stanford Computer Graphics Laboratory.
+The model in the screenshots is the Stanford Bunny by the Stanford Computer Graphics Laboratory, one
+of OrcaSlicer's sample models.
 
 DolphinSlicer is free software under the
 [GNU Affero General Public License v3.0 or later](LICENSE).
