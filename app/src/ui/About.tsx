@@ -59,6 +59,10 @@ export function About({ onClose }: { onClose: () => void }) {
           ·{' '}
           <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noreferrer">
             GNU AGPL v3.0
+          </a>{' '}
+          ·{' '}
+          <a href="privacy.html" target="_blank" rel="noreferrer" data-testid="privacy-link">
+            {t('Privacy Policy')}
           </a>
         </p>
         <button onClick={onClose} autoFocus>

@@ -134,6 +134,7 @@
   "Printer & material": "Printer en materiaal",
   "Printers": "Printers",
   "Printers and filaments": "Printers en filamenten",
+  "Privacy Policy": "Privacybeleid",
   "PrusaSlicer chose this speed automatically; it is set to the maximum print speed ({speed} mm/s).": "PrusaSlicer heeft deze snelheid automatisch gekozen; ze is ingesteld op de maximale printsnelheid ({speed} mm/s).",
   "PrusaSlicer scales every first-layer speed by this percentage; OrcaSlicer uses one speed for first-layer walls, computed from the perimeter speed.": "PrusaSlicer schaalt elke snelheid van de eerste laag met dit percentage; OrcaSlicer gebruikt één snelheid voor de wanden van de eerste laag, berekend uit de perimetersnelheid.",
   "Reload the page. If this keeps happening, your browser may be too old.": "Laad de pagina opnieuw. Blijft dit gebeuren, dan is uw browser mogelijk te oud.",

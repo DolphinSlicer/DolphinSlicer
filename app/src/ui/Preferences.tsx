@@ -171,7 +171,10 @@ function DriveSection({ close }: { close: React.ReactNode }) {
           <p className="muted small">
             {t(
               'Keep your presets, models and settings in your Google Drive and use them on all your devices. DolphinSlicer can only see the files it creates.',
-            )}
+            )}{' '}
+            <a href="privacy.html" target="_blank" rel="noreferrer">
+              {t('Privacy Policy')}
+            </a>
           </p>
           <div className="prefs-row">
             <button className="btn" onClick={() => void connectDrive()} data-testid="drive-connect">

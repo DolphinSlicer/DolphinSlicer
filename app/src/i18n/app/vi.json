@@ -128,6 +128,7 @@
   "Print time": "Thời gian in",
   "Printer & material": "Máy in & vật liệu",
   "Printers and filaments": "Máy in và filament",
+  "Privacy Policy": "Chính sách bảo mật",
   "PrusaSlicer chose this speed automatically; it is set to the maximum print speed ({speed} mm/s).": "PrusaSlicer đã tự động chọn tốc độ này; nó được đặt bằng tốc độ in tối đa ({speed} mm/s).",
   "PrusaSlicer scales every first-layer speed by this percentage; OrcaSlicer uses one speed for first-layer walls, computed from the perimeter speed.": "PrusaSlicer nhân mọi tốc độ của lớp đầu tiên với phần trăm này; OrcaSlicer dùng một tốc độ cho thành của lớp đầu tiên, tính từ tốc độ chu vi.",
   "Reload the page. If this keeps happening, your browser may be too old.": "Hãy tải lại trang. Nếu lỗi vẫn tiếp diễn, có thể trình duyệt của bạn đã quá cũ.",

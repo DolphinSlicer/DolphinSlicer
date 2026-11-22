@@ -125,6 +125,7 @@
   "Print time": "Tiempo de impresión",
   "Printer & material": "Impresora y material",
   "Printers and filaments": "Impresoras y filamentos",
+  "Privacy Policy": "Política de privacidad",
   "PrusaSlicer chose this speed automatically; it is set to the maximum print speed ({speed} mm/s).": "PrusaSlicer eligió esta velocidad automáticamente; se ha fijado en la velocidad de impresión máxima ({speed} mm/s).",
   "PrusaSlicer scales every first-layer speed by this percentage; OrcaSlicer uses one speed for first-layer walls, computed from the perimeter speed.": "PrusaSlicer escala todas las velocidades de la capa inicial con este porcentaje; OrcaSlicer usa una sola velocidad para los perímetros de la capa inicial, calculada a partir de la velocidad de perímetro.",
   "Rectangular": "Rectangular",

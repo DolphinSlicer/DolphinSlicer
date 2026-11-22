@@ -128,6 +128,7 @@
   "Print time": "Doba tisku",
   "Printer & material": "Tiskárna a materiál",
   "Printers and filaments": "Tiskárny a filamenty",
+  "Privacy Policy": "Zásady ochrany osobních údajů",
   "PrusaSlicer chose this speed automatically; it is set to the maximum print speed ({speed} mm/s).": "PrusaSlicer zvolil tuto rychlost automaticky; je nastavena na maximální rychlost tisku ({speed} mm/s).",
   "PrusaSlicer scales every first-layer speed by this percentage; OrcaSlicer uses one speed for first-layer walls, computed from the perimeter speed.": "PrusaSlicer upravuje každou rychlost počáteční vrstvy tímto procentem; OrcaSlicer používá jednu rychlost pro stěny počáteční vrstvy, vypočtenou z rychlosti perimetrů.",
   "Reload the page. If this keeps happening, your browser may be too old.": "Znovu načtěte stránku. Pokud se to opakuje, váš prohlížeč může být příliš starý.",

@@ -125,6 +125,7 @@
   "Print time": "출력 시간",
   "Printer & material": "프린터 및 재료",
   "Printers and filaments": "프린터 및 필라멘트",
+  "Privacy Policy": "개인정보처리방침",
   "PrusaSlicer chose this speed automatically; it is set to the maximum print speed ({speed} mm/s).": "PrusaSlicer가 이 속도를 자동으로 선택했습니다. 최대 출력 속도({speed} mm/s)로 설정했습니다.",
   "PrusaSlicer scales every first-layer speed by this percentage; OrcaSlicer uses one speed for first-layer walls, computed from the perimeter speed.": "PrusaSlicer는 초기 레이어의 모든 속도를 이 비율로 조정합니다. OrcaSlicer는 초기 레이어 벽에 하나의 속도를 사용하며, 외곽선 속도로부터 계산합니다.",
   "Reload the page. If this keeps happening, your browser may be too old.": "페이지를 새로 고치세요. 계속 발생하면 브라우저가 너무 오래되었을 수 있습니다.",

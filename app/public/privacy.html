@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy · DolphinSlicer</title>
+<link rel="icon" href="dolphin-slicer-mark.svg">
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<style>
+  :root { --bg: #f8fafc; --fg: #1e293b; --muted: #64748b; --link: #2563eb; --rule: #e2e8f0; color-scheme: light dark; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0f172a; --fg: #e2e8f0; --muted: #94a3b8; --link: #60a5fa; --rule: #1e293b; }
+  }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 system-ui, sans-serif; }
+  main { max-width: 42rem; margin: 0 auto; padding: 2.5rem 1rem 4rem; }
+  header { display: flex; align-items: center; gap: .75rem; }
+  header img { width: 2.5rem; height: auto; }
+  h1 { font-size: 1.75rem; margin: 0; }
+  h2 { font-size: 1.15rem; margin: 2rem 0 .5rem; padding-top: 1rem; border-top: 1px solid var(--rule); }
+  a { color: var(--link); }
+  .muted { color: var(--muted); }
+  ul { padding-left: 1.25rem; }
+  li { margin: .25rem 0; }
+  code { font-size: .9em; }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <img src="dolphin-slicer-mark.svg" alt="">
+  <h1>Privacy Policy</h1>
+</header>
+<p class="muted">Last updated: November 22, 2026</p>
+<p>
+  <a href="/">DolphinSlicer</a> is a free, open-source 3D printing slicer that runs in your web browser.
+  This page explains what happens with your data when you use it at dolphinslicer.app.
+</p>
+
+<h2>In short</h2>
+<ul>
+  <li>Your models are sliced on your own computer. They are never uploaded.</li>
+  <li>There are no accounts, no ads, no analytics and no tracking cookies.</li>
+  <li>If you turn on Google Drive sync, your data goes to your own Google Drive and nowhere else.</li>
+</ul>
+
+<h2>Data in your browser</h2>
+<p>
+  Your settings, presets, printers and model library are stored in your browser on your device. They are not
+  sent to us. Clearing this site's data in your browser removes them.
+</p>
+
+<h2>Google Drive sync (optional)</h2>
+<p>
+  If you connect Google Drive, DolphinSlicer asks Google for one permission: access to the files DolphinSlicer
+  creates in your Drive (<code>drive.file</code>). It cannot see or change any other files in your Drive.
+</p>
+<ul>
+  <li>
+    It keeps your presets, settings, model library and the printers you choose to sync (including their API keys)
+    in a "DolphinSlicer" folder in your Drive.
+  </li>
+  <li>Your browser exchanges these files with Google directly. They never pass through our servers.</li>
+  <li>
+    To keep you signed in, a small service on dolphinslicer.app (<code>/api/auth</code>) completes the Google sign-in
+    and renews access. It keeps Google's renewal token encrypted in a cookie in your browser and stores nothing on
+    the server. Signing out revokes the token and deletes the cookie. You can also remove DolphinSlicer's access at
+    any time in your <a href="https://myaccount.google.com/permissions">Google account</a>.
+  </li>
+  <li>
+    This data is used only to sync your DolphinSlicer setup between your devices. It is not shared, sold or used for
+    advertising. DolphinSlicer's use of information received from Google APIs adheres to the
+    <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>,
+    including the Limited Use requirements.
+  </li>
+</ul>
+
+<h2>Hosting</h2>
+<p>
+  DolphinSlicer is hosted on Cloudflare Pages. Like any web host, Cloudflare processes your IP address and request
+  details to deliver the site and protect it from attacks, and your browser may report failed connections to
+  Cloudflare (Network Error Logging). See <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare's privacy
+  policy</a>.
+</p>
+
+<h2>Other sites the app contacts</h2>
+<p>Only when you use the feature:</p>
+<ul>
+  <li>Google, for sign-in and Drive, when you use Drive sync.</li>
+  <li>GitHub, when you open the help for a setting: the text comes from the OrcaSlicer wiki.</li>
+  <li>The site a "Slice now" link names, to load its model.</li>
+  <li>Your printers, at the addresses you enter, when you send G-code or check their status.</li>
+</ul>
+
+<h2>Cookies</h2>
+<p>
+  Only the sign-in cookies described above, set when you connect Google Drive. There are no other cookies.
+</p>
+
+<h2>No warranty</h2>
+<p>
+  DolphinSlicer is provided as is, without warranty of any kind. G-code drives real hardware: check it before you
+  print. You are responsible for what you print. The software is licensed under the
+  <a href="https://www.gnu.org/licenses/agpl-3.0.html">GNU AGPL v3.0 or later</a>.
+</p>
+
+<h2>Contact</h2>
+<p><a href="mailto:support@dolphinslicer.net">support@dolphinslicer.net</a></p>
+
+<h2>Changes</h2>
+<p>
+  If this policy changes, the date at the top changes too. Earlier versions are in the
+  <a href="https://github.com/DolphinSlicer/DolphinSlicer">source repository</a>.
+</p>
+</main>
+</body>
+</html>

@@ -136,6 +136,7 @@
   "Print time": "Utskriftstid",
   "Printer & material": "Skrivare och material",
   "Printers and filaments": "Skrivare och filament",
+  "Privacy Policy": "Integritetspolicy",
   "PrusaSlicer chose this speed automatically; it is set to the maximum print speed ({speed} mm/s).": "PrusaSlicer valde denna hastighet automatiskt; den är satt till den maximala utskriftshastigheten ({speed} mm/s).",
   "PrusaSlicer scales every first-layer speed by this percentage; OrcaSlicer uses one speed for first-layer walls, computed from the perimeter speed.": "PrusaSlicer skalar varje hastighet för första lagret med denna procentsats; OrcaSlicer använder en hastighet för väggarna i första lagret, beräknad från perimeterhastigheten.",
   "Reload the page. If this keeps happening, your browser may be too old.": "Ladda om sidan. Om det fortsätter kan din webbläsare vara för gammal.",
