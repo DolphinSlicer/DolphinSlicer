@@ -1,0 +1,23 @@
+# Release PRs from the conventional commits on main (release-please): merging one tags the
+# version, writes CHANGELOG.md and makes the GitHub release.
+name: release-please
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: googleapis/release-please-action@v4
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+          # A token of its own, so CI runs on the release PR (main requires it); PRs opened with
+          # the workflow's token start no workflows.
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
