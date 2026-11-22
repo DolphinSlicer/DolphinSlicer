@@ -127,6 +127,7 @@
   "Print time": "Spausdinimo laikas",
   "Printer & material": "Spausdintuvas ir medžiaga",
   "Printers and filaments": "Spausdintuvai ir gijos",
+  "Privacy Policy": "Privatumo politika",
   "PrusaSlicer chose this speed automatically; it is set to the maximum print speed ({speed} mm/s).": "PrusaSlicer šį greitį pasirinko automatiškai; jis nustatytas į didžiausią spausdinimo greitį ({speed} mm/s).",
   "PrusaSlicer scales every first-layer speed by this percentage; OrcaSlicer uses one speed for first-layer walls, computed from the perimeter speed.": "PrusaSlicer kiekvieną pirmojo sluoksnio greitį pakeičia šiuo procentu; OrcaSlicer naudoja vieną greitį pirmojo sluoksnio sienelėms, apskaičiuotą iš perimetro greičio.",
   "Reload the page. If this keeps happening, your browser may be too old.": "Įkelkite puslapį iš naujo. Jei tai kartojasi, jūsų naršyklė gali būti per sena.",

@@ -378,6 +378,7 @@
   "Printers and filaments",
   "Printing",
   "Printing on {printer}",
+  "Privacy Policy",
   "Process Preset Template",
   "PrusaSlicer chose this speed automatically; it is set to the maximum print speed ({speed} mm/s).",
   "PrusaSlicer scales every first-layer speed by this percentage; OrcaSlicer uses one speed for first-layer walls, computed from the perimeter speed.",

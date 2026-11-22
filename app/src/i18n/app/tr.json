@@ -127,6 +127,7 @@
   "Print time": "Baskı süresi",
   "Printer & material": "Yazıcı ve malzeme",
   "Printers and filaments": "Yazıcılar ve filamentler",
+  "Privacy Policy": "Gizlilik Politikası",
   "PrusaSlicer chose this speed automatically; it is set to the maximum print speed ({speed} mm/s).": "PrusaSlicer bu hızı otomatik olarak seçti; en yüksek yazdırma hızına ({speed} mm/s) ayarlandı.",
   "PrusaSlicer scales every first-layer speed by this percentage; OrcaSlicer uses one speed for first-layer walls, computed from the perimeter speed.": "PrusaSlicer ilk katmanın tüm hızlarını bu yüzdeyle ölçekler; OrcaSlicer ilk katman duvarları için çevre hızından hesaplanan tek bir hız kullanır.",
   "Reload the page. If this keeps happening, your browser may be too old.": "Sayfayı yeniden yükleyin. Bu tekrarlanırsa tarayıcınız çok eski olabilir.",

@@ -127,6 +127,7 @@
   "Print time": "Nyomtatási idő",
   "Printer & material": "Nyomtató és anyag",
   "Printers and filaments": "Nyomtatók és filamentek",
+  "Privacy Policy": "Adatvédelmi szabályzat",
   "PrusaSlicer chose this speed automatically; it is set to the maximum print speed ({speed} mm/s).": "A PrusaSlicer automatikusan választotta ezt a sebességet; a maximális nyomtatási sebességre ({speed} mm/s) lett állítva.",
   "PrusaSlicer scales every first-layer speed by this percentage; OrcaSlicer uses one speed for first-layer walls, computed from the perimeter speed.": "A PrusaSlicer a kezdőréteg minden sebességét ezzel a százalékkal skálázza; az OrcaSlicer egy sebességet használ a kezdőréteg falaihoz, a perimétersebességből számolva.",
   "Reload the page. If this keeps happening, your browser may be too old.": "Töltsd újra az oldalt. Ha ez továbbra is előfordul, lehet, hogy túl régi a böngésződ.",

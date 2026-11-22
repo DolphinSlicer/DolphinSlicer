@@ -129,6 +129,7 @@
   "Print time": "Время печати",
   "Printer & material": "Принтер и материал",
   "Printers and filaments": "Принтеры и материалы",
+  "Privacy Policy": "Политика конфиденциальности",
   "PrusaSlicer chose this speed automatically; it is set to the maximum print speed ({speed} mm/s).": "PrusaSlicer выбрал эту скорость автоматически; она установлена на максимальную скорость печати ({speed} мм/с).",
   "PrusaSlicer scales every first-layer speed by this percentage; OrcaSlicer uses one speed for first-layer walls, computed from the perimeter speed.": "PrusaSlicer масштабирует каждую скорость первого слоя на этот процент; OrcaSlicer использует одну скорость для периметров первого слоя, вычисленную из скорости периметров.",
   "Rectangle": "Прямоугольник",

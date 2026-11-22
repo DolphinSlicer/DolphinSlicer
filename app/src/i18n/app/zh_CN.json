@@ -125,6 +125,7 @@
   "Print time": "打印时间",
   "Printer & material": "打印机和材料",
   "Printers and filaments": "打印机和耗材丝",
+  "Privacy Policy": "隐私政策",
   "PrusaSlicer chose this speed automatically; it is set to the maximum print speed ({speed} mm/s).": "PrusaSlicer 自动选择了此速度；已设为最大打印速度（{speed} mm/s）。",
   "PrusaSlicer scales every first-layer speed by this percentage; OrcaSlicer uses one speed for first-layer walls, computed from the perimeter speed.": "PrusaSlicer 按此百分比缩放首层的所有速度；OrcaSlicer 对首层的墙使用一个速度，由周长速度计算得出。",
   "Reload the page. If this keeps happening, your browser may be too old.": "请重新加载页面。如果问题持续出现，可能是浏览器版本过旧。",

@@ -129,6 +129,7 @@
   "Print time": "Час друку",
   "Printer & material": "Принтер і матеріал",
   "Printers and filaments": "Принтери та філаменти",
+  "Privacy Policy": "Політика конфіденційності",
   "PrusaSlicer chose this speed automatically; it is set to the maximum print speed ({speed} mm/s).": "PrusaSlicer вибрав цю швидкість автоматично; її встановлено на максимальну швидкість друку ({speed} мм/с).",
   "PrusaSlicer scales every first-layer speed by this percentage; OrcaSlicer uses one speed for first-layer walls, computed from the perimeter speed.": "PrusaSlicer масштабує кожну швидкість першого шару на цей відсоток; OrcaSlicer використовує одну швидкість для стінок першого шару, обчислену зі швидкості периметрів.",
   "Reload the page. If this keeps happening, your browser may be too old.": "Перезавантажте сторінку. Якщо це повторюється, можливо, ваш браузер застарів.",

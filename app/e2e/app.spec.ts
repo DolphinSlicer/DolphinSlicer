@@ -108,6 +108,10 @@ test('about dialog links to the source (AGPL)', async ({ page }) => {
   await expect(page.getByRole('dialog')).toContainText('GNU Affero General Public License');
   await expect(page.getByRole('dialog')).toContainText('OrcaSlicer 2.5.0');
   await expect(page.getByTestId('source-link')).toHaveAttribute('href', /^https:\/\//);
+  // The privacy policy (Google's consent screen links to it too).
+  const privacy = await page.request.get(new URL((await page.getByTestId('privacy-link').getAttribute('href'))!, page.url()).href);
+  expect(privacy.ok()).toBe(true);
+  expect(await privacy.text()).toContain('support@dolphinslicer.net');
 });
 
 test('3MF project keeps positions and per-object settings', async ({ page }) => {

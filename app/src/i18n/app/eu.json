@@ -124,6 +124,7 @@
   "Print time": "Inprimatze-denbora",
   "Printer & material": "Inprimagailua eta materiala",
   "Printers and filaments": "Inprimagailuak eta filamentuak",
+  "Privacy Policy": "Pribatutasun-politika",
   "PrusaSlicer chose this speed automatically; it is set to the maximum print speed ({speed} mm/s).": "PrusaSlicer-ek automatikoki aukeratu zuen abiadura hau; inprimatze-abiadura maximoan jarri da ({speed} mm/s).",
   "PrusaSlicer scales every first-layer speed by this percentage; OrcaSlicer uses one speed for first-layer walls, computed from the perimeter speed.": "PrusaSlicer-ek lehen geruzako abiadura guztiak ehuneko honekin eskalatzen ditu; OrcaSlicer-ek abiadura bakarra erabiltzen du lehen geruzako hormetarako, perimetroen abiaduratik kalkulatua.",
   "Reload the page. If this keeps happening, your browser may be too old.": "Kargatu berriro orria. Berriro gertatzen bada, baliteke zure nabigatzailea zaharregia izatea.",
