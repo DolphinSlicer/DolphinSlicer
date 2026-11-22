@@ -642,7 +642,9 @@ describe('tools', () => {
       base,
       JSON.stringify({ from: 'User', inherits: '', name: 'Custom', printer_settings_id: 'Custom', nozzle_diameter: ['0.5'] }),
     );
-    expect((await tool(token, 'get_setup')).data.user_presets.printer).toEqual(['Child', 'Custom']);
+    const setup = (await tool(token, 'get_setup')).data;
+    expect(setup.user_presets.printer).toEqual(['Child', 'Custom']);
+    expect(setup.printer_extruder_variants).toEqual({ Child: ['Direct Drive Standard'], Custom: ['Direct Drive Standard'] });
     expect(
       (await tool(token, 'get_preset', { type: 'printer', name: 'Child', keys: ['nozzle_diameter', 'machine_start_gcode'] })).data,
     ).toMatchObject({
@@ -665,7 +667,7 @@ describe('tools', () => {
     });
     const setup = await tool(token, 'get_setup');
     expect(setup.data.drive_updated).toEqual({ settings: '2026-01-01T00:00:00Z', presets: '2026-01-01T00:00:00Z' });
-    expect(setup.data.selected.printer_extruder_variants).toEqual(['Direct Drive Standard']);
+    expect(setup.data.printer_extruder_variants).toEqual({ 'Acme Cube 0.4 nozzle': ['Direct Drive Standard'] });
   });
 
   it('labels per-variant values and saves them by variant', async () => {

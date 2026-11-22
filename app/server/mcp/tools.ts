@@ -183,12 +183,14 @@ async function byVariant(ctx: ToolContext, type: PresetType, key: string, v: unk
   return out;
 }
 
+const MAX_PRINTERS = 15;
+
 export const TOOLS: Tool[] = [
   {
     name: 'get_setup',
     title: 'Get my setup',
     description:
-      "The user's DolphinSlicer setup as DolphinSlicer last saved it to Google Drive: the selected printer, filament and print settings (and the printer's extruder variants, which pick the value that applies of per-variant settings), the system printers and filaments in their library, their own presets by type, units and currency. `drive_updated` says when DolphinSlicer last wrote the settings and the presets there.",
+      "The user's DolphinSlicer setup as DolphinSlicer last saved it to Google Drive: the selected printer, filament and print settings, the system printers and filaments in their library, their own presets by type, units and currency. `printer_extruder_variants` lists each of their printers' extruder variants (and the selected printer's): of a per-variant setting, the value for the printer's variant applies. `drive_updated.settings` is when DolphinSlicer last saved the settings file (preferences, printer and filament library, selected presets), `drive_updated.presets` when it last saved one of the user's presets.",
     inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     annotations: { readOnlyHint: true, openWorldHint: false },
     async run(_args, ctx) {
@@ -198,19 +200,25 @@ export const TOOLS: Tool[] = [
           note: 'No DolphinSlicer data in Google Drive. The user can turn on Google Drive sync in DolphinSlicer (Preferences) to share their setup.',
         };
       const sel = settings?.selection;
-      const printer = sel?.printer ? await loadPreset(ctx, 'printer', sel.printer).catch(() => null) : null;
-      const variants = printer?.values.printer_extruder_variant;
+      // Each printer is a Drive download (Cloudflare allows 50 requests per call): up to MAX_PRINTERS.
+      const names = [...new Set([...(sel?.printer ? [sel.printer] : []), ...presets.printer])];
+      const variants: Record<string, string[]> = {};
+      await Promise.all(
+        names.slice(0, MAX_PRINTERS).map(async (n) => {
+          const v = (await loadPreset(ctx, 'printer', n).catch(() => null))?.values.printer_extruder_variant;
+          if (Array.isArray(v)) variants[n] = v;
+        }),
+      );
       return {
-        selected: sel
-          ? {
-              printer: sel.printer,
-              ...(Array.isArray(variants) ? { printer_extruder_variants: variants } : {}),
-              filament: sel.filament,
-              print: sel.process,
-            }
-          : null,
+        selected: sel ? { printer: sel.printer, filament: sel.filament, print: sel.process } : null,
         library: settings?.library ? { printers: settings.library.printers ?? [], filaments: settings.library.filaments ?? [] } : null,
         user_presets: presets,
+        printer_extruder_variants: Object.fromEntries(names.filter((n) => variants[n]).map((n) => [n, variants[n]!])),
+        ...(names.length > MAX_PRINTERS
+          ? {
+              printer_extruder_variants_note: `Only the first ${MAX_PRINTERS} printers; get_preset gives the others' printer_extruder_variant.`,
+            }
+          : {}),
         ...(settings?.units ? { units: settings.units } : {}),
         ...(settings?.currency ? { currency: settings.currency } : {}),
         ...(settings?.bedTypes ? { plate_types: settings.bedTypes } : {}),
