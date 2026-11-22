@@ -16,13 +16,17 @@ export interface McpEnv extends OAuthEnv {
 const CURRENT = '2026-07-28';
 const LEGACY = ['2025-11-25', '2025-06-18', '2025-03-26'];
 const META = 'io.modelcontextprotocol/';
-const SERVER_INFO = {
+const serverInfo = (origin: string) => ({
   name: 'dolphinslicer',
   title: 'DolphinSlicer',
   version: '1.0.0',
   description: 'Your DolphinSlicer presets and OrcaSlicer profiles',
   websiteUrl: 'https://dolphinslicer.app',
-};
+  icons: [
+    { src: `${origin}/icon-512.png`, mimeType: 'image/png', sizes: ['512x512'] },
+    { src: `${origin}/dolphin-slicer-mark.svg`, mimeType: 'image/svg+xml', sizes: ['any'] },
+  ],
+});
 const INSTRUCTIONS =
   "DolphinSlicer is OrcaSlicer in the browser. These tools read the user's setup and presets (as DolphinSlicer last synced them to their Google Drive), OrcaSlicer's system profiles and setting help, and save presets. Start with get_setup. Saved presets reach DolphinSlicer at its next sync, when its tab is reopened or reloaded. Ask before saving.";
 
@@ -106,7 +110,7 @@ export async function handleMcp(env: McpEnv, req: Request, origin: string): Prom
       if (msg.method === 'tools/call' && header(req, 'mcp-name') !== msg.params?.name)
         return rpcError(id, -32020, 'Headers do not match the request', 400);
       const ok = (result: object) =>
-        json({ jsonrpc: '2.0', id, result: { resultType: 'complete', ...result, _meta: { [`${META}serverInfo`]: SERVER_INFO } } });
+        json({ jsonrpc: '2.0', id, result: { resultType: 'complete', ...result, _meta: { [`${META}serverInfo`]: serverInfo(origin) } } });
       switch (msg.method) {
         case 'server/discover':
           return ok({
@@ -138,7 +142,7 @@ export async function handleMcp(env: McpEnv, req: Request, origin: string): Prom
         return ok({
           protocolVersion: typeof v === 'string' && LEGACY.includes(v) ? v : LEGACY[0],
           capabilities: { tools: {} },
-          serverInfo: SERVER_INFO,
+          serverInfo: serverInfo(origin),
           instructions: INSTRUCTIONS,
         });
       }

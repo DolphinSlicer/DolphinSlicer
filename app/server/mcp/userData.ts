@@ -1,6 +1,7 @@
 // The user's DolphinSlicer data in Google Drive, as the app's Drive sync keeps it:
 //   DolphinSlicer/settings.json         preferences, printer and filament library, the selected presets
-//   DolphinSlicer/Presets/<dir>/<name>.json   user presets in desktop's format (dir: machine, filament, process)
+//   DolphinSlicer/Presets/<dir>/<name>.json   user presets in desktop's format (dir: machine, filament, process);
+//   DolphinSlicer/Presets/<dir>/base/<name>.json   those with no parent (e.g. a printer made with Create Printer)
 // A preset saved here reaches the app at its next sync, like one saved on another device.
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { Drive } from '../../src/drive/api';
@@ -22,7 +23,7 @@ export interface SyncedSettings {
 export class UserData {
   readonly drive: Drive;
   private app?: Promise<string | null>;
-  private presetDirs?: Promise<Map<PresetType, { id: string; files: { id: string; name: string }[] }>>;
+  private presetTree?: Promise<{ root: string; folders: Map<string, string>; files: Map<string, string> } | null>;
 
   constructor(token: string) {
     this.drive = new Drive(token);
@@ -52,57 +53,70 @@ export class UserData {
     }
   }
 
-  /** The user preset files of each type. */
-  private dirs() {
-    this.presetDirs ??= (async () => {
-      const out = new Map<PresetType, { id: string; files: { id: string; name: string }[] }>();
+  /**
+   * The user preset files ("machine/Name.json" → file id), read as the app's sync reads them:
+   * the whole Presets tree, where folders of the same name count as one (Drive allows duplicates,
+   * e.g. when two devices first synced at once).
+   */
+  private tree() {
+    this.presetTree ??= (async () => {
       const app = await this.appFolder();
       const root = app && (await this.child(app, PRESETS, true));
-      if (!root) return out;
-      const sub = await this.drive.children(root.id);
-      await Promise.all(
-        (Object.entries(TYPE_DIR) as [PresetType, string][]).map(async ([type, dir]) => {
-          const f = sub.find((x) => x.name === dir && x.mimeType === FOLDER);
-          if (!f) return;
-          const files = (await this.drive.children(f.id)).filter((x) => x.mimeType !== FOLDER && x.name.endsWith('.json'));
-          out.set(type, { id: f.id, files: files.map((x) => ({ id: x.id, name: x.name })) });
-        }),
-      );
-      return out;
+      if (!root) return null;
+      const t = await this.drive.tree(root.id);
+      return { root: root.id, folders: t.folders, files: new Map(t.files.map((f) => [f.path, f.id])) };
     })();
-    return this.presetDirs;
+    return this.presetTree;
+  }
+
+  /** Where desktop keeps a preset: presets with no parent in "base". */
+  private static path = (type: PresetType, name: string, base: boolean) => `${TYPE_DIR[type]}/${base ? 'base/' : ''}${name}.json`;
+
+  /** A user preset's file id. */
+  private async find(type: PresetType, name: string): Promise<string | undefined> {
+    const files = (await this.tree())?.files;
+    return files?.get(UserData.path(type, name, false)) ?? files?.get(UserData.path(type, name, true));
   }
 
   /** The names of the user's presets by type. */
   async presetNames(): Promise<Record<PresetType, string[]>> {
-    const d = await this.dirs();
-    const names = (t: PresetType) => (d.get(t)?.files ?? []).map((f) => f.name.slice(0, -5)).sort((a, b) => a.localeCompare(b));
+    const files = [...((await this.tree())?.files.keys() ?? [])];
+    const names = (t: PresetType) => {
+      const re = new RegExp(`^${TYPE_DIR[t]}/(?:base/)?([^/]+)\\.json$`);
+      const found = files.map((p) => re.exec(p)?.[1]).filter((n): n is string => !!n);
+      return [...new Set(found)].sort((a, b) => a.localeCompare(b));
+    };
     return { printer: names('printer'), filament: names('filament'), print: names('print') };
   }
 
   /** A user preset's file, or null. */
   async preset(type: PresetType, name: string): Promise<PresetJson | null> {
-    const f = (await this.dirs()).get(type)?.files.find((x) => x.name === `${name}.json`);
-    if (!f) return null;
+    const id = await this.find(type, name);
+    if (!id) return null;
     try {
-      const j = JSON.parse(await this.drive.download(f.id)) as PresetJson;
+      const j = JSON.parse(await this.drive.download(id)) as PresetJson;
       return j && typeof j === 'object' && !Array.isArray(j) ? j : null;
     } catch {
       return null;
     }
   }
 
-  /** Save a user preset file (new or replacing the one of that name). */
-  async savePreset(type: PresetType, name: string, text: string): Promise<'created' | 'updated'> {
-    const existing = (await this.dirs()).get(type)?.files.find((x) => x.name === `${name}.json`);
+  /** Save a user preset file (new, or replacing the one of that name where it is). `base`: it has no parent. */
+  async savePreset(type: PresetType, name: string, text: string, base: boolean): Promise<'created' | 'updated'> {
+    const existing = await this.find(type, name);
     if (existing) {
-      await this.drive.update(existing.id, text);
+      await this.drive.update(existing, text);
       return 'updated';
     }
-    const app = (await this.appFolder()) ?? (await this.drive.folder('root', APP));
-    const dir = await this.drive.folder(await this.drive.folder(app, PRESETS), TYPE_DIR[type]);
+    const tree = await this.tree();
+    let dir = tree?.root ?? (await this.drive.folder((await this.appFolder()) ?? (await this.drive.folder('root', APP)), PRESETS));
+    let path = '';
+    for (const part of [TYPE_DIR[type], ...(base ? ['base'] : [])]) {
+      path = path ? `${path}/${part}` : part;
+      dir = tree?.folders.get(path) ?? (await this.drive.folder(dir, part));
+    }
     await this.drive.create(dir, `${name}.json`, text);
-    this.presetDirs = undefined;
+    this.presetTree = undefined;
     return 'created';
   }
 }

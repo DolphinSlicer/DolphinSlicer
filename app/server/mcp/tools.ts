@@ -368,7 +368,7 @@ export const TOOLS: Tool[] = [
           .sort()
           .map((k) => [k, json[k]]),
       );
-      const result = await ctx.user.savePreset(type, name, `${JSON.stringify(sorted, null, '\t')}\n`);
+      const result = await ctx.user.savePreset(type, name, `${JSON.stringify(sorted, null, '\t')}\n`, !inherits);
       const changed: Record<string, Value | undefined> = {};
       for (const k of Object.keys(changes as object)) changed[k] = own[k] ?? parent?.values[k];
       return {

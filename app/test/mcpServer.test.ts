@@ -599,6 +599,35 @@ describe('tools', () => {
     ]);
   });
 
+  it('reads presets with no parent from base/, and saves them there', async () => {
+    const app = addFile('DolphinSlicer', 'root', '', FOLDER);
+    const presets = addFile('Presets', app, '', FOLDER);
+    const machine = addFile('machine', presets, '', FOLDER);
+    addFile(
+      'Child.json',
+      machine,
+      JSON.stringify({ from: 'User', inherits: 'Custom', name: 'Child', printer_settings_id: 'Child', nozzle_diameter: ['0.6'] }),
+    );
+    const base = addFile('base', machine, '', FOLDER);
+    addFile(
+      'Custom.json',
+      base,
+      JSON.stringify({ from: 'User', inherits: '', name: 'Custom', printer_settings_id: 'Custom', nozzle_diameter: ['0.5'] }),
+    );
+    expect((await tool(token, 'get_setup')).data.user_presets.printer).toEqual(['Child', 'Custom']);
+    expect(
+      (await tool(token, 'get_preset', { type: 'printer', name: 'Child', keys: ['nozzle_diameter', 'machine_start_gcode'] })).data,
+    ).toMatchObject({
+      inherits: 'Custom',
+      values: { nozzle_diameter: ['0.6'], machine_start_gcode: 'G28' },
+    });
+    // A copy of a printer with no parent has none either: it goes to base/.
+    await tool(token, 'save_preset', { type: 'printer', name: 'Copy', base: 'Custom', changes: { nozzle_diameter: '0.8' } });
+    expect(drive.find((x) => x.name === 'Copy.json')!.parents[0]).toBe(base);
+    await tool(token, 'save_preset', { type: 'printer', name: 'Custom', changes: { nozzle_diameter: '0.4' } });
+    expect(JSON.parse(drive.find((x) => x.name === 'Custom.json')!.content).nozzle_diameter).toEqual(['0.4']);
+  });
+
   it('says when nothing is synced', async () => {
     expect((await tool(token, 'get_setup')).data.note).toMatch(/Google Drive sync/);
   });
