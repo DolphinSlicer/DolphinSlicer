@@ -138,6 +138,10 @@ export interface AppState {
   view: 'prepare' | 'preview' | 'settings' | 'library';
   /** Preset type shown in the Settings tab. */
   settingsType: 'print' | 'filament' | 'printer';
+  /** A setting for the Settings tab to show (picked in the quick search); `n` tells picks apart. */
+  settingsFocus: { type: 'print' | 'filament' | 'printer'; key: string; n: number } | null;
+  /** The calibration test whose dialog is open (Calibration.tsx's kinds). */
+  calibrationDialog: string | null;
   files: SourceFile[];
   objects: SceneObject[];
   /** Selected objects (ids); the object panel shows when there is one. */
@@ -197,6 +201,8 @@ export interface AppState {
 export const useApp = create<AppState>()(() => ({
   view: 'prepare',
   settingsType: 'print',
+  settingsFocus: null,
+  calibrationDialog: null,
   files: [],
   objects: [],
   selected: [],

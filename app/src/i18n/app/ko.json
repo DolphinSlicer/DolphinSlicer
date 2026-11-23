@@ -338,5 +338,8 @@
   "SCV-V2": "SCV-V2",
   "VFA": "VFA",
   "mm/s": "mm/s",
-  "Quick settings": "빠른 설정"
+  "Quick settings": "빠른 설정",
+  "Quick search": "빠른 검색",
+  "Actions": "작업",
+  "No results": "결과 없음"
 }

@@ -63,6 +63,20 @@ const MODE_LABEL: Record<SettingsMode, [string, string]> = {
 /** The page each preset type was left on: kept while the app is open, also across the other views. */
 let lastPages: Record<PresetType, number> = { print: 0, filament: 0, printer: 0 };
 
+/** The preset files Import takes: desktop's JSON presets and bundles, PrusaSlicer's .ini. */
+export const PRESET_FILES = '.json,.orca_printer,.orca_filament,.orca_bundle,.ini';
+
+/** Import presets from files (Settings' Import button, the quick search), saying what came in. */
+export async function importPresetFiles(files: ReturnType<typeof readNow>) {
+  const { imported, canceled } = await importPresets(files, discardEditsOk, replacePresetsOk);
+  if (canceled) return;
+  notify({
+    kind: 'info',
+    title: imported.length ? t('Imported') : t('Nothing imported'),
+    message: imported.map((i) => i.name).join(', ') || t('The file contained no presets.'),
+  });
+}
+
 export function SettingsPanel({ type: chosen, onType }: { type: PresetType; onType: (t: PresetType) => void }) {
   const setType = onType;
   const [schema, setSchema] = useState<Schema | null>(null);
@@ -197,6 +211,32 @@ export function SettingsPanel({ type: chosen, onType }: { type: PresetType; onTy
       }))
       .filter((p) => p.groups.length);
   }, [schema, pages, query, mode, values]);
+
+  // A setting picked in the quick search: its page, in a mode that shows it, then it scrolled to and lit.
+  const focus = useApp((s) => s.settingsFocus);
+  const [flash, setFlash] = useState<string | null>(null);
+  useEffect(() => {
+    if (!focus || !schema || values?.type !== focus.type) return;
+    const def = schema.options[focus.key];
+    const i = layout[focus.type].findIndex((p) => p.groups.some((g) => g.keys.includes(focus.key)));
+    useApp.setState({ settingsFocus: null });
+    if (!def || i < 0) return;
+    setQuery('');
+    setOnlyDiff(false);
+    if (!visibleInMode(def, mode)) setMode(def.mode as SettingsMode);
+    setPageOf((p) => (lastPages = { ...p, [focus.type]: i }));
+    if (!(focus.key in values.states.hidden)) setFlash(focus.key);
+  }, [focus, schema, values?.type]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!flash) return;
+    const el = document.querySelector<HTMLElement>(`.settings-content .field[data-key="${flash}"]`);
+    if (!el) return;
+    el.scrollIntoView({ block: 'center' });
+    el.querySelector<HTMLElement>('.control input, .control button, .control textarea')?.focus({ preventScroll: true });
+    el.classList.add('flash');
+    setTimeout(() => el.classList.remove('flash'), 1600);
+    setFlash(null);
+  });
 
   const commit = async (key: string, value: Parameters<typeof editSetting>[2]) => {
     try {
@@ -730,20 +770,12 @@ export function SettingsPanel({ type: chosen, onType }: { type: PresetType; onTy
             type="file"
             hidden
             multiple
-            accept=".json,.orca_printer,.orca_filament,.orca_bundle,.ini"
+            accept={PRESET_FILES}
             data-testid="settings-import"
             onChange={(e) => {
               const files = readNow([...(e.target.files ?? [])]);
               e.target.value = '';
-              void run(async () => {
-                const { imported, canceled } = await importPresets(files, discardEditsOk, replacePresetsOk);
-                if (canceled) return;
-                notify({
-                  kind: 'info',
-                  title: imported.length ? t('Imported') : t('Nothing imported'),
-                  message: imported.map((i) => i.name).join(', ') || t('The file contained no presets.'),
-                });
-              });
+              void run(() => importPresetFiles(files));
             }}
           />
         </div>

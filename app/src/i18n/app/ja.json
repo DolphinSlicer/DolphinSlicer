@@ -341,5 +341,8 @@
   "SCV-V2": "SCV-V2",
   "VFA": "VFA",
   "mm/s": "mm/s",
-  "Quick settings": "クイック設定"
+  "Quick settings": "クイック設定",
+  "Quick search": "クイック検索",
+  "Actions": "操作",
+  "No results": "結果がありません"
 }
