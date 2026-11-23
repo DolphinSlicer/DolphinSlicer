@@ -4155,8 +4155,7 @@ label.check {
   color: var(--muted);
 }
 .quick-search-item {
-  display: grid;
-  grid-template-columns: 22px minmax(0, auto) minmax(0, 1fr);
+  display: flex;
   align-items: center;
   gap: 10px;
   min-height: 34px;
@@ -4170,6 +4169,11 @@ label.check {
 .quick-search-item[aria-disabled="true"] {
   color: var(--muted);
   opacity: 0.6;
+}
+.quick-search-item .icon,
+.quick-search-item .thumb {
+  flex: none;
+  width: 22px;
 }
 .quick-search-item .icon {
   display: grid;
@@ -4188,8 +4192,15 @@ label.check {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.quick-search-item .label {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+/* The rest of the row, at least a share of it; the name keeps the room it needs. */
 .quick-search-item .detail {
-  justify-self: end;
+  flex: 1 1 0;
+  min-width: 30%;
+  text-align: right;
   font-size: 12px;
   color: var(--muted);
 }
