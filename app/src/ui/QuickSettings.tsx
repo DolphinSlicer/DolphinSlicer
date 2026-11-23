@@ -1,7 +1,8 @@
 // The print settings changed most often, beside the plate in Prepare and Preview (as PrusaSlicer's
 // and Cura's sidebars have them). Edits are unsaved edits of the selected print settings, as in
-// the Settings tab; everything else is there.
+// the Settings tab; everything else is there. Collapsed until opened; this browser remembers it.
 // SPDX-License-Identifier: AGPL-3.0-or-later
+import { ChevronDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { PresetValues } from '../engine/protocol';
 import { t, tr } from '../i18n/i18n';
@@ -16,7 +17,26 @@ const GROUPS: { title?: string; keys: string[] }[] = [
   { title: 'Support', keys: ['enable_support', 'support_type', 'support_on_build_plate_only'] },
 ];
 
+const OPEN_KEY = 'dolphin-slicer.quick-settings.v1';
+
+function storedOpen(): boolean {
+  try {
+    return localStorage.getItem(OPEN_KEY) === 'open';
+  } catch {
+    return false;
+  }
+}
+
 export function QuickSettings() {
+  const [open, setOpen] = useState(storedOpen);
+  const toggle = () => {
+    setOpen(!open);
+    try {
+      localStorage.setItem(OPEN_KEY, open ? 'closed' : 'open');
+    } catch {
+      /* private mode: this session only */
+    }
+  };
   const config = useApp((s) => s.presets.config);
   const [schema, setSchema] = useState<Schema | null>(null);
   const [values, setValues] = useState<PresetValues | null>(null);
@@ -62,39 +82,53 @@ export function QuickSettings() {
   const hidden = values.states.hidden;
 
   return (
-    <section className="card quick-settings" data-testid="quick-settings">
+    <section className={`card quick-settings${open ? '' : ' collapsed'}`} data-testid="quick-settings">
       <div className="card-head">
-        <h2>{t('Quick settings')}</h2>
+        <h2>
+          <button
+            type="button"
+            className="card-toggle"
+            aria-expanded={open}
+            aria-controls="quick-settings-body"
+            onClick={toggle}
+            data-testid="quick-settings-toggle"
+          >
+            <ChevronDown size={14} aria-hidden="true" />
+            {t('Quick settings')}
+          </button>
+        </h2>
       </div>
-      {GROUPS.map((g) => {
-        const keys = g.keys.filter((k) => schema.options[k] && !(k in hidden));
-        if (!keys.length) return null;
-        return (
-          <fieldset key={g.title ?? ''} className="quick-group">
-            {g.title && <legend>{tr(g.title)}</legend>}
-            {keys.map((k) => (
-              <Field
-                key={k}
-                k={k}
-                def={schema.options[k]!}
-                value={values.values[k]}
-                index={variantKeys.has(k) ? values.variant_index : 0}
-                off={values.states.disabled[k]}
-                labelOverride={values.states.labels[k]}
-                choices={values.states.enums[k]}
-                all={values.values}
-                canNil={false}
-                dirty={dirty.has(k)}
-                fromSystem={fromSystem.has(k)}
-                error={errors[k]}
-                onCommit={(v) => void commit(k, v)}
-                onUndo={() => void run(() => resetSettings('print', [k], 'saved'))}
-                onReset={() => void run(() => resetSettings('print', [k], 'system'))}
-              />
-            ))}
-          </fieldset>
-        );
-      })}
+      <div id="quick-settings-body" hidden={!open}>
+        {GROUPS.map((g) => {
+          const keys = g.keys.filter((k) => schema.options[k] && !(k in hidden));
+          if (!keys.length) return null;
+          return (
+            <fieldset key={g.title ?? ''} className="quick-group">
+              {g.title && <legend>{tr(g.title)}</legend>}
+              {keys.map((k) => (
+                <Field
+                  key={k}
+                  k={k}
+                  def={schema.options[k]!}
+                  value={values.values[k]}
+                  index={variantKeys.has(k) ? values.variant_index : 0}
+                  off={values.states.disabled[k]}
+                  labelOverride={values.states.labels[k]}
+                  choices={values.states.enums[k]}
+                  all={values.values}
+                  canNil={false}
+                  dirty={dirty.has(k)}
+                  fromSystem={fromSystem.has(k)}
+                  error={errors[k]}
+                  onCommit={(v) => void commit(k, v)}
+                  onUndo={() => void run(() => resetSettings('print', [k], 'saved'))}
+                  onReset={() => void run(() => resetSettings('print', [k], 'system'))}
+                />
+              ))}
+            </fieldset>
+          );
+        })}
+      </div>
     </section>
   );
 }
