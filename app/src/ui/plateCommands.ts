@@ -197,7 +197,7 @@ export function onPlateKey(ev: KeyboardEvent) {
   if (target?.closest?.(TEXT)) return;
   if (WIDGET_KEYS.has(ev.key) && target?.closest?.(WIDGET)) return;
   // A dialog is open over the page.
-  if (document.querySelector('[aria-modal="true"], dialog[open]')) return;
+  if (document.querySelector('[aria-modal="true"]:not([data-closing] *), dialog[open]')) return;
   if (ev.key === 'Escape' && s.slice.state === 'running') {
     cancelSlice();
     return;

@@ -2541,6 +2541,28 @@ input[type="checkbox"].switch:disabled {
   overflow-y: auto;
   animation: toast 0.2s;
 }
+/* Closing (Presence.tsx): the dialog fades and sinks before it is removed. */
+.presence {
+  display: contents;
+}
+.presence[data-closing] .modal-backdrop {
+  animation: fade-out 0.15s ease-in forwards;
+  pointer-events: none;
+}
+.presence[data-closing] :is(.modal, .quick-search) {
+  animation: dialog-out 0.15s ease-in forwards;
+}
+@keyframes dialog-out {
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
 /* The dialog itself takes the focus when it opens (useModal). */
 .modal:focus {
   outline: none;
@@ -2575,6 +2597,23 @@ dialog.confirm::backdrop {
   -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
   animation: fade 0.15s;
+}
+/* Closing: shown a moment longer (display, overlay) while it fades, where the browser can. */
+dialog.confirm,
+dialog.confirm::backdrop {
+  transition:
+    opacity 0.15s ease-in,
+    transform 0.15s ease-in,
+    display 0.15s allow-discrete,
+    overlay 0.15s allow-discrete;
+}
+dialog.confirm:not([open]) {
+  opacity: 0;
+  transform: translateY(8px) scale(0.98);
+  pointer-events: none;
+}
+dialog.confirm:not([open])::backdrop {
+  opacity: 0;
 }
 .confirm-body {
   padding: 20px 22px 16px;

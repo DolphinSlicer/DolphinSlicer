@@ -36,6 +36,7 @@ import { ObjectPanel } from './ObjectPanel';
 import { PaintPanel } from './PaintPanel';
 import { PlateMenu, PlateToolbar } from './PlateToolbar';
 import { Preferences } from './Preferences';
+import { Presence } from './Presence';
 import { PresetPanel } from './PresetPanel';
 import { PreviewPanel } from './PreviewPanel';
 import { PrintersDialog, SendDialog } from './Printers';
@@ -127,7 +128,7 @@ export function App() {
     const onKey = (e: KeyboardEvent) => {
       const mod = isMac ? e.metaKey && !e.ctrlKey : e.ctrlKey && !e.metaKey;
       if (e.key.toLowerCase() !== 'f' || !mod || e.altKey || e.shiftKey) return;
-      const other = document.querySelector('[aria-modal="true"]:not([data-testid="quick-search"]), dialog:modal');
+      const other = document.querySelector('[aria-modal="true"]:not([data-testid="quick-search"], [data-closing] *), dialog:modal');
       if (other) return;
       e.preventDefault();
       setSearching((on) => !on);
@@ -270,11 +271,11 @@ export function App() {
         <Notices />
         <ConfirmHost />
       </main>
-      {about && <About onClose={() => setAbout(false)} />}
-      {prefs && <Preferences onClose={() => setPrefs(false)} />}
-      {printers && <PrintersDialog onClose={() => setPrinters(false)} />}
-      {sending && <SendDialog onClose={() => setSending(false)} />}
-      {searching && <QuickSearch onClose={() => setSearching(false)} actions={appActions} />}
+      <Presence>{about && <About onClose={() => setAbout(false)} />}</Presence>
+      <Presence>{prefs && <Preferences onClose={() => setPrefs(false)} />}</Presence>
+      <Presence>{printers && <PrintersDialog onClose={() => setPrinters(false)} />}</Presence>
+      <Presence>{sending && <SendDialog onClose={() => setSending(false)} />}</Presence>
+      <Presence>{searching && <QuickSearch onClose={() => setSearching(false)} actions={appActions} />}</Presence>
       {/* The quick search's Import presets (the Settings tab's own input is there only with the tab). */}
       <input
         type="file"
@@ -288,7 +289,7 @@ export function App() {
           importPresetFiles(files).catch((err) => notify({ kind: 'error', ...describeError(err) }));
         }}
       />
-      {wizard && <LibraryWizard page={wizard} />}
+      <Presence>{wizard && <LibraryWizard page={wizard} />}</Presence>
     </div>
   );
 }
