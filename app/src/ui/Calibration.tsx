@@ -10,15 +10,15 @@ import type { CalibParams, CalibRequest } from '../engine/protocol';
 import { N_, t } from '../i18n/i18n';
 import { wikiUrl } from '../settings/docs';
 import { checkVfaSpeed, isBeltPrinter, startCalibration } from '../state/actions';
-import { notify, useApp } from '../state/store';
+import { notify, set, useApp } from '../state/store';
 import { ask } from './Confirm';
 import { Select } from './Select';
 import { useModal } from './useModal';
 
-type Kind = 'temp' | 'max_flowrate' | 'pa' | 'flow_ratio' | 'retraction' | 'cornering' | 'is_freq' | 'is_damp' | 'vfa';
+export type Kind = 'temp' | 'max_flowrate' | 'pa' | 'flow_ratio' | 'retraction' | 'cornering' | 'is_freq' | 'is_damp' | 'vfa';
 
 /** The menu, in desktop's order. */
-const MENU: (null | { kind: Kind; label: string })[] = [
+export const MENU: (null | { kind: Kind; label: string })[] = [
   { kind: 'temp', label: N_('Temperature') },
   { kind: 'max_flowrate', label: N_('Max flowrate') },
   { kind: 'pa', label: N_('Pressure advance') },
@@ -62,7 +62,9 @@ function useCfg() {
 export function CalibrationButton() {
   const ready = useApp((s) => !!s.presets.state && !s.importing);
   const [menu, setMenu] = useState<DOMRect | null>(null);
-  const [kind, setKind] = useState<Kind | null>(null);
+  // In the store: the quick search opens a test's dialog too.
+  const kind = useApp((s) => s.calibrationDialog as Kind | null);
+  const setKind = (k: Kind | null) => set({ calibrationDialog: k });
   return (
     <>
       <button

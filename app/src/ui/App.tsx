@@ -20,7 +20,7 @@ import {
   Upload,
   X,
 } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { t, tr } from '../i18n/i18n';
 import { cancelSlice, deleteObject, downloadGcode, importFiles, isModelFile, openGcode, readNow, slice } from '../state/actions';
 import { addModels, addPlateToLibrary } from '../state/libraryActions';
@@ -39,6 +39,7 @@ import { PresetPanel } from './PresetPanel';
 import { PreviewPanel } from './PreviewPanel';
 import { PrintersDialog, SendDialog } from './Printers';
 import { onPlateKey } from './plateCommands';
+import { QuickSearch } from './QuickSearch';
 import { QuickSettings } from './QuickSettings';
 import { SegmentThumb } from './SegmentThumb';
 import { SettingsPanel } from './SettingsPanel';
@@ -73,6 +74,16 @@ export function App() {
   const [prefs, setPrefs] = useState(false);
   const [printers, setPrinters] = useState(false);
   const [sending, setSending] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const appActions = useMemo(
+    () => ({
+      send: () => setSending(true),
+      printers: () => setPrinters(true),
+      preferences: () => setPrefs(true),
+      about: () => setAbout(true),
+    }),
+    [],
+  );
   const wizard = useApp((s) => s.wizard);
   const [dragOver, setDragOver] = useState(false);
   const done = sliceState.state === 'done';
@@ -108,6 +119,19 @@ export function App() {
   useEffect(() => {
     window.addEventListener('keydown', onPlateKey);
     return () => window.removeEventListener('keydown', onPlateKey);
+  }, []);
+
+  // Cmd+K (Ctrl+K): the quick search, also from a field; not over another dialog.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() !== 'k' || !(e.metaKey || e.ctrlKey) || e.altKey || e.shiftKey) return;
+      const other = document.querySelector('[aria-modal="true"]:not([data-testid="quick-search"]), dialog:modal');
+      if (other) return;
+      e.preventDefault();
+      setSearching((on) => !on);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
   }, []);
 
   // The plate and unsaved setting edits live only in this page: ask before leaving it (reload,
@@ -248,6 +272,7 @@ export function App() {
       {prefs && <Preferences onClose={() => setPrefs(false)} />}
       {printers && <PrintersDialog onClose={() => setPrinters(false)} />}
       {sending && <SendDialog onClose={() => setSending(false)} />}
+      {searching && <QuickSearch onClose={() => setSearching(false)} actions={appActions} />}
       {wizard && <LibraryWizard page={wizard} />}
     </div>
   );

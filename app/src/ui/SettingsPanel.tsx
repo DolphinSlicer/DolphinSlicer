@@ -198,6 +198,32 @@ export function SettingsPanel({ type: chosen, onType }: { type: PresetType; onTy
       .filter((p) => p.groups.length);
   }, [schema, pages, query, mode, values]);
 
+  // A setting picked in the quick search: its page, in a mode that shows it, then it scrolled to and lit.
+  const focus = useApp((s) => s.settingsFocus);
+  const [flash, setFlash] = useState<string | null>(null);
+  useEffect(() => {
+    if (!focus || !schema || values?.type !== focus.type) return;
+    const def = schema.options[focus.key];
+    const i = layout[focus.type].findIndex((p) => p.groups.some((g) => g.keys.includes(focus.key)));
+    useApp.setState({ settingsFocus: null });
+    if (!def || i < 0) return;
+    setQuery('');
+    setOnlyDiff(false);
+    if (!visibleInMode(def, mode)) setMode(def.mode as SettingsMode);
+    setPageOf((p) => (lastPages = { ...p, [focus.type]: i }));
+    if (!(focus.key in values.states.hidden)) setFlash(focus.key);
+  }, [focus, schema, values?.type]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!flash) return;
+    const el = document.querySelector<HTMLElement>(`.settings-content .field[data-key="${flash}"]`);
+    if (!el) return;
+    el.scrollIntoView({ block: 'center' });
+    el.querySelector<HTMLElement>('.control input, .control button, .control textarea')?.focus({ preventScroll: true });
+    el.classList.add('flash');
+    setTimeout(() => el.classList.remove('flash'), 1600);
+    setFlash(null);
+  });
+
   const commit = async (key: string, value: Parameters<typeof editSetting>[2]) => {
     try {
       const problem = schema?.options[key] ? numberProblem(key, schema.options[key]!, value) : null;
