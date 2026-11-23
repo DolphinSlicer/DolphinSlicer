@@ -1109,18 +1109,48 @@ input[type="checkbox"].switch:disabled {
 .quick-settings .field {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 4px 8px;
-  min-height: 34px;
+  min-height: 36px;
   font-size: 13px;
 }
+/* The controls in one column of one width, the unit inside the box, and one button beside it
+   (undo, else reset), so every row lines up. */
 .quick-settings .field .control {
-  justify-content: flex-end;
+  display: grid;
+  grid-template-columns: 124px 22px;
+  gap: 4px;
+  align-items: center;
 }
-.quick-settings .field .control input.num {
-  width: 64px;
+.quick-settings .field .control > fieldset.input > *,
+.quick-settings .field .control .select-trigger,
+.quick-settings .field .control > .sidetext {
+  grid-row: 1;
+  grid-column: 1;
 }
+.quick-settings .field .control > .icon-btn {
+  grid-row: 1;
+  grid-column: 2;
+}
+.quick-settings .field .control > .icon-btn + .icon-btn {
+  display: none;
+}
+.quick-settings .field .control input.num,
+.quick-settings .field .control .select,
 .quick-settings .field .control .select-trigger {
+  width: 100%;
   min-width: 0;
-  max-width: 150px;
+  max-width: none;
+}
+.quick-settings .field .control > .sidetext {
+  justify-self: end;
+  margin-right: 9px;
+  pointer-events: none;
+}
+/* Room for a unit in every box, so the numbers line up too. */
+.quick-settings .field .control input.num {
+  padding-right: 32px;
+}
+.quick-settings .field .control input.switch {
+  justify-self: end;
 }
 
 /* Captions are not <label>s: hovering a label would also show its dropdown's hover state. */
