@@ -29,6 +29,7 @@ import { dismiss, isStale, notify, set, useApp } from '../state/store';
 import { About } from './About';
 import { CalibrationButton } from './Calibration';
 import { ConfirmHost } from './Confirm';
+import { describeError } from './errors';
 import { LibraryView } from './LibraryView';
 import { LibraryWizard } from './LibraryWizard';
 import { ObjectPanel } from './ObjectPanel';
@@ -38,11 +39,11 @@ import { Preferences } from './Preferences';
 import { PresetPanel } from './PresetPanel';
 import { PreviewPanel } from './PreviewPanel';
 import { PrintersDialog, SendDialog } from './Printers';
-import { onPlateKey } from './plateCommands';
+import { isMac, onPlateKey } from './plateCommands';
 import { QuickSearch } from './QuickSearch';
 import { QuickSettings } from './QuickSettings';
 import { SegmentThumb } from './SegmentThumb';
-import { SettingsPanel } from './SettingsPanel';
+import { importPresetFiles, PRESET_FILES, SettingsPanel } from './SettingsPanel';
 import { useFit } from './useFit';
 import { ViewportView } from './ViewportView';
 
@@ -121,10 +122,11 @@ export function App() {
     return () => window.removeEventListener('keydown', onPlateKey);
   }, []);
 
-  // Cmd+K (Ctrl+K): the quick search, also from a field; not over another dialog.
+  // Cmd+F (Ctrl+F), desktop's search shortcut: the quick search, also from a field; not over another dialog.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key.toLowerCase() !== 'k' || !(e.metaKey || e.ctrlKey) || e.altKey || e.shiftKey) return;
+      const mod = isMac ? e.metaKey && !e.ctrlKey : e.ctrlKey && !e.metaKey;
+      if (e.key.toLowerCase() !== 'f' || !mod || e.altKey || e.shiftKey) return;
       const other = document.querySelector('[aria-modal="true"]:not([data-testid="quick-search"]), dialog:modal');
       if (other) return;
       e.preventDefault();
@@ -273,6 +275,19 @@ export function App() {
       {printers && <PrintersDialog onClose={() => setPrinters(false)} />}
       {sending && <SendDialog onClose={() => setSending(false)} />}
       {searching && <QuickSearch onClose={() => setSearching(false)} actions={appActions} />}
+      {/* The quick search's Import presets (the Settings tab's own input is there only with the tab). */}
+      <input
+        type="file"
+        hidden
+        multiple
+        accept={PRESET_FILES}
+        data-testid="preset-import-input"
+        onChange={(e) => {
+          const files = readNow([...(e.target.files ?? [])]);
+          e.target.value = '';
+          importPresetFiles(files).catch((err) => notify({ kind: 'error', ...describeError(err) }));
+        }}
+      />
       {wizard && <LibraryWizard page={wizard} />}
     </div>
   );

@@ -63,6 +63,20 @@ const MODE_LABEL: Record<SettingsMode, [string, string]> = {
 /** The page each preset type was left on: kept while the app is open, also across the other views. */
 let lastPages: Record<PresetType, number> = { print: 0, filament: 0, printer: 0 };
 
+/** The preset files Import takes: desktop's JSON presets and bundles, PrusaSlicer's .ini. */
+export const PRESET_FILES = '.json,.orca_printer,.orca_filament,.orca_bundle,.ini';
+
+/** Import presets from files (Settings' Import button, the quick search), saying what came in. */
+export async function importPresetFiles(files: ReturnType<typeof readNow>) {
+  const { imported, canceled } = await importPresets(files, discardEditsOk, replacePresetsOk);
+  if (canceled) return;
+  notify({
+    kind: 'info',
+    title: imported.length ? t('Imported') : t('Nothing imported'),
+    message: imported.map((i) => i.name).join(', ') || t('The file contained no presets.'),
+  });
+}
+
 export function SettingsPanel({ type: chosen, onType }: { type: PresetType; onType: (t: PresetType) => void }) {
   const setType = onType;
   const [schema, setSchema] = useState<Schema | null>(null);
@@ -756,20 +770,12 @@ export function SettingsPanel({ type: chosen, onType }: { type: PresetType; onTy
             type="file"
             hidden
             multiple
-            accept=".json,.orca_printer,.orca_filament,.orca_bundle,.ini"
+            accept={PRESET_FILES}
             data-testid="settings-import"
             onChange={(e) => {
               const files = readNow([...(e.target.files ?? [])]);
               e.target.value = '';
-              void run(async () => {
-                const { imported, canceled } = await importPresets(files, discardEditsOk, replacePresetsOk);
-                if (canceled) return;
-                notify({
-                  kind: 'info',
-                  title: imported.length ? t('Imported') : t('Nothing imported'),
-                  message: imported.map((i) => i.name).join(', ') || t('The file contained no presets.'),
-                });
-              });
+              void run(() => importPresetFiles(files));
             }}
           />
         </div>

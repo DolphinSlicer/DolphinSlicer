@@ -4222,3 +4222,7 @@ label.check {
     background-color: transparent;
   }
 }
+.quick-search-item kbd {
+  font: inherit;
+  font-size: 12px;
+}

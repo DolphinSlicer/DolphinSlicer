@@ -27,23 +27,33 @@ import { addPlateToLibrary, openModel } from '../state/libraryActions';
 import { set, useApp } from '../state/store';
 import { MENU as CALIBRATIONS } from './Calibration';
 import { usePresetPicker } from './PresetPanel';
+import { COMMANDS, type Command, VIEWS } from './plateCommands';
 import { useModal } from './useModal';
 
-type Group = 'actions' | 'settings' | 'presets' | 'library';
+type Group = 'actions' | 'plate' | 'settings' | 'presets' | 'library';
 const GROUP_LABEL: Record<Group, string> = {
   actions: N_('Actions'),
+  plate: N_('Plate'),
   settings: N_('Settings'),
   presets: N_('Presets'),
   library: N_('Library'),
 };
 /** The most shown of each group (all actions). */
-const LIMIT: Record<Group, number> = { actions: Number.POSITIVE_INFINITY, settings: 8, presets: 6, library: 6 };
+const LIMIT: Record<Group, number> = {
+  actions: Number.POSITIVE_INFINITY,
+  plate: Number.POSITIVE_INFINITY,
+  settings: 8,
+  presets: 6,
+  library: 6,
+};
 
 interface Item {
   id: string;
   group: Group;
   label: string;
   detail?: string;
+  /** Its keyboard shortcut, shown instead of a detail. */
+  keys?: string;
   icon?: ReactNode;
   thumb?: string;
   disabled?: boolean;
@@ -130,6 +140,7 @@ export function QuickSearch({ onClose, actions }: { onClose: () => void; actions
       action('send', 'Send to printer', <Send size={15} />, actions.send, !done),
       action('import', 'Import models', <Upload size={15} />, () => clickInput('file-input')),
       action('gcode', 'Open G-code', <FileCode2 size={15} />, () => clickInput('gcode-input')),
+      action('import-presets', 'Import presets', <Upload size={15} />, () => clickInput('preset-import-input')),
       action('add-to-library', 'Add to library', <BookmarkPlus size={15} />, () => void addPlateToLibrary(), !objects),
       action('printers-wizard', 'Add or remove printers…', <Printer size={15} />, () => set({ wizard: 'printers' })),
       action('filaments-wizard', 'Add or remove filaments…', <Printer size={15} />, () => set({ wizard: 'filaments' })),
@@ -211,15 +222,58 @@ export function QuickSearch({ onClose, actions }: { onClose: () => void; actions
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [schema, hidden, picker.groups, models, objects, sliceState, calibReady, actions]);
 
+  // The plate's commands (as on the toolbar and the context menu), with their shortcuts; they act on Prepare.
+  const app = useApp();
+  const plate = useMemo((): Item[] => {
+    const c = COMMANDS;
+    const camera = [c.fitView, ...VIEWS];
+    const list: Command[] = [
+      c.arrange,
+      c.orient,
+      c.supports,
+      c.layOnFace,
+      c.clone,
+      c.addInstance,
+      c.removeInstance,
+      c.selectAll,
+      c.delete,
+      c.deleteAll,
+      c.undo,
+      c.redo,
+      ...camera,
+    ];
+    return list.map((cmd): Item => {
+      const Icon = cmd.icon;
+      const label = cmd.label();
+      return {
+        id: `c:${cmd.id}`,
+        group: 'plate',
+        label,
+        keys: cmd.keys || undefined,
+        icon: Icon ? <Icon size={15} /> : null,
+        disabled: !cmd.enabled(app),
+        names: [label],
+        ids: [cmd.id.replace(/-/g, ' ')],
+        run: () => {
+          // The camera views work in Preview too.
+          const v = useApp.getState().view;
+          if (!(camera.includes(cmd) && v === 'preview')) set({ view: 'prepare' });
+          cmd.run();
+        },
+      };
+    });
+  }, [app]);
+  const all = useMemo(() => [...items, ...plate], [items, plate]);
+
   /** What is shown: the actions without a search; else the best matches of each group. */
   const shown = useMemo(() => {
     const q = query.trim().toLocaleLowerCase();
-    if (!q) return items.filter((i) => i.group === 'actions');
+    if (!q) return all.filter((i) => i.group === 'actions');
     const words = q.split(/\s+/);
     // Among the names that start with the words, the settings of the simpler modes first (the common ones).
     const good = (x: number) => (x >= 3 ? 1 : 0);
     const groups = (Object.keys(GROUP_LABEL) as Group[]).map((group) =>
-      items
+      all
         .filter((i) => i.group === group)
         .map((i) => ({ i, s: score(i, q, words) }))
         .filter((x) => x.s > 0)
@@ -231,7 +285,7 @@ export function QuickSearch({ onClose, actions }: { onClose: () => void; actions
       .filter((g) => g.length)
       .sort((a, b) => b[0]!.s - a[0]!.s)
       .flatMap((g) => g.map((x) => x.i));
-  }, [items, query]);
+  }, [all, query]);
 
   const usable = shown.filter((i) => !i.disabled);
   const current = usable[Math.min(active, usable.length - 1)];
@@ -311,7 +365,7 @@ export function QuickSearch({ onClose, actions }: { onClose: () => void; actions
                 >
                   {item.thumb ? <img className="thumb" src={item.thumb} alt="" /> : <span className="icon">{item.icon}</span>}
                   <span className="label">{item.label}</span>
-                  {item.detail && <span className="detail">{item.detail}</span>}
+                  {item.keys ? <kbd className="detail">{item.keys}</kbd> : item.detail && <span className="detail">{item.detail}</span>}
                 </div>
               </div>
             );
