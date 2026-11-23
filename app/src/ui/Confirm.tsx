@@ -57,7 +57,11 @@ export function ConfirmHost() {
       back?.focus?.();
     };
   }, [req]);
-  if (!req) return null;
+  // Shown as last asked while it closes (the close transition, styles.css).
+  const last = useRef(req);
+  if (req) last.current = req;
+  const shown = req ?? last.current;
+  if (!shown) return null;
   return (
     <dialog
       ref={dialog}
@@ -81,11 +85,11 @@ export function ConfirmHost() {
       }}
     >
       <div className="confirm-body">
-        <p id="confirm-message">{req.message}</p>
+        <p id="confirm-message">{shown.message}</p>
         <div className="confirm-actions">
           {/* The action first, then Cancel, as desktop's dialogs (MsgDialog). */}
-          <button ref={ok} type="button" className={`btn primary${req.danger ? ' destructive' : ''}`} onClick={() => answer(true)}>
-            {req.confirm ?? t('OK')}
+          <button ref={ok} type="button" className={`btn primary${shown.danger ? ' destructive' : ''}`} onClick={() => answer(true)}>
+            {shown.confirm ?? t('OK')}
           </button>
           <button type="button" className="btn ghost" onClick={() => answer(false)}>
             {t('Cancel')}

@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { t } from '../i18n/i18n';
 import { printerInLibrary } from '../presets/library';
 import { useApp } from '../state/store';
+import { Presence } from './Presence';
 import { useModal } from './useModal';
 
 type Commit = string | { elements: string[] };
@@ -38,16 +39,18 @@ export function CompatiblePrintersControl({ value, onCommit }: { value: string[]
         <span>{text}</span>
         <Pencil size={14} className="edit-icon" />
       </button>
-      {open && (
-        <PrinterDialog
-          value={value}
-          onClose={() => setOpen(false)}
-          onApply={(v) => {
-            setOpen(false);
-            onCommit({ elements: v });
-          }}
-        />
-      )}
+      <Presence>
+        {open && (
+          <PrinterDialog
+            value={value}
+            onClose={() => setOpen(false)}
+            onApply={(v) => {
+              setOpen(false);
+              onCommit({ elements: v });
+            }}
+          />
+        )}
+      </Presence>
     </>
   );
 }

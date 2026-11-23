@@ -25,6 +25,7 @@ import {
   toElements,
   type Volume,
 } from '../settings/bedGeometry';
+import { Presence } from './Presence';
 import { SegmentThumb } from './SegmentThumb';
 import { useModal } from './useModal';
 
@@ -101,17 +102,19 @@ export function BedSettingControl({
         <span>{summary(k, v)}</span>
         <Pencil size={14} className="edit-icon" />
       </button>
-      {open && (
-        <BedDialog
-          k={k}
-          values={v}
-          onClose={() => setOpen(false)}
-          onApply={(c) => {
-            setOpen(false);
-            onCommit(c);
-          }}
-        />
-      )}
+      <Presence>
+        {open && (
+          <BedDialog
+            k={k}
+            values={v}
+            onClose={() => setOpen(false)}
+            onApply={(c) => {
+              setOpen(false);
+              onCommit(c);
+            }}
+          />
+        )}
+      </Presence>
     </>
   );
 }

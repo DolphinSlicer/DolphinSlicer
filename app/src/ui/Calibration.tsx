@@ -12,6 +12,7 @@ import { wikiUrl } from '../settings/docs';
 import { checkVfaSpeed, isBeltPrinter, startCalibration } from '../state/actions';
 import { notify, set, useApp } from '../state/store';
 import { ask } from './Confirm';
+import { Presence } from './Presence';
 import { Select } from './Select';
 import { useModal } from './useModal';
 
@@ -93,7 +94,7 @@ export function CalibrationButton() {
           />,
           document.body,
         )}
-      {kind && createPortal(<CalibDialog kind={kind} onClose={() => setKind(null)} />, document.body)}
+      {createPortal(<Presence>{kind && <CalibDialog kind={kind} onClose={() => setKind(null)} />}</Presence>, document.body)}
     </>
   );
 }

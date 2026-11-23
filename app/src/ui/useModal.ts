@@ -32,8 +32,8 @@ export function useModal<T extends HTMLElement>() {
       el.focus({ preventScroll: true });
     }
     const onKey = (e: KeyboardEvent) => {
-      // Not below another dialog; a confirmation (a modal <dialog>) keeps the focus by itself.
-      if (e.key !== 'Tab' || open[open.length - 1] !== el || document.querySelector('dialog:modal')) return;
+      // Not below another dialog, nor closing (Presence); a confirmation (a modal <dialog>) keeps the focus by itself.
+      if (e.key !== 'Tab' || open[open.length - 1] !== el || el.closest('[inert]') || document.querySelector('dialog:modal')) return;
       const items = [...el.querySelectorAll<HTMLElement>('a[href], button, input, select, textarea, [tabindex]')].filter(
         (x) => x.tabIndex >= 0 && !x.matches(':disabled') && x.getClientRects().length > 0,
       );
