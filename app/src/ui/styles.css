@@ -1090,6 +1090,39 @@ input[type="checkbox"].switch:disabled {
   flex: none;
 }
 
+/* Quick settings: the settings page's fields, narrow (name, then the control at the right). */
+.quick-group {
+  border: none;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.quick-group + .quick-group {
+  margin-top: 8px;
+}
+.quick-group legend {
+  font-weight: 650;
+  font-size: 12.5px;
+  padding: 0 0 2px;
+  color: var(--ink);
+}
+.quick-settings .field {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 8px;
+  min-height: 34px;
+  font-size: 13px;
+}
+.quick-settings .field .control {
+  justify-content: flex-end;
+}
+.quick-settings .field .control input.num {
+  width: 64px;
+}
+.quick-settings .field .control .select-trigger {
+  min-width: 0;
+  max-width: 150px;
+}
+
 /* Captions are not <label>s: hovering a label would also show its dropdown's hover state. */
 .preset-field {
   margin-bottom: 9px;

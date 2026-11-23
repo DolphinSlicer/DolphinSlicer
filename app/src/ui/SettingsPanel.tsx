@@ -916,7 +916,7 @@ export function SettingsPanel({ type: chosen, onType }: { type: PresetType; onTy
   );
 }
 
-type Commit = Parameters<typeof editSetting>[2];
+export type Commit = Parameters<typeof editSetting>[2];
 
 /** The filament's "Setting Overrides" page: the only options with a "use the printer's value" state (as desktop's check boxes there). */
 const OVERRIDES = new Set(layout.filament.filter((p) => p.title === 'Setting Overrides').flatMap((p) => p.groups.flatMap((g) => g.keys)));
@@ -930,7 +930,7 @@ const ABOVE_ZERO = new Set(['layer_height', 'initial_layer_print_height']);
  * What is wrong with a typed number (untranslated), or null: not a number, or outside the
  * option's limits (desktop's Field: "Invalid numeric.", "Value is out of range.").
  */
-function numberProblem(k: string, def: OptionDef, value: Commit): string | null {
+export function numberProblem(k: string, def: OptionDef, value: Commit): string | null {
   const base = def.type.replace(/s$/, '').replace(/^floats_or_percent$/, 'float_or_percent');
   // One point of a list ("XxY").
   if (base === 'point' && typeof value !== 'string' && 'value' in value) {
@@ -957,7 +957,7 @@ function numberProblem(k: string, def: OptionDef, value: Commit): string | null 
 /** For a field's text: the values it was last loaded from, and whether its own edit was refused. */
 const Shown = createContext<{ stamp: unknown; refused: boolean }>({ stamp: null, refused: false });
 
-function Field({
+export function Field({
   k,
   def,
   value,
@@ -996,8 +996,8 @@ function Field({
   onCommit: (v: Commit) => void;
   onUndo: () => void;
   onReset: () => void;
-  /** Show the setting's documentation: its wiki page, or else its description. */
-  onHelp: (label: string, text: string) => void;
+  /** Show the setting's documentation: its wiki page, or else its description (none: the description is the name's tooltip only). */
+  onHelp?: (label: string, text: string) => void;
 }) {
   const kind = editKind(k, def);
   // In a row of several options the option's label ("First layer") only names its part.
@@ -1141,7 +1141,11 @@ function Field({
     >
       <div className="field-label">
         {/* The name shows the description as its tooltip; a click opens the documentation (the wiki page, or else the description). */}
-        {help || docPath(k) ? (
+        {!onHelp ? (
+          <span className={`name${help ? ' help' : ''}`} data-tip={help || undefined}>
+            {label}
+          </span>
+        ) : help || docPath(k) ? (
           <button
             type="button"
             className="name help"
