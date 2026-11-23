@@ -1137,6 +1137,58 @@ input[type="checkbox"].switch:disabled {
   padding: 0 0 2px;
   color: var(--ink);
 }
+/* Choosing the quick settings: every print setting, by page and group, to tick. */
+.modal.quick-choose {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: min(640px, 86vh);
+  overflow: hidden;
+}
+.modal.quick-choose h2 {
+  margin: 0;
+}
+.quick-choose .search input {
+  width: 100%;
+}
+.quick-choose-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 4px 4px 8px;
+}
+.quick-choose-list h3 {
+  margin: 8px 6px 2px;
+  font-size: 11.5px;
+  font-weight: 650;
+  color: var(--muted);
+}
+.quick-choose-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.quick-choose-list label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.quick-choose-list label:hover {
+  background: var(--elev);
+}
+.quick-choose-list .muted {
+  margin: 8px 6px;
+}
+.quick-choose-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
 .quick-settings .field {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 2px 8px;

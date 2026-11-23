@@ -344,5 +344,7 @@
   "Quick settings": "クイック設定",
   "Quick search": "クイック検索",
   "Actions": "操作",
-  "No results": "結果がありません"
+  "No results": "結果がありません",
+  "Choose quick settings": "クイック設定を選択",
+  "Reset to defaults": "デフォルトに戻す"
 }

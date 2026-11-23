@@ -341,5 +341,7 @@
   "Quick settings": "การตั้งค่าด่วน",
   "Quick search": "ค้นหาด่วน",
   "Actions": "การทำงาน",
-  "No results": "ไม่พบผลลัพธ์"
+  "No results": "ไม่พบผลลัพธ์",
+  "Choose quick settings": "เลือกการตั้งค่าด่วน",
+  "Reset to defaults": "คืนค่าเริ่มต้น"
 }

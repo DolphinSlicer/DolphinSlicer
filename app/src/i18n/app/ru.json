@@ -343,5 +343,7 @@
   "Quick settings": "Быстрые настройки",
   "Quick search": "Быстрый поиск",
   "Actions": "Действия",
-  "No results": "Ничего не найдено"
+  "No results": "Ничего не найдено",
+  "Choose quick settings": "Выбрать быстрые настройки",
+  "Reset to defaults": "Сбросить по умолчанию"
 }

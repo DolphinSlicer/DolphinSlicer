@@ -338,5 +338,7 @@
   "Quick settings": "快速设置",
   "Quick search": "快速搜索",
   "Actions": "操作",
-  "No results": "无结果"
+  "No results": "无结果",
+  "Choose quick settings": "选择快速设置",
+  "Reset to defaults": "恢复默认"
 }

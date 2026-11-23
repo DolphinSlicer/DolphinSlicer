@@ -47,6 +47,8 @@ describe('syncing the settings through Drive', () => {
   it('ignores values in Drive it cannot use', () => {
     expect(validSetting('language', 'xx')).toBe(false);
     expect(validSetting('settingsMode', 'expert')).toBe(true);
+    expect(validSetting('quickSettings', ['layer_height', 'wall_loops'])).toBe(true);
+    expect(validSetting('quickSettings', 'layer_height')).toBe(false);
     expect(validSetting('library', { printers: 'x' })).toBe(false);
     expect(validSetting('selection', { printer: 'MyKlipper 0.4 nozzle', process: 3 })).toBe(false);
     const r = mergeSettings(
