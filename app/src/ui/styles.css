@@ -1090,6 +1090,111 @@ input[type="checkbox"].switch:disabled {
   flex: none;
 }
 
+/* A card that folds to its head (Quick settings). */
+.card-head h2:has(> .card-toggle) {
+  flex: 1;
+}
+.card-toggle {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.card-toggle:hover {
+  color: var(--ink);
+}
+.card-toggle svg {
+  transition: transform 0.15s;
+}
+.card-toggle[aria-expanded="false"] svg {
+  transform: rotate(-90deg);
+}
+.card.collapsed .card-head {
+  margin-bottom: 0;
+}
+
+/* Quick settings: the settings page's fields, narrow (name, then the control at the right). */
+.quick-group {
+  border: none;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.quick-group + .quick-group {
+  margin-top: 8px;
+}
+.quick-group legend {
+  font-weight: 650;
+  font-size: 12.5px;
+  padding: 0 0 2px;
+  color: var(--ink);
+}
+.quick-settings .field {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 8px;
+  min-height: 30px;
+  font-size: 13px;
+}
+/* Small controls, each ending at the card's edge: numbers in boxes of one width with the unit
+   inside; one button (undo, else reset) before the control, only when there is something to undo. */
+.quick-settings .field .control {
+  position: relative;
+  justify-content: flex-end;
+  gap: 2px;
+}
+.quick-settings .field .control > .icon-btn {
+  order: -1;
+  width: 22px;
+  height: 22px;
+}
+.quick-settings .field .control > .icon-btn + .icon-btn {
+  display: none;
+}
+.quick-settings .field .control input.num,
+.quick-settings .field .control .select-trigger {
+  height: 26px;
+  font-size: 12.5px;
+  border-radius: 6px;
+}
+.quick-settings .field .control input.num {
+  width: 68px;
+  padding: 0 26px 0 6px;
+}
+.quick-settings .field .control > .sidetext {
+  position: absolute;
+  right: 0;
+  width: 22px;
+  font-size: 11px;
+  pointer-events: none;
+}
+.quick-settings .field .control .select-trigger {
+  width: 124px;
+  min-width: 0;
+  max-width: none;
+  padding-left: 8px;
+  padding-right: 22px;
+  background-position: right 6px center;
+}
+.quick-settings .field .control input.switch {
+  width: 30px;
+  height: 18px;
+}
+.quick-settings .field .control input.switch::after {
+  width: 14px;
+  height: 14px;
+}
+.quick-settings .field .control input.switch:checked::after {
+  transform: translateX(12px);
+}
+
 /* Captions are not <label>s: hovering a label would also show its dropdown's hover state. */
 .preset-field {
   margin-bottom: 9px;

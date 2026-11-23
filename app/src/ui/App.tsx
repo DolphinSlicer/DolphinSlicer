@@ -39,6 +39,7 @@ import { PresetPanel } from './PresetPanel';
 import { PreviewPanel } from './PreviewPanel';
 import { PrintersDialog, SendDialog } from './Printers';
 import { onPlateKey } from './plateCommands';
+import { QuickSettings } from './QuickSettings';
 import { SegmentThumb } from './SegmentThumb';
 import { SettingsPanel } from './SettingsPanel';
 import { useFit } from './useFit';
@@ -220,6 +221,7 @@ export function App() {
         <ViewportView />
         <aside className="dock">
           <PresetPanel />
+          <QuickSettings />
           <ObjectsCard />
         </aside>
         {view === 'prepare' && <PlateToolbar />}
