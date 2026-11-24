@@ -342,5 +342,7 @@
   "Quick settings": "Швидкі налаштування",
   "Quick search": "Швидкий пошук",
   "Actions": "Дії",
-  "No results": "Нічого не знайдено"
+  "No results": "Нічого не знайдено",
+  "Choose quick settings": "Вибрати швидкі налаштування",
+  "Reset to defaults": "Скинути до типових"
 }

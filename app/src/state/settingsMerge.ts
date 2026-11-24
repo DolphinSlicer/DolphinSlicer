@@ -3,6 +3,7 @@
 import { LANGUAGES } from '../i18n/i18n';
 import type { Library } from '../presets/library';
 import { MODES } from '../settings/schema';
+import { isStrings } from './prefs';
 import { SETTING_KEYS, type SettingKey, type SettingsMeta } from './settingsMeta';
 
 /** The selection kept in Drive: the printer, print settings and filament picked. */
@@ -23,7 +24,6 @@ export interface SettingsFile {
 }
 export type Values = Partial<Record<SettingKey, unknown>>;
 
-const isStrings = (v: unknown): v is string[] => Array.isArray(v) && v.every((x) => typeof x === 'string');
 /** Whether a value from Drive can be used (another version of the app may have written it). */
 export function validSetting(k: SettingKey, v: unknown): boolean {
   switch (k) {
@@ -37,6 +37,8 @@ export function validSetting(k: SettingKey, v: unknown): boolean {
       return v === 'metric' || v === 'imperial';
     case 'settingsMode':
       return (MODES as readonly unknown[]).includes(v);
+    case 'quickSettings':
+      return isStrings(v);
     case 'library': {
       const l = v as Library | null;
       return (

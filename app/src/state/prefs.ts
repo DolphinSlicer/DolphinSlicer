@@ -1,5 +1,5 @@
-// App preferences (Preferences dialog): theme, language, currency, units; and the settings
-// page's mode. Kept in localStorage, synced through Drive (settingsSync.ts).
+// App preferences (Preferences dialog): theme, language, currency, units; the settings page's
+// mode and the Quick settings card's settings. Kept in localStorage, synced through Drive (settingsSync.ts).
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { bcp47, currentLanguage, LANGUAGES, type Language, matchLanguage } from '../i18n/i18n';
 import { MODES, type SettingsMode } from '../settings/schema';
@@ -16,7 +16,20 @@ export interface Prefs {
   units: Units;
   /** The settings page's Simple, Advanced or Expert mode. */
   settingsMode: SettingsMode;
+  /** The print settings in the Quick settings card. */
+  quickSettings: string[];
 }
+
+export const DEFAULT_QUICK_SETTINGS = [
+  'layer_height',
+  'wall_loops',
+  'sparse_infill_density',
+  'brim_type',
+  'enable_support',
+  'support_type',
+  'support_on_build_plate_only',
+];
+export const isStrings = (v: unknown): v is string[] => Array.isArray(v) && v.every((x) => typeof x === 'string');
 
 const KEY = 'dolphin-slicer.prefs.v1';
 const EURO = new Set([
@@ -119,6 +132,7 @@ export function loadPrefs(): Prefs {
     currency: typeof saved.currency === 'string' && /^[A-Z]{3}$/.test(saved.currency) ? saved.currency : defaultCurrency(),
     units: saved.units === 'imperial' || saved.units === 'metric' ? saved.units : 'metric', // desktop's default too
     settingsMode: (MODES as readonly string[]).includes(saved.settingsMode ?? '') ? saved.settingsMode! : 'simple',
+    quickSettings: isStrings(saved.quickSettings) ? saved.quickSettings : DEFAULT_QUICK_SETTINGS,
   };
 }
 

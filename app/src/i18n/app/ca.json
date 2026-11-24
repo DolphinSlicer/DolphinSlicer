@@ -348,5 +348,7 @@
   "Quick settings": "Configuració ràpida",
   "Quick search": "Cerca ràpida",
   "Actions": "Accions",
-  "No results": "Cap resultat"
+  "No results": "Cap resultat",
+  "Choose quick settings": "Tria la configuració ràpida",
+  "Reset to defaults": "Restableix els valors predeterminats"
 }

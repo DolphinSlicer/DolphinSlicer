@@ -345,5 +345,7 @@
   "Quick settings": "Gyorsbeállítások",
   "Quick search": "Gyorskeresés",
   "Actions": "Műveletek",
-  "No results": "Nincs találat"
+  "No results": "Nincs találat",
+  "Choose quick settings": "Gyorsbeállítások kiválasztása",
+  "Reset to defaults": "Alapértékek visszaállítása"
 }

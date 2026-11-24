@@ -4,7 +4,17 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 /** The settings synced through Drive. */
-export const SETTING_KEYS = ['theme', 'language', 'currency', 'units', 'settingsMode', 'library', 'selection', 'bedTypes'] as const;
+export const SETTING_KEYS = [
+  'theme',
+  'language',
+  'currency',
+  'units',
+  'settingsMode',
+  'quickSettings',
+  'library',
+  'selection',
+  'bedTypes',
+] as const;
 export type SettingKey = (typeof SETTING_KEYS)[number];
 
 /**

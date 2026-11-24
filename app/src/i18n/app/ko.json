@@ -341,5 +341,7 @@
   "Quick settings": "빠른 설정",
   "Quick search": "빠른 검색",
   "Actions": "작업",
-  "No results": "결과 없음"
+  "No results": "결과 없음",
+  "Choose quick settings": "빠른 설정 선택",
+  "Reset to defaults": "기본값으로 재설정"
 }

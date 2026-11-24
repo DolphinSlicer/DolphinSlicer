@@ -1,6 +1,7 @@
 // The app's settings in Google Drive: preferences (theme, language, currency, units, the settings
-// page's mode), the printer and filament library, the selected presets and each printer's plate
-// type. One file, DolphinSlicer/settings.json; for each setting the newer change wins.
+// page's mode, the quick settings), the printer and filament library, the selected presets and
+// each printer's plate type. One file, DolphinSlicer/settings.json; for each setting the newer
+// change wins.
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { Drive } from '../drive/api';
 import { type Library, loadLibrary } from '../presets/library';
@@ -31,6 +32,7 @@ function localSettings(): Values {
     currency: p.currency,
     units: p.units,
     settingsMode: p.settingsMode,
+    quickSettings: p.quickSettings,
     library: loadLibrary(),
     selection: loadSaved(),
     bedTypes: bedTypes(),
@@ -44,7 +46,7 @@ function localSettings(): Values {
 async function applySettings(apply: Values): Promise<SettingKey[]> {
   const done: SettingKey[] = [];
   const prefs: Partial<Prefs> = {};
-  for (const k of ['theme', 'language', 'currency', 'units', 'settingsMode'] as const)
+  for (const k of ['theme', 'language', 'currency', 'units', 'settingsMode', 'quickSettings'] as const)
     if (k in apply) {
       Object.assign(prefs, { [k]: apply[k] });
       done.push(k);
