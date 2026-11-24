@@ -1120,6 +1120,10 @@ input[type="checkbox"].switch:disabled {
 .card.collapsed .card-head {
   margin-bottom: 0;
 }
+/* Its button (shown when open) doesn't make the head taller than when closed. */
+.quick-settings .card-tools {
+  margin-block: -2px;
+}
 
 /* Quick settings: the settings page's fields, narrow (name, then the control at the right). */
 .quick-group {
