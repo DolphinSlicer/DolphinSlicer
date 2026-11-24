@@ -19,7 +19,7 @@ import { type SyncState, syncFiles } from '../drive/sync';
 import { t } from '../i18n/i18n';
 import { loadUserStore, onUserFilesSaved } from '../presets/userStore';
 import { describeError } from '../ui/errors';
-import { reloadUserPresets } from './actions';
+import { editedPresetFiles, reloadUserPresets } from './actions';
 import { syncModels } from './libraryActions';
 import { syncPrinters } from './printerActions';
 import { onSettingChange } from './settingsMeta';
@@ -151,10 +151,10 @@ async function syncOnce() {
       return;
     }
     const store = await loadUserStore();
-    const dirty = get().presets.state?.dirty;
-    const clean = !dirty || !Object.values(dirty).some(Boolean);
+    // The files of presets with unsaved edits wait; the others are loaded, keeping those edits.
+    const edited = editedPresetFiles(store.files);
     const sync = async (tk: string) => {
-      const r = await syncFiles(new Drive(tk), store.files, store.mtimes, loadState(a.email), clean);
+      const r = await syncFiles(new Drive(tk), store.files, store.mtimes, loadState(a.email), (p) => !edited.has(p));
       await syncModels(new Drive(tk));
       await syncPrinters(new Drive(tk));
       return r;
