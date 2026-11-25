@@ -124,7 +124,7 @@ function bindViewport(vp: Viewport, home: HTMLButtonElement): () => void {
     // screens (where they sit at the bottom).
     const size = vp.cube.size,
       gap = 8;
-    const covered = cards.some((r) => r.bottom > c.bottom - gap - size && r.left < c.left + gap + size);
+    const covered = cards.some((r) => r.bottom > c.bottom - gap - size && r.left < c.left + gap + size && r.right > c.left);
     const side = cards.length > 0 && cards[0]!.right < c.left + c.width / 2;
     if (!covered) vp.setCubeAt(gap, gap);
     else if (side) vp.setCubeAt(Math.round(Math.max(...cards.map((r) => r.right)) - c.left + 12), gap);

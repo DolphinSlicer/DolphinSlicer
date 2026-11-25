@@ -32,8 +32,8 @@ export type CubeLabels = Record<CubeSide, string>;
 // up (+Z) and +Z is the front (−Y): right, left, top, bottom, front, rear.
 const SIDES: CubeSide[] = ['right', 'left', 'top', 'bottom', 'front', 'rear'];
 const LOOK = {
-  light: { face: '#e9edf2', text: '#3d4450', edge: 0x8b95a3, hover: 0x3b82f6 },
-  dark: { face: '#353b45', text: '#e1e5eb', edge: 0x6b7484, hover: 0x60a5fa },
+  light: { face: '#efeeea', text: '#42403b', edge: 0x95918a, hover: 0x2766d6 },
+  dark: { face: '#353532', text: '#e4e2dc', edge: 0x6b6963, hover: 0x5eabff },
 };
 /** How far into a side its edges and corners reach (the cube is 1 across). */
 const BAND = 0.22;
