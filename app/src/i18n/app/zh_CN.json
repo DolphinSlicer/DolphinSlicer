@@ -344,5 +344,7 @@
   "Server storage": "服务器存储",
   "Your presets, models and settings are stored on this server and shared by all browsers that open it.": "您的预设、模型和设置存储在此服务器上，所有打开它的浏览器共享这些数据。",
   "Save or discard your changes to get the latest presets.": "请保存或放弃更改，以获取最新的预设。",
-  "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "已保留较新的版本：{names}。另一个版本位于服务器的“Conflicts”文件夹中。"
+  "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "已保留较新的版本：{names}。另一个版本位于服务器的“Conflicts”文件夹中。",
+  "Sync with server storage": "与服务器存储同步",
+  "The API key is stored on the server too.": "API 密钥也会保存到服务器。"
 }

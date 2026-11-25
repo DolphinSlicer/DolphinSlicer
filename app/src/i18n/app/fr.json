@@ -356,5 +356,7 @@
   "Server storage": "Stockage sur le serveur",
   "Your presets, models and settings are stored on this server and shared by all browsers that open it.": "Vos préréglages, vos modèles et vos paramètres sont stockés sur ce serveur et partagés par tous les navigateurs qui l’ouvrent.",
   "Save or discard your changes to get the latest presets.": "Enregistrez ou abandonnez vos modifications pour récupérer les derniers préréglages.",
-  "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Version la plus récente conservée pour : {names}. L’autre se trouve dans le dossier « Conflicts » du serveur."
+  "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Version la plus récente conservée pour : {names}. L’autre se trouve dans le dossier « Conflicts » du serveur.",
+  "Sync with server storage": "Synchroniser avec le stockage sur le serveur",
+  "The API key is stored on the server too.": "La clé API est aussi enregistrée sur le serveur."
 }

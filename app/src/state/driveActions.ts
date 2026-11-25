@@ -249,13 +249,13 @@ export function initDrive() {
     const a = loadAccount();
     // With the token service an expired token is renewed at the first sync, without asking.
     if (a) setDrive({ email: a.email, status: 'idle' });
-    void probeService();
   }
   void findServerStorage().then((base) => {
     if (base) {
       server = new ServerFolder(base);
       setDrive({ server: true, email: null, status: 'idle' });
     } else if (!window.isSecureContext) return;
+    else void probeService();
     start();
   });
 }

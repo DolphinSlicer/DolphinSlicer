@@ -356,5 +356,7 @@
   "Server storage": "Lưu trữ trên máy chủ",
   "Your presets, models and settings are stored on this server and shared by all browsers that open it.": "Cài đặt sẵn, mô hình và thiết lập của bạn được lưu trên máy chủ này và dùng chung cho mọi trình duyệt mở nó.",
   "Save or discard your changes to get the latest presets.": "Hãy lưu hoặc hủy các thay đổi để lấy cài đặt sẵn mới nhất.",
-  "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Đã giữ phiên bản mới hơn của: {names}. Phiên bản còn lại nằm trong thư mục \"Conflicts\" trên máy chủ."
+  "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Đã giữ phiên bản mới hơn của: {names}. Phiên bản còn lại nằm trong thư mục \"Conflicts\" trên máy chủ.",
+  "Sync with server storage": "Đồng bộ với lưu trữ trên máy chủ",
+  "The API key is stored on the server too.": "Khóa API cũng được lưu trên máy chủ."
 }

@@ -351,5 +351,7 @@
   "Server storage": "Tárhely a szerveren",
   "Your presets, models and settings are stored on this server and shared by all browsers that open it.": "A beállításkészleteid, modelljeid és beállításaid ezen a szerveren vannak tárolva, és minden böngésző használja őket, amely megnyitja.",
   "Save or discard your changes to get the latest presets.": "Mentsd vagy vesd el a módosításaidat, hogy megkapd a legújabb beállításokat.",
-  "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Megtartott újabb verzió: {names}. A másik a szerver „Conflicts” mappájában van."
+  "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Megtartott újabb verzió: {names}. A másik a szerver „Conflicts” mappájában van.",
+  "Sync with server storage": "Szinkronizálás a szerveren lévő tárhellyel",
+  "The API key is stored on the server too.": "Az API-kulcs a szerveren is tárolódik."
 }
