@@ -28,10 +28,15 @@ For a home server instead of the printer, use the [Docker image](SELF_HOST_DOCKE
    If `unzip` is missing: `sudo apt install unzip`. To use a build of your own instead, see
    [Building it yourself](#building-it-yourself).
 
-2. Add a location to the printer's nginx site (`/etc/nginx/sites-available/mainsail`, or
+2. Add two locations to the printer's nginx site (`/etc/nginx/sites-available/mainsail`, or
    `fluidd`), inside the `server { … }` block, next to the existing `location /` block:
 
    ```nginx
+   # /dolphin without the slash would open Mainsail or Fluidd instead.
+   location = /dolphin {
+       absolute_redirect off;
+       return 301 /dolphin/$is_args$args;
+   }
    location /dolphin/ {
        alias /home/pi/dolphin-slicer/;
        # nginx's mime.types has no .mjs (the engine is a JavaScript module).
@@ -78,7 +83,7 @@ instead of Google Drive.
    sudo install -d -o www-data -g www-data /var/lib/dolphin-slicer
    ```
 
-2. Add a second location next to `location /dolphin/`:
+2. Add another location next to `location /dolphin/`:
 
    ```nginx
    location /dolphin/storage/ {

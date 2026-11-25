@@ -8,7 +8,9 @@ import { boxStl } from './models';
 test('runs over plain http:// and prints on the printer it is served from', async ({ page }) => {
   // An empty storage folder (nginx deletes folders with everything in them).
   await fetch('http://localhost:8090/dolphin/storage/DolphinSlicer/', { method: 'DELETE' });
-  await page.goto('./');
+  // The address without the trailing slash leads to the app too.
+  await page.goto('/dolphin');
+  await expect(page).toHaveURL('http://pi.test:8090/dolphin/');
   await expect(page.getByTestId('app')).toHaveAttribute('data-engine-ready', 'yes', { timeout: 120_000 });
   expect(await page.evaluate(() => [location.protocol, window.isSecureContext])).toEqual(['http:', false]);
   // No SharedArrayBuffer without a secure context: the single-threaded engine.
