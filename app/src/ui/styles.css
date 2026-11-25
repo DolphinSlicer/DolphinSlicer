@@ -30,7 +30,9 @@
   --primary-ink: #ffffff;
   --field-bg: #ffffff;
   --danger: #c4302b;
+  --danger-solid: #c4302b;
   --warn: #965a00;
+  --mark: #e8b400;
   --ok: #2a7a45;
   --hl-cmd: #2766d6;
   --hl-macro: #8a3db5;
@@ -69,12 +71,14 @@
     --accent-soft: rgba(94, 171, 255, 0.15);
     --accent-ink: #0a1626;
     /* A lit key: the light blue of the mark, dark text on it. */
-    --primary: #5eabff;
-    --primary-hover: #7dbbff;
-    --primary-ink: #0a1626;
+    --primary: #2b6fe0;
+    --primary-hover: #2766d6;
+    --primary-ink: #ffffff;
     --field-bg: #191918;
     --danger: #ff7b6c;
-    --warn: #e5b04a;
+    --danger-solid: #cc3a33;
+    --warn: #f0c24e;
+    --mark: #f0c24e;
     --ok: #63c381;
     --hl-cmd: #78b8ff;
     --hl-macro: #cfa2f0;
@@ -106,12 +110,14 @@
   --accent-soft: rgba(94, 171, 255, 0.15);
   --accent-ink: #0a1626;
   /* A lit key: the light blue of the mark, dark text on it. */
-  --primary: #5eabff;
-  --primary-hover: #7dbbff;
-  --primary-ink: #0a1626;
+  --primary: #2b6fe0;
+  --primary-hover: #2766d6;
+  --primary-ink: #ffffff;
   --field-bg: #191918;
   --danger: #ff7b6c;
-  --warn: #e5b04a;
+  --danger-solid: #cc3a33;
+  --warn: #f0c24e;
+  --mark: #f0c24e;
   --ok: #63c381;
   --hl-cmd: #78b8ff;
   --hl-macro: #cfa2f0;
@@ -2720,8 +2726,8 @@ dialog.confirm:not([open])::backdrop {
 }
 .btn.primary.destructive,
 .btn.primary.destructive:hover:not(:disabled) {
-  background: var(--danger);
-  border-color: var(--danger);
+  background: var(--danger-solid);
+  border-color: var(--danger-solid);
   color: var(--primary-ink);
 }
 .btn.primary.destructive:hover:not(:disabled) {
@@ -4198,7 +4204,13 @@ label.check {
   grid-column: 1 / -1;
 }
 .settings-group > .field.differs {
-  background: color-mix(in srgb, var(--warn) 7%, var(--field-bg));
+  --differs-bg: color-mix(in srgb, var(--mark) 10%, var(--field-bg));
+  background: var(--differs-bg);
+  /* The tint reaches past the row's edges, with a yellow bar at the left. */
+  box-shadow:
+    -10px 0 0 var(--differs-bg),
+    10px 0 0 var(--differs-bg),
+    -12px 0 0 var(--mark);
 }
 .field .other {
   display: flex;
