@@ -5,12 +5,12 @@
 // A preset saved here reaches the app at its next sync, like one saved on another device.
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { Drive } from '../../src/drive/api';
+import { tree } from '../../src/drive/storage';
 import { type PresetJson, type PresetType, TYPE_DIR } from './profiles';
 
 const APP = 'DolphinSlicer',
   PRESETS = 'Presets',
-  SETTINGS = 'settings.json',
-  FOLDER = 'application/vnd.google-apps.folder';
+  SETTINGS = 'settings.json';
 
 export interface SyncedSettings {
   library?: { printers?: { vendor: string; model: string; nozzle: string }[]; filaments?: string[] };
@@ -31,7 +31,7 @@ export class UserData {
   }
 
   private async child(parent: string, name: string, folder: boolean) {
-    return (await this.drive.children(parent)).find((f) => f.name === name && (f.mimeType === FOLDER) === folder);
+    return (await this.drive.children(parent)).find((f) => f.name === name && f.folder === folder);
   }
 
   /** The DolphinSlicer folder, or null when Drive sync never ran. */
@@ -68,7 +68,7 @@ export class UserData {
       const app = await this.appFolder();
       const root = app && (await this.child(app, PRESETS, true));
       if (!root) return null;
-      const t = await this.drive.tree(root.id);
+      const t = await tree(this.drive, root.id);
       const latest = t.files.reduce((m, f) => (f.modifiedTime > m ? f.modifiedTime : m), '');
       return { root: root.id, folders: t.folders, files: new Map(t.files.map((f) => [f.path, f.id])), latest };
     })();

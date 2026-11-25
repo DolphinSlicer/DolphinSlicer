@@ -343,5 +343,9 @@
   "Actions": "Ekintzak",
   "No results": "Emaitzarik ez",
   "Choose quick settings": "Aukeratu ezarpen azkarrak",
-  "Reset to defaults": "Berrezarri lehenetsiak"
+  "Reset to defaults": "Berrezarri lehenetsiak",
+  "Server storage": "Zerbitzariko biltegia",
+  "Your presets, models and settings are stored on this server and shared by all browsers that open it.": "Zure aurrezarpenak, modeloak eta ezarpenak zerbitzari honetan gordetzen dira, eta hura irekitzen duten nabigatzaile guztiek partekatzen dituzte.",
+  "Save or discard your changes to get the latest presets.": "Gorde edo baztertu aldaketak aurrezarpen berrienak lortzeko.",
+  "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Bertsio berriena mantendu da: {names}. Bestea zerbitzariko «Conflicts» karpetan dago."
 }

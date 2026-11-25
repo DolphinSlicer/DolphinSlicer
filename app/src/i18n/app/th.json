@@ -343,5 +343,9 @@
   "Actions": "การทำงาน",
   "No results": "ไม่พบผลลัพธ์",
   "Choose quick settings": "เลือกการตั้งค่าด่วน",
-  "Reset to defaults": "คืนค่าเริ่มต้น"
+  "Reset to defaults": "คืนค่าเริ่มต้น",
+  "Server storage": "พื้นที่จัดเก็บบนเซิร์ฟเวอร์",
+  "Your presets, models and settings are stored on this server and shared by all browsers that open it.": "พรีเซ็ต โมเดล และการตั้งค่าของคุณถูกจัดเก็บไว้บนเซิร์ฟเวอร์นี้ และใช้ร่วมกันในทุกเบราว์เซอร์ที่เปิดเซิร์ฟเวอร์นี้",
+  "Save or discard your changes to get the latest presets.": "บันทึกหรือยกเลิกการเปลี่ยนแปลงเพื่อรับพรีเซ็ตล่าสุด",
+  "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "เก็บเวอร์ชันที่ใหม่กว่าของ: {names} อีกเวอร์ชันอยู่ในโฟลเดอร์ \"Conflicts\" บนเซิร์ฟเวอร์"
 }

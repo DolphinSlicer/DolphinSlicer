@@ -10,7 +10,7 @@
 // otherwise those steps wait for the next sync.
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { UserFiles } from '../engine/protocol';
-import type { Drive, RemoteFile } from './api';
+import { type RemoteFile, type RemoteStore, tree as walkTree } from './storage';
 
 /** `md5`: the Drive file's content checksum when synced (`version` for state saved before it). */
 export interface SyncedEntry {
@@ -67,8 +67,53 @@ export function plan(local: Record<string, LocalFile>, remote: Record<string, Re
 }
 
 export async function sha256(text: string): Promise<string> {
-  const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
-  return [...new Uint8Array(d)].map((b) => b.toString(16).padStart(2, '0')).join('');
+  const bytes = new TextEncoder().encode(text);
+  // Browsers have crypto.subtle only on https:// pages (a self-hosted server may serve http://).
+  const d = crypto.subtle ? new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)) : sha256Js(bytes);
+  return [...d].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+const K = Uint32Array.from(
+  '428a2f98 71374491 b5c0fbcf e9b5dba5 3956c25b 59f111f1 923f82a4 ab1c5ed5 d807aa98 12835b01 243185be 550c7dc3 72be5d74 80deb1fe 9bdc06a7 c19bf174 e49b69c1 efbe4786 0fc19dc6 240ca1cc 2de92c6f 4a7484aa 5cb0a9dc 76f988da 983e5152 a831c66d b00327c8 bf597fc7 c6e00bf3 d5a79147 06ca6351 14292967 27b70a85 2e1b2138 4d2c6dfc 53380d13 650a7354 766a0abb 81c2c92e 92722c85 a2bfe8a1 a81a664b c24b8b70 c76c51a3 d192e819 d6990624 f40e3585 106aa070 19a4c116 1e376c08 2748774c 34b0bcb5 391c0cb3 4ed8aa4a 5b9cca4f 682e6ff3 748f82ee 78a5636f 84c87814 8cc70208 90befffa a4506ceb bef9a3f7 c67178f2'
+    .split(' ')
+    .map((h) => Number.parseInt(h, 16)),
+);
+
+/** SHA-256 (FIPS 180-4), for pages without crypto.subtle. */
+export function sha256Js(data: Uint8Array): Uint8Array {
+  const len = data.length;
+  const blocks = Math.ceil((len + 9) / 64);
+  const m = new Uint8Array(blocks * 64);
+  m.set(data);
+  m[len] = 0x80;
+  const view = new DataView(m.buffer);
+  view.setUint32(m.length - 8, Math.floor(len / 0x20000000));
+  view.setUint32(m.length - 4, (len * 8) >>> 0);
+  const h = Uint32Array.of(0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19);
+  const w = new Uint32Array(64);
+  const rotr = (x: number, n: number) => (x >>> n) | (x << (32 - n));
+  for (let off = 0; off < m.length; off += 64) {
+    for (let i = 0; i < 16; i++) w[i] = view.getUint32(off + i * 4);
+    for (let i = 16; i < 64; i++) {
+      const a = w[i - 15]!,
+        b = w[i - 2]!;
+      w[i] = (w[i - 16]! + (rotr(a, 7) ^ rotr(a, 18) ^ (a >>> 3)) + w[i - 7]! + (rotr(b, 17) ^ rotr(b, 19) ^ (b >>> 10))) >>> 0;
+    }
+    const v = Array.from(h);
+    for (let i = 0; i < 64; i++) {
+      const [a, b, c, d, e, f, g, k] = v as [number, number, number, number, number, number, number, number];
+      const t1 = (k + (rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25)) + ((e & f) ^ (~e & g)) + K[i]! + w[i]!) >>> 0;
+      const t2 = ((rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22)) + ((a & b) ^ (a & c) ^ (b & c))) >>> 0;
+      v.pop();
+      v.unshift((t1 + t2) >>> 0);
+      v[4] = (d + t1) >>> 0;
+    }
+    for (let i = 0; i < 8; i++) h[i] = h[i]! + v[i]!;
+  }
+  const out = new Uint8Array(32);
+  const ov = new DataView(out.buffer);
+  for (let i = 0; i < 8; i++) ov.setUint32(i * 4, h[i]!);
+  return out;
 }
 
 export interface SyncResult {
@@ -85,7 +130,7 @@ export interface SyncResult {
 }
 
 export async function syncFiles(
-  drive: Drive,
+  drive: RemoteStore,
   files: UserFiles,
   mtimes: Record<string, number>,
   state: SyncState,
@@ -94,7 +139,7 @@ export async function syncFiles(
 ): Promise<SyncResult> {
   const app = await drive.folder('root', 'DolphinSlicer');
   const root = await drive.folder(app, 'Presets');
-  const tree = await drive.tree(root);
+  const tree = await walkTree(drive, root);
   const remote = Object.fromEntries(tree.files.map((f) => [f.path, f]));
   const local: Record<string, LocalFile> = {};
   for (const [p, text] of Object.entries(files)) local[p] = { hash: await sha256(text), mtime: mtimes[p] ?? 0 };

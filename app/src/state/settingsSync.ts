@@ -3,7 +3,7 @@
 // each printer's plate type. One file, DolphinSlicer/settings.json; for each setting the newer
 // change wins.
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import type { Drive } from '../drive/api';
+import type { RemoteStore } from '../drive/storage';
 import { type Library, loadLibrary } from '../presets/library';
 import {
   applySelection,
@@ -96,9 +96,9 @@ async function applySettings(apply: Values): Promise<SettingKey[]> {
 }
 
 /** Sync the settings with DolphinSlicer/settings.json. */
-export async function syncSettings(drive: Drive) {
+export async function syncSettings(drive: RemoteStore) {
   const app = await drive.folder('root', 'DolphinSlicer');
-  const file = (await drive.children(app)).find((f) => f.name === FILE && !f.mimeType.endsWith('folder'));
+  const file = (await drive.children(app)).find((f) => f.name === FILE && !f.folder);
   let remoteText = '';
   let remote: SettingsFile['settings'] = {};
   if (file) {

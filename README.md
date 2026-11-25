@@ -88,8 +88,8 @@ browser.
 
 Use a recent desktop browser such as Chrome, Edge or Firefox.
 
-You can also host DolphinSlicer yourself, for example on the Raspberry Pi that runs your printer
-([how to](docs/SELF_HOST_PI.md)).
+You can also host DolphinSlicer yourself, for example on the Raspberry Pi that runs your printer,
+with your presets and models stored there instead of in Google Drive ([how to](docs/SELF_HOST_PI.md)).
 
 ## Development
 

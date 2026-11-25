@@ -361,5 +361,9 @@
   "Actions": "Acties",
   "No results": "Geen resultaten",
   "Choose quick settings": "Snelle instellingen kiezen",
-  "Reset to defaults": "Standaardwaarden herstellen"
+  "Reset to defaults": "Standaardwaarden herstellen",
+  "Server storage": "Serveropslag",
+  "Your presets, models and settings are stored on this server and shared by all browsers that open it.": "Uw voorinstellingen, modellen en instellingen worden op deze server opgeslagen en gedeeld door alle browsers die hem openen.",
+  "Save or discard your changes to get the latest presets.": "Sla uw wijzigingen op of verwerp ze om de nieuwste voorinstellingen op te halen.",
+  "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Nieuwere versie behouden van: {names}. De andere staat in de map 'Conflicts' op de server."
 }

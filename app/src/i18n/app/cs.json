@@ -349,5 +349,9 @@
   "Actions": "Akce",
   "No results": "Žádné výsledky",
   "Choose quick settings": "Vybrat rychlá nastavení",
-  "Reset to defaults": "Obnovit výchozí"
+  "Reset to defaults": "Obnovit výchozí",
+  "Server storage": "Úložiště na serveru",
+  "Your presets, models and settings are stored on this server and shared by all browsers that open it.": "Vaše předvolby, modely a nastavení jsou uloženy na tomto serveru a sdílejí je všechny prohlížeče, které ho otevřou.",
+  "Save or discard your changes to get the latest presets.": "Uložte nebo zahoďte změny, abyste získali nejnovější předvolby.",
+  "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Ponechána novější verze: {names}. Ta druhá je ve složce „Conflicts“ na serveru."
 }

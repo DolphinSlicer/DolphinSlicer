@@ -352,5 +352,9 @@
   "Actions": "Actions",
   "No results": "Aucun résultat",
   "Choose quick settings": "Choisir les réglages rapides",
-  "Reset to defaults": "Rétablir les valeurs par défaut"
+  "Reset to defaults": "Rétablir les valeurs par défaut",
+  "Server storage": "Stockage sur le serveur",
+  "Your presets, models and settings are stored on this server and shared by all browsers that open it.": "Vos préréglages, vos modèles et vos paramètres sont stockés sur ce serveur et partagés par tous les navigateurs qui l’ouvrent.",
+  "Save or discard your changes to get the latest presets.": "Enregistrez ou abandonnez vos modifications pour récupérer les derniers préréglages.",
+  "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Version la plus récente conservée pour : {names}. L’autre se trouve dans le dossier « Conflicts » du serveur."
 }

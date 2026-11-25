@@ -2,7 +2,7 @@
 // controls and status polling.
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import type { Drive } from '../drive/api';
+import type { RemoteStore } from '../drive/storage';
 import { t } from '../i18n/i18n';
 import { newId } from '../library/store';
 import { connect, type PrinterConfig, PrinterHttpError, type PrinterInfo, type PrinterStatus } from '../printers/connectors';
@@ -107,10 +107,10 @@ export function addPrinterLink(name: string, siblings: string[]) {
 }
 
 /** Sync the printers chosen for it with "DolphinSlicer/printers.json" in Drive. */
-export async function syncPrinters(drive: Drive) {
+export async function syncPrinters(drive: RemoteStore) {
   const before = loadPrinters();
   const app = await drive.folder('root', 'DolphinSlicer');
-  const file = (await drive.children(app)).find((f) => f.name === 'printers.json' && !f.mimeType.endsWith('folder'));
+  const file = (await drive.children(app)).find((f) => f.name === 'printers.json' && !f.folder);
   let remoteText = '';
   let remote: PrinterEntry[] = [];
   if (file) {

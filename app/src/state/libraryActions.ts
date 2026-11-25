@@ -1,14 +1,14 @@
 // The model library: adding models (from files or the plate), opening them on the plate,
 // names and tags, deleting, and its part of the Google Drive sync.
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { Drive } from '../drive/api';
+import type { RemoteStore } from '../drive/storage';
 import { t } from '../i18n/i18n';
 import { dropFile, evict, type LibraryEntry, loadEntries, newId, readFile, removeEntry, saveEntry, writeFile } from '../library/store';
 import { syncLibrary } from '../library/sync';
 import { renderThumbnail } from '../library/thumbnail';
 import { describeError } from '../ui/errors';
 import { importFiles, inspectModel, isModelFile, liveFiles } from './actions';
-import { driveToken, requestSync } from './driveActions';
+import { remoteStore, requestSync, syncing } from './driveActions';
 import { get, notify, set } from './store';
 
 const visible = (all: Iterable<LibraryEntry>) =>
@@ -110,12 +110,12 @@ async function modelBytes(e: LibraryEntry): Promise<ArrayBuffer | null> {
     });
     return null;
   }
-  const token = await driveToken();
-  if (!token) {
+  const remote = await remoteStore();
+  if (!remote) {
     notify({ kind: 'info', title: t('Google Drive'), message: t('Sign in to Google Drive to open this model.') });
     return null;
   }
-  const bytes = await new Drive(token).downloadBytes(e.driveId);
+  const bytes = await remote.downloadBytes(e.driveId);
   await writeFile(e.id, bytes);
   await evict();
   return bytes;
@@ -157,7 +157,7 @@ export async function deleteModel(id: string) {
   if (!e) return;
   await dropFile(id);
   // Once in Drive, other devices have to learn it's gone: keep a deletion mark.
-  if (e.driveId || get().drive.email)
+  if (e.driveId || syncing())
     await saveEntry({
       id: e.id,
       name: e.name,
@@ -176,7 +176,7 @@ export async function deleteModel(id: string) {
 }
 
 /** The library's part of a Drive sync. */
-export async function syncModels(drive: Drive) {
+export async function syncModels(drive: RemoteStore) {
   const before = await loadEntries();
   const r = await syncLibrary(drive, [...before.values()], readFile, async (up) => {
     for (const e of up) await saveEntry(e);

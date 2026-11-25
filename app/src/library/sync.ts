@@ -6,7 +6,7 @@
 // reach the other devices). Model files are uploaded once and never change; they are downloaded
 // only when a model is opened.
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import type { Drive } from '../drive/api';
+import type { RemoteStore } from '../drive/storage';
 import type { LibraryEntry } from './store';
 
 export interface LibraryIndex {
@@ -46,7 +46,7 @@ export interface LibrarySyncResult {
  * this device (null if it isn't here).
  */
 export async function syncLibrary(
-  drive: Drive,
+  drive: RemoteStore,
   local: LibraryEntry[],
   readFile: (id: string) => Promise<ArrayBuffer | null>,
   onUploaded?: (entries: LibraryEntry[]) => Promise<void>,
@@ -54,7 +54,7 @@ export async function syncLibrary(
   const app = await drive.folder('root', 'DolphinSlicer');
   const folder = await drive.folder(app, 'Models');
   const children = await drive.children(folder);
-  const indexFile = children.find((f) => f.name === 'library.json' && !f.mimeType.endsWith('folder'));
+  const indexFile = children.find((f) => f.name === 'library.json' && !f.folder);
   let remoteText = '';
   let remote: LibraryEntry[] = [];
   if (indexFile) {

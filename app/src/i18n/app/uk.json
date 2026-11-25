@@ -344,5 +344,9 @@
   "Actions": "Дії",
   "No results": "Нічого не знайдено",
   "Choose quick settings": "Вибрати швидкі налаштування",
-  "Reset to defaults": "Скинути до типових"
+  "Reset to defaults": "Скинути до типових",
+  "Server storage": "Сховище на сервері",
+  "Your presets, models and settings are stored on this server and shared by all browsers that open it.": "Ваші профілі, моделі та налаштування зберігаються на цьому сервері й доступні в усіх браузерах, які його відкривають.",
+  "Save or discard your changes to get the latest presets.": "Збережіть або скасуйте зміни, щоб отримати найновіші профілі.",
+  "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Збережено новішу версію: {names}. Інша знаходиться в папці «Conflicts» на сервері."
 }

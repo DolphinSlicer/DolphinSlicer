@@ -345,5 +345,9 @@
   "Actions": "Действия",
   "No results": "Ничего не найдено",
   "Choose quick settings": "Выбрать быстрые настройки",
-  "Reset to defaults": "Сбросить по умолчанию"
+  "Reset to defaults": "Сбросить по умолчанию",
+  "Server storage": "Хранилище на сервере",
+  "Your presets, models and settings are stored on this server and shared by all browsers that open it.": "Ваши профили, модели и настройки хранятся на этом сервере и доступны во всех браузерах, которые его открывают.",
+  "Save or discard your changes to get the latest presets.": "Сохраните или отмените изменения, чтобы получить последние профили.",
+  "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Сохранена более новая версия: {names}. Другая находится в папке «Conflicts» на сервере."
 }

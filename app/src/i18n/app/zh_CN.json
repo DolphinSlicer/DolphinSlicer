@@ -340,5 +340,9 @@
   "Actions": "操作",
   "No results": "无结果",
   "Choose quick settings": "选择快速设置",
-  "Reset to defaults": "恢复默认"
+  "Reset to defaults": "恢复默认",
+  "Server storage": "服务器存储",
+  "Your presets, models and settings are stored on this server and shared by all browsers that open it.": "您的预设、模型和设置存储在此服务器上，所有打开它的浏览器共享这些数据。",
+  "Save or discard your changes to get the latest presets.": "请保存或放弃更改，以获取最新的预设。",
+  "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "已保留较新的版本：{names}。另一个版本位于服务器的“Conflicts”文件夹中。"
 }

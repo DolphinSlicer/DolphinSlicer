@@ -6,6 +6,8 @@ import { expect, test } from '@playwright/test';
 import { boxStl } from './models';
 
 test('runs over plain http:// and prints on the printer it is served from', async ({ page }) => {
+  // An empty storage folder (nginx deletes folders with everything in them).
+  await fetch('http://localhost:8090/dolphin/storage/DolphinSlicer/', { method: 'DELETE' });
   await page.goto('./');
   await expect(page.getByTestId('app')).toHaveAttribute('data-engine-ready', 'yes', { timeout: 120_000 });
   expect(await page.evaluate(() => [location.protocol, window.isSecureContext])).toEqual(['http:', false]);
@@ -13,16 +15,22 @@ test('runs over plain http:// and prints on the printer it is served from', asyn
   await expect(page.getByTestId('app')).toHaveAttribute('data-engine', 'st');
   await expect(page.getByTestId('process')).not.toHaveAttribute('data-value', '');
 
-  // Google Drive needs https://; the app says so instead of offering it.
+  // The server's storage folder takes the place of Google Drive (which needs https://).
   await page.getByTestId('open-preferences').click();
-  await expect(page.getByTestId('drive-insecure')).toBeVisible();
+  await expect(page.getByTestId('server-storage')).toBeVisible();
   await expect(page.getByTestId('drive-connect')).toHaveCount(0);
+  await expect(page.getByTestId('drive-status')).toContainText('Synced');
   await page.keyboard.press('Escape');
 
-  // The model library works (IndexedDB).
+  // The model library works, and its models go to the storage folder.
   await page.getByTestId('tab-library').click();
   await page.getByTestId('library-input').setInputFiles({ name: 'pi cube.stl', mimeType: 'model/stl', buffer: boxStl() });
   await expect(page.getByTestId('library-card')).toHaveCount(1);
+  const stored = async () => {
+    const r = await fetch('http://localhost:8090/dolphin/storage/DolphinSlicer/Models/');
+    return r.ok ? ((await r.json()) as { name: string }[]).map((f) => f.name).sort() : [];
+  };
+  await expect.poll(stored).toEqual(['library.json', 'pi cube.stl']);
   await page.getByRole('button', { name: 'Open pi cube' }).click();
   await expect(page.getByTestId('object-list')).toContainText('pi cube.stl');
 
