@@ -96,8 +96,8 @@ const MAT = {
 
 /** Scene colours per colour scheme (set by the app to match the page's theme). */
 const THEMES = {
-  light: { background: 0xdfe3e8, plate: 0xf3f5f8, grid: 0xd3d8df, outline: 0xaab2bd, exclude: 0xf1c9c9 },
-  dark: { background: 0x0b0c0f, plate: 0x17191e, grid: 0x2a2e36, outline: 0x4a515c, exclude: 0x4a2a2a },
+  light: { background: 0xe2e1dc, plate: 0xf6f5f2, grid: 0xd6d4ce, outline: 0xa3a099, exclude: 0xefc8c2 },
+  dark: { background: 0x121211, plate: 0x1e1e1d, grid: 0x30302d, outline: 0x55534d, exclude: 0x4a2b27 },
 };
 
 export class Viewport {
@@ -152,7 +152,7 @@ export class Viewport {
     this.objectsGroup.add(this.selectionCorners, this.axisGroup);
     this.axisGroup.add(this.axisGizmo);
     this.resizeObs = new ResizeObserver(() => this.resize());
-    this.resizeObs.observe(canvas.parentElement ?? canvas);
+    this.resizeObs.observe(canvas);
     canvas.addEventListener('pointerdown', this.onCubeDown, { capture: true });
     canvas.addEventListener('pointermove', this.onCubeMove, { capture: true });
     canvas.addEventListener('pointerup', this.onCubeUp, { capture: true });
@@ -338,10 +338,10 @@ export class Viewport {
     this.invalidate();
   }
 
+  /** The canvas's size is the style sheet's (beside the sidebar on wide screens); its pixels follow it. */
   private resize() {
-    const el = this.canvas.parentElement ?? this.canvas;
-    const w = el.clientWidth,
-      h = el.clientHeight;
+    const w = this.canvas.clientWidth,
+      h = this.canvas.clientHeight;
     if (!w || !h) return;
     this.renderer.setSize(w, h, false);
     this.camera.aspect = w / h;

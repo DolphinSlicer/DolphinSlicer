@@ -18,6 +18,7 @@
     "build:pi": "npm run assets && npm run typecheck && VITE_TARGET=pi vite build --base ./ --outDir dist-pi"
   },
   "dependencies": {
+    "@fontsource-variable/ibm-plex-sans": "5.3.0",
     "dompurify": "3.4.17",
     "lucide-react": "1.61.0",
     "marked": "18.1.2",

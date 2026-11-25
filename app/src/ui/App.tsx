@@ -89,7 +89,7 @@ export function App() {
   const wizard = useApp((s) => s.wizard);
   const [dragOver, setDragOver] = useState(false);
   const done = sliceState.state === 'done';
-  const [topbar, compact] = useFit<HTMLElement>(TOPBAR_STEPS, { center: true });
+  const [topbar, compact] = useFit<HTMLElement>(TOPBAR_STEPS);
   // The name of a view shown as an icon only.
   const tip = (text: string) => (compact.includes('icons') ? text : undefined);
 

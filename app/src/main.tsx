@@ -9,6 +9,8 @@ import { initPrinters } from './state/printerActions';
 import { openQuickLinks } from './state/quickLink';
 import { App } from './ui/App';
 import { installTooltips } from './ui/tooltip';
+import '@fontsource-variable/ibm-plex-sans/wght.css';
+import '@fontsource-variable/ibm-plex-sans/wght-italic.css';
 import './ui/styles.css';
 
 // The engine starts while the language loads; the UI renders once it is there.
