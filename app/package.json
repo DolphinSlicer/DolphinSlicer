@@ -15,7 +15,8 @@
     "check": "biome check --write .",
     "test": "vitest run",
     "e2e": "playwright test",
-    "build:pi": "npm run assets && npm run typecheck && VITE_TARGET=pi vite build --base ./ --outDir dist-pi"
+    "build:pi": "npm run assets && npm run typecheck && VITE_TARGET=pi vite build --base ./ --outDir dist-pi",
+    "build:docker": "npm run assets && npm run typecheck && vite build --base ./ --outDir dist-docker"
   },
   "dependencies": {
     "@fontsource-variable/ibm-plex-sans": "5.3.0",
