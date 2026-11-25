@@ -13,24 +13,20 @@ What works differently over `http://`:
   settings on the printer instead ([below](#storage-on-the-printer)), so every browser that opens
   DolphinSlicer there shares them. Without it, they stay in each browser.
 
-## Build
-
-On any computer with Node.js 22 (the engine files come from the engine build, see
-`engine/README.md`):
-
-```sh
-cd app
-npm ci
-npm run build:pi        # writes app/dist-pi/ (about 80 MB, mostly printer profiles)
-```
+For a home server instead of the printer, use the [Docker image](SELF_HOST_DOCKER.md).
 
 ## Install on a Mainsail or Fluidd printer
 
-1. Copy the build to the printer:
+1. On the printer (over SSH), download the latest build and unpack it to `~/dolphin-slicer/`:
 
    ```sh
-   rsync -a --delete app/dist-pi/ pi@printer.local:~/dolphin-slicer/
+   cd ~
+   wget https://github.com/DolphinSlicer/DolphinSlicer/releases/latest/download/dolphinslicer-pi.zip
+   rm -rf dolphin-slicer && unzip -q dolphinslicer-pi.zip && rm dolphinslicer-pi.zip
    ```
+
+   If `unzip` is missing: `sudo apt install unzip`. To use a build of your own instead, see
+   [Building it yourself](#building-it-yourself).
 
 2. Add a location to the printer's nginx site (`/etc/nginx/sites-available/mainsail`, or
    `fluidd`), inside the `server { … }` block, next to the existing `location /` block:
@@ -125,8 +121,20 @@ Things to know:
 
 ## Updating
 
-Build again and repeat step 1. The browser and the storage folder keep your presets, library and
-printers.
+Repeat step 1, then reload DolphinSlicer in the browser. The browser and the storage folder keep
+your presets, library and printers.
+
+## Building it yourself
+
+On any computer with Node.js 22 (the engine files come from the engine build, see
+`engine/README.md`):
+
+```sh
+cd app
+npm ci
+npm run build:pi        # writes app/dist-pi/ (about 120 MB, mostly printer profiles)
+rsync -a --delete dist-pi/ pi@printer.local:~/dolphin-slicer/
+```
 
 ## Tested
 

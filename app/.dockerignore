@@ -1,0 +1,5 @@
+# The image needs only the build and its nginx config (docker/Dockerfile).
+*
+!docker/default.conf
+!docker/headers.conf
+!dist-docker/

@@ -1,8 +1,6 @@
 # Deploys main to Cloudflare Pages (dolphinslicer.app), and each pull request from this repository
 # to a preview (<branch>.dolphinslicer.pages.dev, linked in a PR comment). Pull requests from forks
-# get no preview: their workflows have no secrets. The engines are cached by their sources:
-# a commit that leaves engine/ alone reuses them, one that changes it builds them (cold: hours,
-# with warm dependency and compiler caches: much less).
+# get no preview: their workflows have no secrets. The engines come from build-engine.yml.
 name: deploy
 on:
   push:
@@ -21,57 +19,9 @@ concurrency:
 
 jobs:
   engine:
-    name: Engine (${{ matrix.variant }})
+    name: Engine
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ubuntu-24.04
-    timeout-minutes: 340
-    strategy:
-      matrix:
-        variant: [st, mt]
-    env:
-      DEPS_JOBS: 4
-      ENGINE_JOBS: 4
-    steps:
-      - uses: actions/checkout@v4
-      - name: Engine built from these sources
-        id: dist
-        uses: actions/cache@v4
-        with:
-          path: .work/build-engine-${{ matrix.variant }}/dist
-          key: engine-dist-${{ matrix.variant }}-${{ hashFiles('engine/**', '!engine/test/**') }}
-      - name: Free disk space
-        if: steps.dist.outputs.cache-hit != 'true'
-        run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
-      - name: Cache WASM dependencies
-        if: steps.dist.outputs.cache-hit != 'true'
-        uses: actions/cache@v4
-        with:
-          path: .work/deps-${{ matrix.variant }}
-          key: deps-${{ matrix.variant }}-${{ hashFiles('engine/versions.env', 'engine/deps/**', 'engine/patches/deps/**', 'engine/docker/Dockerfile', 'engine/docker/*.patch') }}
-      - name: Cache compiler output
-        if: steps.dist.outputs.cache-hit != 'true'
-        uses: actions/cache@v4
-        with:
-          path: |
-            .work/ccache
-            .work/emcache
-          key: ccache-${{ matrix.variant }}-${{ github.sha }}
-          restore-keys: ccache-${{ matrix.variant }}-
-      - name: Build dependencies
-        if: steps.dist.outputs.cache-hit != 'true'
-        run: |
-          if [ ! -f .work/deps-${{ matrix.variant }}/include/boost/version.hpp ]; then
-            engine/scripts/build-deps.sh ${{ matrix.variant }}
-          fi
-      - name: Build engine
-        if: steps.dist.outputs.cache-hit != 'true'
-        run: engine/scripts/build-engine.sh ${{ matrix.variant }} orca_engine
-      - uses: actions/upload-artifact@v4
-        with:
-          name: engine-${{ matrix.variant }}
-          path: .work/build-engine-${{ matrix.variant }}/dist/slicer-${{ matrix.variant }}.*
-          retention-days: 1
-          if-no-files-found: error
+    uses: ./.github/workflows/build-engine.yml
 
   deploy:
     name: Build and deploy

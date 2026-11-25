@@ -65,7 +65,9 @@ heap before slicing, to test out-of-memory handling.
 ## Deploy
 
 `npm run build` produces `dist/`, a static site. `npm run build:pi` produces `dist-pi/`, the
-build to serve from a printer over plain HTTP (`docs/SELF_HOST_PI.md`). On Cloudflare Pages, `public/_headers` sets
+build to serve from a printer over plain HTTP (`docs/SELF_HOST_PI.md`), and `npm run build:docker`
+produces `dist-docker/` for the Docker image (`docker/Dockerfile`, `docs/SELF_HOST_DOCKER.md`).
+Each release attaches `dolphinslicer-pi.zip` and pushes the image (`release-assets.yml`). On Cloudflare Pages, `public/_headers` sets
 cross-origin isolation, so the multithreaded engine is used. Hosts that can't set headers (e.g.
 GitHub Pages) get the single-threaded engine (a service-worker shim is planned).
 
