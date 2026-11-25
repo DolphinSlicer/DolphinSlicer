@@ -96,8 +96,8 @@ const MAT = {
 
 /** Scene colours per colour scheme (set by the app to match the page's theme). */
 const THEMES = {
-  light: { background: 0xe2e1dc, plate: 0xf6f5f2, grid: 0xd6d4ce, outline: 0xa3a099, exclude: 0xefc8c2 },
-  dark: { background: 0x121211, plate: 0x1e1e1d, grid: 0x30302d, outline: 0x55534d, exclude: 0x4a2b27 },
+  light: { background: 0xe2e1dc, plate: 0xf6f5f2, grid: 0xcdcac3, outline: 0x95918a, exclude: 0xefc8c2 },
+  dark: { background: 0x121211, plate: 0x1e1e1d, grid: 0x3b3b38, outline: 0x6b6963, exclude: 0x4a2b27 },
 };
 
 export class Viewport {
@@ -130,7 +130,6 @@ export class Viewport {
     private readonly events: ViewportEvents,
   ) {
     this.renderer = new WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.applyTheme();
     this.camera.up.set(0, 0, 1);
     this.controls = new OrbitControls(this.camera, canvas);
@@ -153,6 +152,7 @@ export class Viewport {
     this.axisGroup.add(this.axisGizmo);
     this.resizeObs = new ResizeObserver(() => this.resize());
     this.resizeObs.observe(canvas);
+    this.watchPixelRatio();
     canvas.addEventListener('pointerdown', this.onCubeDown, { capture: true });
     canvas.addEventListener('pointermove', this.onCubeMove, { capture: true });
     canvas.addEventListener('pointerup', this.onCubeUp, { capture: true });
@@ -190,6 +190,7 @@ export class Viewport {
   dispose() {
     cancelAnimationFrame(this.frame);
     this.resizeObs.disconnect();
+    this.pixelRatioQuery?.removeEventListener('change', this.onPixelRatio);
     this.controls.dispose();
     this.paintLayer.dispose();
     this.gcode.dispose();
@@ -338,11 +339,28 @@ export class Viewport {
     this.invalidate();
   }
 
-  /** The canvas's size is the style sheet's (beside the sidebar on wide screens); its pixels follow it. */
+  /** The most pixels drawn: a 4K screen's. Zoomed in, the page has more pixels per CSS pixel but
+   *  fewer CSS pixels, so the canvas stays sharp; only very large screens draw fewer. */
+  private static readonly MAX_PIXELS = 3840 * 2160;
+  private pixelRatioQuery: MediaQueryList | null = null;
+  private onPixelRatio = () => {
+    this.resize();
+    this.watchPixelRatio();
+  };
+  /** The screen's pixels per CSS pixel change with the browser's zoom and from one screen to another. */
+  private watchPixelRatio() {
+    this.pixelRatioQuery?.removeEventListener('change', this.onPixelRatio);
+    this.pixelRatioQuery = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+    this.pixelRatioQuery.addEventListener('change', this.onPixelRatio);
+  }
+
+  /** The canvas's size is the style sheet's (beside the sidebar on wide screens); its pixels follow
+   *  it, one per screen pixel. */
   private resize() {
     const w = this.canvas.clientWidth,
       h = this.canvas.clientHeight;
     if (!w || !h) return;
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, Math.sqrt(Viewport.MAX_PIXELS / (w * h))));
     this.renderer.setSize(w, h, false);
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
