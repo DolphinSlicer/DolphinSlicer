@@ -89,7 +89,8 @@ export async function syncFiles(
   files: UserFiles,
   mtimes: Record<string, number>,
   state: SyncState,
-  canChangeLocal: boolean,
+  /** Whether a local file may change now (not one of presets with unsaved edits). */
+  canChange: (path: string) => boolean,
 ): Promise<SyncResult> {
   const app = await drive.folder('root', 'DolphinSlicer');
   const root = await drive.folder(app, 'Presets');
@@ -126,7 +127,7 @@ export async function syncFiles(
     r.pushed++;
   };
   const pull = async (path: string, id: string, text?: string) => {
-    if (!canChangeLocal) {
+    if (!canChange(path)) {
       r.waiting++;
       return;
     }
@@ -151,7 +152,7 @@ export async function syncFiles(
         delete synced[s.path];
         break;
       case 'deleteLocal':
-        if (!canChangeLocal) {
+        if (!canChange(s.path)) {
           r.waiting++;
           break;
         }

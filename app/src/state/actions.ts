@@ -309,6 +309,7 @@ async function reloadUserPresetsNow(files: UserFiles, mtimes: Record<string, num
   await saveUserFiles(files, mtimes);
   await addVendorsFor(files);
   const p = get().presets;
+  const edits = await unsavedEdits();
   const m = await profilesManifest();
   const bundles = await Promise.all([m.library, ...p.loadedVendors].map(vendorBundle));
   const r = await aux.call('presetsLoad', { vendors: bundles, userFiles: files });
@@ -320,6 +321,59 @@ async function reloadUserPresetsNow(files: UserFiles, mtimes: Record<string, num
     // The selected printer was deleted on another device.
     await loadPresets(get().library, {});
   }
+  // The unsaved edits again, on the presets still selected.
+  const now = get().presets.state;
+  const selected = { printer: now?.printer, print: now?.process, filament: now?.filaments[0] };
+  const again = edits.filter((e) => selected[e.type] === e.name);
+  for (const e of again) await aux.call('presetsEdit', { type: e.type, values: e.values as Record<string, string> });
+  if (again.length) await refreshConfig();
+}
+
+type Edit = string | { elements: string[] };
+/** The selected presets' unsaved edits: the edited settings' values. */
+async function unsavedEdits(): Promise<{ type: PresetType; name: string; values: Record<string, Edit> }[]> {
+  const dirty = get().presets.state?.dirty;
+  const out: { type: PresetType; name: string; values: Record<string, Edit> }[] = [];
+  for (const type of ['printer', 'print', 'filament'] as const) {
+    if (!dirty?.[type]) continue;
+    const v = await presetValues(type);
+    const values: Record<string, Edit> = {};
+    // One value of a list (a nozzle's) is reported as "key#index": the whole list is kept.
+    for (const k of new Set(v.dirty.map((x) => x.replace(/#\d+$/, '')))) {
+      const x = v.values[k];
+      if (x !== undefined) values[k] = Array.isArray(x) ? { elements: x } : x;
+    }
+    if (Object.keys(values).length) out.push({ type, name: v.name, values });
+  }
+  return out;
+}
+
+/**
+ * The user's files of the selected presets with unsaved edits (a Drive sync leaves them as they
+ * are until the edits are saved or discarded).
+ */
+export function editedPresetFiles(files: UserFiles): Set<string> {
+  const st = get().presets.state;
+  const out = new Set<string>();
+  if (!st) return out;
+  const edited: [string, string | undefined][] = [
+    ['machine/', st.dirty.printer ? st.printer : undefined],
+    ['process/', st.dirty.print ? st.process : undefined],
+    ['filament/', st.dirty.filament ? st.filaments[0] : undefined],
+  ];
+  for (const [path, text] of Object.entries(files)) {
+    if (!path.endsWith('.json')) continue;
+    let name: unknown;
+    try {
+      name = (JSON.parse(text) as { name?: unknown }).name;
+    } catch {
+      continue;
+    }
+    if (!edited.some(([dir, n]) => n && path.startsWith(dir) && name === n)) continue;
+    out.add(path);
+    out.add(path.replace(/\.json$/, '.info'));
+  }
+  return out;
 }
 
 /**
