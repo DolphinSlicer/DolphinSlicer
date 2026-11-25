@@ -365,5 +365,11 @@
   "Actions": "Åtgärder",
   "No results": "Inga resultat",
   "Choose quick settings": "Välj snabbinställningar",
-  "Reset to defaults": "Återställ standardvärden"
+  "Reset to defaults": "Återställ standardvärden",
+  "Server storage": "Serverlagring",
+  "Your presets, models and settings are stored on this server and shared by all browsers that open it.": "Dina förinställningar, modeller och inställningar lagras på den här servern och delas av alla webbläsare som öppnar den.",
+  "Save or discard your changes to get the latest presets.": "Spara eller ignorera dina ändringar för att hämta de senaste förinställningarna.",
+  "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Behöll den nyare versionen av: {names}. Den andra finns i mappen ”Conflicts” på servern.",
+  "Sync with server storage": "Synkronisera med serverlagringen",
+  "The API key is stored on the server too.": "API-nyckeln sparas också på servern."
 }

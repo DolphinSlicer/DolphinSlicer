@@ -91,6 +91,8 @@ export interface Notice {
 export interface DriveUi {
   /** The signed-in Google account, if Drive sync is on. */
   email: string | null;
+  /** Synced with the storage folder of the server that hosts the app (instead of Drive). */
+  server?: boolean;
   status: 'off' | 'signing-in' | 'idle' | 'syncing' | 'expired' | 'error';
   lastSync?: number;
   message?: string;

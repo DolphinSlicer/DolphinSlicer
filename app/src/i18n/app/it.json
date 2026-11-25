@@ -344,5 +344,11 @@
   "Actions": "Azioni",
   "No results": "Nessun risultato",
   "Choose quick settings": "Scegli impostazioni rapide",
-  "Reset to defaults": "Ripristina predefiniti"
+  "Reset to defaults": "Ripristina predefiniti",
+  "Server storage": "Archiviazione sul server",
+  "Your presets, models and settings are stored on this server and shared by all browsers that open it.": "I profili, i modelli e le impostazioni sono archiviati su questo server e condivisi da tutti i browser che lo aprono.",
+  "Save or discard your changes to get the latest presets.": "Salvare o annullare le modifiche per ottenere i profili più recenti.",
+  "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Mantenuta la versione più recente di: {names}. L'altra si trova nella cartella \"Conflicts\" sul server.",
+  "Sync with server storage": "Sincronizza con l'archiviazione sul server",
+  "The API key is stored on the server too.": "La chiave API viene salvata anche sul server."
 }

@@ -229,6 +229,8 @@ export function PrinterForm({
   const profiles = usePrinterChoices(presets);
   const [sync, setSync] = useState(printer?.sync ?? false);
   const drive = useApp((s) => !!s.drive.email);
+  // Self-hosted with a storage folder: printers sync there instead.
+  const server = useApp((s) => !!s.drive.server);
   const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [lan, setLan] = useState<LanPermission>('unsupported');
@@ -373,7 +375,7 @@ export function PrinterForm({
             </li>
           ))}
         </ul>
-        {(drive || printer?.sync) && (
+        {(drive || server || printer?.sync) && (
           <>
             <span />
             <div>
@@ -385,11 +387,11 @@ export function PrinterForm({
                   onChange={(e) => setSync(e.target.checked)}
                   data-testid="printer-sync"
                 />
-                {t('Sync with Google Drive')}
+                {server ? t('Sync with server storage') : t('Sync with Google Drive')}
               </label>
               {sync && apiKey.trim() && (
                 <p className="hint small muted" data-testid="printer-sync-key">
-                  {t('The API key is stored in Google Drive too.')}
+                  {server ? t('The API key is stored on the server too.') : t('The API key is stored in Google Drive too.')}
                 </p>
               )}
             </div>

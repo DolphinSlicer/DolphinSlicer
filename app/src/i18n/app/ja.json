@@ -346,5 +346,11 @@
   "Actions": "操作",
   "No results": "結果がありません",
   "Choose quick settings": "クイック設定を選択",
-  "Reset to defaults": "デフォルトに戻す"
+  "Reset to defaults": "デフォルトに戻す",
+  "Server storage": "サーバーストレージ",
+  "Your presets, models and settings are stored on this server and shared by all browsers that open it.": "プリセット、モデル、設定はこのサーバーに保存され、このサーバーを開くすべてのブラウザーで共有されます。",
+  "Save or discard your changes to get the latest presets.": "最新のプリセットを取得するには、変更を保存するか破棄してください。",
+  "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "新しい方のバージョンを保持しました: {names}。もう一方はサーバーの「Conflicts」フォルダーにあります。",
+  "Sync with server storage": "サーバーストレージと同期",
+  "The API key is stored on the server too.": "APIキーもサーバーに保存されます。"
 }

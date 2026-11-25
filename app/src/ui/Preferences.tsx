@@ -1,7 +1,7 @@
 // Preferences: theme, language, currency and units. Changes apply right away.
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import { Cloud, Monitor, Moon, RefreshCw, Sun } from 'lucide-react';
+import { Cloud, HardDrive, Monitor, Moon, RefreshCw, Sun } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { bcp47, LANGUAGES, type Language, matchLanguage, nativeName, t } from '../i18n/i18n';
 import { cancelSignIn, connectDrive, disconnectDrive, syncDrive } from '../state/driveActions';
@@ -148,17 +148,39 @@ function DriveSection({ close }: { close: React.ReactNode }) {
   else if (d.status === 'syncing') status = t('Syncing…');
   else if (d.status === 'expired') status = t('Sign in again to sync your presets and models.');
   else if (d.status === 'error') status = t('Sync failed: {message}', { message: d.message ?? '' });
-  else if (d.waiting) status = t('Save or discard your changes to get the presets from Drive.');
+  else if (d.waiting)
+    status = d.server
+      ? t('Save or discard your changes to get the latest presets.')
+      : t('Save or discard your changes to get the presets from Drive.');
   else if (d.lastSync)
     status = t('Synced at {time}', { time: new Date(d.lastSync).toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' }) });
   else status = '';
   return (
     <section className="prefs-drive" data-testid="drive">
       <h3>
-        <Cloud size={14} />
-        {t('Google Drive')}
+        {d.server ? <HardDrive size={14} /> : <Cloud size={14} />}
+        {d.server ? t('Server storage') : t('Google Drive')}
       </h3>
-      {!window.isSecureContext ? (
+      {d.server ? (
+        // Self-hosted with a storage folder: always on, nothing to sign in to.
+        <>
+          <p className="muted small" data-testid="server-storage">
+            {t('Your presets, models and settings are stored on this server and shared by all browsers that open it.')}
+          </p>
+          {status && (
+            <p className={`small ${d.status === 'error' ? 'error' : 'muted'}`} data-testid="drive-status">
+              {status}
+            </p>
+          )}
+          <div className="prefs-row">
+            <button className="btn" onClick={() => void syncDrive()} disabled={busy} data-testid="drive-sync">
+              <RefreshCw size={14} />
+              {t('Sync now')}
+            </button>
+            {close}
+          </div>
+        </>
+      ) : !window.isSecureContext ? (
         // Google signs in only to https:// pages (the self-hosted build is served over http://).
         <>
           <p className="muted small" data-testid="drive-insecure">

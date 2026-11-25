@@ -9,8 +9,9 @@ needs no CORS settings.
 What works differently over `http://`:
 - **Slicing is single-threaded.** Browsers allow the multithreaded engine only on https://
   pages. Plates with many objects slice slower.
-- **No Google Drive.** Google signs in only to https:// pages. Your presets and model library
-  stay in this browser.
+- **No Google Drive.** Google signs in only to https:// pages. Store your presets, models and
+  settings on the printer instead ([below](#storage-on-the-printer)), so every browser that opens
+  DolphinSlicer there shares them. Without it, they stay in each browser.
 
 ## Build
 
@@ -66,13 +67,70 @@ npm run build:pi        # writes app/dist-pi/ (about 80 MB, mostly printer profi
 The Mainsail and Fluidd nginx configs already forward Moonraker's API (`/server/`, `/printer/`,
 …) on the same address, which is why no other setup is needed.
 
+## Storage on the printer
+
+With a storage folder on the printer, DolphinSlicer keeps your presets, model library, printers and
+settings there instead of only in the browser. Every browser and device that opens
+`http://printer.local/dolphin/` then works with the same data, as with Google Drive on
+dolphinslicer.app. The app finds the folder by itself: **Preferences** shows **Server storage**
+instead of Google Drive.
+
+1. Create the folder, owned by the user nginx runs as (the `user` line in
+   `/etc/nginx/nginx.conf`, `www-data` on Raspberry Pi OS):
+
+   ```sh
+   sudo install -d -o www-data -g www-data /var/lib/dolphin-slicer
+   ```
+
+2. Add a second location next to `location /dolphin/`:
+
+   ```nginx
+   location /dolphin/storage/ {
+       alias /var/lib/dolphin-slicer/;
+       # Write files (WebDAV, built into nginx) and list folders as JSON.
+       dav_methods PUT DELETE MKCOL;
+       create_full_put_path on;
+       autoindex on;
+       autoindex_format json;
+       client_max_body_size 1024m;  # large models
+   }
+   ```
+
+3. Check the config and reload nginx:
+
+   ```sh
+   sudo nginx -t && sudo systemctl reload nginx
+   ```
+
+4. Reload DolphinSlicer in the browser. Presets, models and settings already in this browser are
+   copied to the printer at the first sync.
+
+The folder holds the same files as the `DolphinSlicer` folder in Google Drive:
+
+| Path | What |
+|---|---|
+| `DolphinSlicer/Presets/` | your presets, in OrcaSlicer's format (`machine/`, `filament/`, `process/`) |
+| `DolphinSlicer/Models/` | the model library: the model files and `library.json` (names, tags, thumbnails) |
+| `DolphinSlicer/Conflicts/` | the older version of a preset that was changed on two devices at once |
+| `DolphinSlicer/printers.json` | the printers you chose to sync |
+| `DolphinSlicer/settings.json` | preferences, your printer and filament list, the selected presets |
+
+Things to know:
+- **Anyone who can reach the printer can read and change these files**, as they can use
+  Moonraker. Don't make the printer reachable from the internet.
+- **Deleting is permanent.** Drive keeps deleted files in its trash; this folder doesn't. Include
+  `/var/lib/dolphin-slicer` in your backups.
+- Browsers sync when DolphinSlicer starts, after you save or delete a preset or change the library,
+  and when you return to the tab. **Preferences → Sync now** syncs at once.
+
 ## Updating
 
-Build again and repeat step 1. The browser keeps your presets, library and printers.
+Build again and repeat step 1. The browser and the storage folder keep your presets, library and
+printers.
 
 ## Tested
 
-`e2e/pi.spec.ts` runs this setup: nginx with the location above in front of Klipper and
+`e2e/pi.spec.ts` runs this setup: nginx with the locations above in front of Klipper and
 Moonraker (Docker), opened at a non-localhost `http://` address. It checks that the
-single-threaded engine slices, the library works, Google Drive is replaced by a note, and G-code
+single-threaded engine slices, the library is stored in the storage folder above, and G-code
 reaches Moonraker. See `app/README.md` (Test) for how to run it.

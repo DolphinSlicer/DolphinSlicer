@@ -1,7 +1,7 @@
-// Google Drive sync of the user presets, the model library, the printers chosen for it and the
-// app's settings:
-// connecting, syncing and when to sync (start-up, after a preset is saved, deleted or imported,
-// and when the tab comes back into view).
+// Sync of the user presets, the model library, the printers chosen for it and the app's settings
+// with Google Drive, or with the storage folder of a self-hosted server when it has one (always
+// on, no sign-in): connecting, syncing and when to sync (start-up, after a preset is saved,
+// deleted or imported, and when the tab comes back into view).
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { AuthExpired, Drive } from '../drive/api';
 import {
@@ -15,6 +15,8 @@ import {
   signIn,
   tokenValid,
 } from '../drive/auth';
+import { findServerStorage, ServerFolder } from '../drive/server';
+import type { RemoteStore } from '../drive/storage';
 import { type SyncState, syncFiles } from '../drive/sync';
 import { t } from '../i18n/i18n';
 import { loadUserStore, onUserFilesSaved } from '../presets/userStore';
@@ -28,6 +30,10 @@ import { type DriveUi, get, notify, set, useApp } from './store';
 
 const STATE_KEY = 'dolphin-slicer.drive.sync.v1';
 
+/** The server's storage folder, when the app is self-hosted with one: then used instead of Drive. */
+let server: ServerFolder | null = null;
+
+/** `email`: whose state it is (the Google account, or "server:" and the storage folder's URL). */
 function loadState(email: string): SyncState {
   try {
     const v = JSON.parse(localStorage.getItem(STATE_KEY) ?? 'null') as { email: string; state: SyncState } | null;
@@ -136,46 +142,53 @@ async function accessToken(a: DriveAccount, renew = false): Promise<string | nul
 }
 
 async function syncOnce() {
-  const a = loadAccount();
-  if (!a) return;
+  const a = server ? null : loadAccount();
+  if (!server && !a) return;
   // The engine's preset bundle must be loaded: pulled presets are loaded into it.
   if (get().presets.status !== 'ready') {
-    if (!tokenValid(a) && !(await probeService())) expired();
+    if (a && !tokenValid(a) && !(await probeService())) expired();
     return;
   }
   setDrive({ status: 'syncing', message: undefined });
   try {
-    let token = await accessToken(a);
-    if (!token) {
-      expired();
-      return;
-    }
-    const store = await loadUserStore();
-    // The files of presets with unsaved edits wait; the others are loaded, keeping those edits.
-    const edited = editedPresetFiles(store.files);
-    const sync = async (tk: string) => {
-      const r = await syncFiles(new Drive(tk), store.files, store.mtimes, loadState(a.email), (p) => !edited.has(p));
-      await syncModels(new Drive(tk));
-      await syncPrinters(new Drive(tk));
-      return r;
-    };
-    let r: Awaited<ReturnType<typeof sync>>;
-    try {
-      r = await sync(token);
-    } catch (e) {
-      // Rejected before its time (e.g. revoked and granted again): renew once.
-      if (!(e instanceof AuthExpired)) throw e;
-      token = await accessToken(a, true);
+    let remote: RemoteStore;
+    if (server) remote = server;
+    else {
+      const token = await accessToken(a!);
       if (!token) {
         expired();
         return;
       }
-      r = await sync(token);
+      remote = new Drive(token);
     }
-    saveState(a.email, r.state);
+    const key = server ? `server:${server.base}` : a!.email;
+    const store = await loadUserStore();
+    // The files of presets with unsaved edits wait; the others are loaded, keeping those edits.
+    const edited = editedPresetFiles(store.files);
+    const sync = async (d: RemoteStore) => {
+      const r = await syncFiles(d, store.files, store.mtimes, loadState(key), (p) => !edited.has(p));
+      await syncModels(d);
+      await syncPrinters(d);
+      return r;
+    };
+    let r: Awaited<ReturnType<typeof sync>>;
+    try {
+      r = await sync(remote);
+    } catch (e) {
+      // Rejected before its time (e.g. revoked and granted again): renew once.
+      if (!(e instanceof AuthExpired) || !a) throw e;
+      const token = await accessToken(a, true);
+      if (!token) {
+        expired();
+        return;
+      }
+      remote = new Drive(token);
+      r = await sync(remote);
+    }
+    saveState(key, r.state);
     if (r.files) await reloadUserPresets(r.files, r.mtimes);
-    // After the presets: the selected ones may have just come from Drive.
-    await syncSettings(new Drive(token));
+    // After the presets: the selected ones may have just come from the other devices.
+    await syncSettings(remote);
     if (r.conflicts.length) {
       const names = r.conflicts
         .filter((p) => p.endsWith('.json'))
@@ -184,13 +197,14 @@ async function syncOnce() {
             .split('/')
             .pop()!
             .replace(/\.json$/, ''),
-        );
+        )
+        .join(', ');
       notify({
         kind: 'warning',
         title: t('Changed on two devices'),
-        message: t('Kept the newer version of: {names}. The other one is in the Conflicts folder in Google Drive.', {
-          names: names.join(', '),
-        }),
+        message: server
+          ? t('Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.', { names })
+          : t('Kept the newer version of: {names}. The other one is in the Conflicts folder in Google Drive.', { names }),
       });
     }
     setDrive({ status: 'idle', lastSync: Date.now(), waiting: r.waiting });
@@ -204,29 +218,49 @@ async function syncOnce() {
 }
 
 let debounce = 0;
+/** Whether this device syncs (signed in to Drive, or self-hosted with storage). */
+export function syncing(): boolean {
+  return !!server || !!loadAccount();
+}
+
 /** Sync soon (after a change), if signed in. */
 export function requestSync(delay = 800) {
-  if (!loadAccount()) return;
+  if (!syncing()) return;
   clearTimeout(debounce);
   debounce = window.setTimeout(() => void syncDrive(), delay);
 }
 
-/** A valid access token, renewed through the token service if needed; null when signed out. */
-export async function driveToken(): Promise<string | null> {
+/**
+ * Where the synced files are: the server's storage, or Drive with a valid access token (renewed
+ * through the token service if needed); null when signed out.
+ */
+export async function remoteStore(): Promise<RemoteStore | null> {
+  if (server) return server;
   const a = loadAccount();
   if (!a) return null;
   const token = await accessToken(a);
   if (!token) expired();
-  return token;
+  return token ? new Drive(token) : null;
 }
 
-/** Restore the account and sync when it makes sense. Call once at start. */
+/** Restore the account, or find the server's storage, and sync when it makes sense. Call once at start. */
 export function initDrive() {
-  if (!window.isSecureContext) return;
-  const a = loadAccount();
-  // With the token service an expired token is renewed at the first sync, without asking.
-  if (a) setDrive({ email: a.email, status: 'idle' });
-  void probeService();
+  if (window.isSecureContext) {
+    const a = loadAccount();
+    // With the token service an expired token is renewed at the first sync, without asking.
+    if (a) setDrive({ email: a.email, status: 'idle' });
+  }
+  void findServerStorage().then((base) => {
+    if (base) {
+      server = new ServerFolder(base);
+      setDrive({ server: true, email: null, status: 'idle' });
+    } else if (!window.isSecureContext) return;
+    else void probeService();
+    start();
+  });
+}
+
+function start() {
   // First sync once the presets are loaded.
   const first = () => {
     if (get().presets.status !== 'ready') return false;
@@ -241,7 +275,7 @@ export function initDrive() {
   onSettingChange(() => requestSync(3000));
   document.addEventListener('visibilitychange', () => {
     const d = get().drive;
-    if (document.visibilityState === 'visible' && d.email && d.status === 'idle' && Date.now() - (d.lastSync ?? 0) > 60_000)
+    if (document.visibilityState === 'visible' && (d.email || d.server) && d.status === 'idle' && Date.now() - (d.lastSync ?? 0) > 60_000)
       void syncDrive();
   });
 }

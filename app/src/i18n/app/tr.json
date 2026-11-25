@@ -347,5 +347,11 @@
   "Actions": "Eylemler",
   "No results": "Sonuç yok",
   "Choose quick settings": "Hızlı ayarları seç",
-  "Reset to defaults": "Varsayılanlara sıfırla"
+  "Reset to defaults": "Varsayılanlara sıfırla",
+  "Server storage": "Sunucu depolaması",
+  "Your presets, models and settings are stored on this server and shared by all browsers that open it.": "Ön ayarlarınız, modelleriniz ve ayarlarınız bu sunucuda saklanır ve onu açan tüm tarayıcılarla paylaşılır.",
+  "Save or discard your changes to get the latest presets.": "En son ön ayarları almak için değişikliklerinizi kaydedin veya atın.",
+  "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Daha yeni sürüm korundu: {names}. Diğeri sunucudaki \"Conflicts\" klasöründe.",
+  "Sync with server storage": "Sunucu depolamasıyla eşitle",
+  "The API key is stored on the server too.": "API anahtarı sunucuda da saklanır."
 }

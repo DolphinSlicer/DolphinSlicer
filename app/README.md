@@ -54,6 +54,7 @@ heap before slicing, to test out-of-memory handling.
 | `src/presets/` | profile manifest and lazily fetched vendor bundles |
 | `src/gcode/` | the preview's segments from the engine's moves (and their worker), desktop's color views |
 | `src/library/` | model library: storage (IndexedDB), thumbnails, Drive sync |
+| `src/drive/` | sync of presets, library, printers and settings with Google Drive or a self-hosted server's storage folder (`server.ts`) |
 | `src/printers/` | Moonraker and OctoPrint connectors, local network access |
 | `src/view/` | three.js viewport and the instanced G-code renderer |
 | `src/ui/` | React components |

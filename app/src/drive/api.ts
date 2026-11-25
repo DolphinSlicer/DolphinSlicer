@@ -6,31 +6,16 @@ const API = 'https://www.googleapis.com/drive/v3';
 const UPLOAD = 'https://www.googleapis.com/upload/drive/v3';
 const FOLDER = 'application/vnd.google-apps.folder';
 
+import type { Child, RemoteStore, Written } from './storage';
+
 /** The token was rejected (expired or revoked): sign in again. */
 export class AuthExpired extends Error {}
 
-/**
- * `md5` is the content's checksum: unlike `version`, which counts every change on Google's side,
- * also ones the user cannot see, it changes only with the content.
- */
-export interface RemoteFile {
-  id: string;
-  path: string;
-  version: string;
-  md5?: string;
-  modifiedTime: string;
-}
-type Child = { id: string; name: string; mimeType: string; version: string; md5Checksum?: string; modifiedTime: string };
-
+type ChildJson = { id: string; name: string; mimeType: string; version: string; md5Checksum?: string; modifiedTime: string };
 type WrittenJson = { id: string; version: string; md5Checksum?: string };
-export interface Written {
-  id: string;
-  version: string;
-  md5?: string;
-}
 const written = (r: WrittenJson): Written => ({ id: r.id, version: r.version, md5: r.md5Checksum });
 
-export class Drive {
+export class Drive implements RemoteStore {
   constructor(private readonly token: string) {}
 
   private async call(url: string, init: RequestInit = {}): Promise<Response> {
@@ -50,14 +35,22 @@ export class Drive {
 
   /** Files and folders directly in a folder ('root' = My Drive). */
   async children(parent: string): Promise<Child[]> {
-    const out = [];
+    const out: Child[] = [];
     let pageToken = '';
     do {
       const q = `'${parent}' in parents and trashed = false`;
-      const r = await this.json<{ files: Child[]; nextPageToken?: string }>(
+      const r = await this.json<{ files: ChildJson[]; nextPageToken?: string }>(
         `${API}/files?${new URLSearchParams({ q, fields: 'nextPageToken,files(id,name,mimeType,version,md5Checksum,modifiedTime)', pageSize: '1000', spaces: 'drive', ...(pageToken ? { pageToken } : {}) })}`,
       );
-      out.push(...r.files);
+      for (const f of r.files)
+        out.push({
+          id: f.id,
+          name: f.name,
+          folder: f.mimeType === FOLDER,
+          version: f.version,
+          md5: f.md5Checksum,
+          modifiedTime: f.modifiedTime,
+        });
       pageToken = r.nextPageToken ?? '';
     } while (pageToken);
     return out;
@@ -65,7 +58,7 @@ export class Drive {
 
   /** The folder of this name in parent, created if missing. */
   async folder(parent: string, name: string): Promise<string> {
-    const hit = (await this.children(parent)).find((f) => f.mimeType === FOLDER && f.name === name);
+    const hit = (await this.children(parent)).find((f) => f.folder && f.name === name);
     if (hit) return hit.id;
     const r = await this.json<{ id: string }>(`${API}/files?fields=id`, {
       method: 'POST',
@@ -73,26 +66,6 @@ export class Drive {
       body: JSON.stringify({ name, mimeType: FOLDER, parents: [parent] }),
     });
     return r.id;
-  }
-
-  /** Every file below a folder, with its path relative to it ("process/My preset.json"). */
-  async tree(root: string): Promise<{ files: RemoteFile[]; folders: Map<string, string> }> {
-    const files: RemoteFile[] = [],
-      folders = new Map<string, string>([['', root]]);
-    const walk = async (id: string, prefix: string) => {
-      for (const f of await this.children(id)) {
-        // Names with a slash cannot be a desktop preset path; skip them.
-        if (f.name.includes('/') || f.name === '..' || f.name === '.') continue;
-        const path = prefix ? `${prefix}/${f.name}` : f.name;
-        if (f.mimeType === FOLDER) {
-          folders.set(path, f.id);
-          await walk(f.id, path);
-        } else if (!files.some((x) => x.path === path))
-          files.push({ id: f.id, path, version: f.version, md5: f.md5Checksum, modifiedTime: f.modifiedTime });
-      }
-    };
-    await walk(root, '');
-    return { files, folders };
   }
 
   async download(id: string): Promise<string> {
