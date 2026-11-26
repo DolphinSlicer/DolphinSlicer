@@ -140,6 +140,8 @@ export class Viewport {
   private drag: { start: Vector3; meshes: { id: string; k: number; mesh: Mesh; matrix: Matrix4 }[] } | null = null;
   /** Support blockers and enforcers, a mesh per volume and instance. */
   private volumesGroup = new Group();
+  /** The selected support volume (its object is the one selected): the axis hint goes on it. */
+  private selectedVolume: { object: string; volume: string } | null = null;
   private volumeDrag: { id: string; volume: string; start: Vector3; meshes: { mesh: Mesh; matrix: Matrix4 }[] } | null = null;
   private ray = new Raycaster();
   private resizeObs: ResizeObserver;
@@ -540,6 +542,7 @@ export class Viewport {
     selectedVolume: { object: string; volume: string } | null = null,
   ) {
     this.selected = new Set(selected);
+    this.selectedVolume = selectedVolume;
     this.setVolumes(objects, selectedVolume);
     const seen = new Set<string>();
     for (const o of objects) {
@@ -1078,8 +1081,16 @@ export class Viewport {
     this.axisSpin = null;
     this.axisGroup.position.set(0, 0, 0);
     const only = this.selected.size === 1 ? [...this.selected][0]! : null;
+    const sv = this.selectedVolume;
+    // On the selected support volume (its first instance's), else on the object.
+    const volumeMesh = sv
+      ? (this.volumesGroup.children as Mesh[]).find((m) => {
+          const d = m.userData as { id: string; volume: string; k: number };
+          return d.id === sv.object && d.volume === sv.volume && d.k === 0;
+        })
+      : undefined;
     const hint = this.axisHint,
-      mesh = only ? this.meshes.get(only)?.[0] : undefined;
+      mesh = volumeMesh ?? (only ? this.meshes.get(only)?.[0] : undefined);
     if (!hint || !mesh) return;
     mesh.updateMatrixWorld(true);
     const box = new Box3().setFromObject(mesh, true);
@@ -1259,7 +1270,8 @@ export class Viewport {
       this.events.select(id, true);
       return;
     }
-    if (!this.selected.has(id)) this.events.select(id, false);
+    // The object itself, also when one of its support volumes was selected.
+    if (!this.selected.has(id) || this.selectedVolume) this.events.select(id, false);
     const start = this.pickBedPoint(ev, 0);
     if (!start) return;
     // Several objects selected: they move together. One: the instance clicked.

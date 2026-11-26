@@ -14,8 +14,6 @@ import {
   Printer,
   Send,
   Settings,
-  ShieldMinus,
-  ShieldPlus,
   SlidersHorizontal,
   Trash2,
   TriangleAlert,
@@ -28,7 +26,7 @@ import { cancelSlice, deleteObject, downloadGcode, importFiles, isModelFile, ope
 import { addModels, addPlateToLibrary } from '../state/libraryActions';
 import { select } from '../state/plate';
 import { dismiss, isStale, notify, set, useApp } from '../state/store';
-import { deleteVolume, SHAPE_NAMES, selectedVolume, selectVolume } from '../state/supportVolumes';
+import { deleteVolume, SHAPE_NAMES, selectedVolume, selectVolume, TYPE_NAMES } from '../state/supportVolumes';
 import { About } from './About';
 import { CalibrationButton } from './Calibration';
 import { ConfirmHost } from './Confirm';
@@ -48,6 +46,7 @@ import { QuickSearch } from './QuickSearch';
 import { QuickSettings } from './QuickSettings';
 import { SegmentThumb } from './SegmentThumb';
 import { importPresetFiles, PRESET_FILES, SettingsPanel } from './SettingsPanel';
+import { SupportBlockerIcon, SupportEnforcerIcon } from './supportIcons';
 import { useFit } from './useFit';
 import { ViewportView } from './ViewportView';
 
@@ -436,7 +435,10 @@ function ObjectsCard() {
           {objects.map((o) => (
             <Fragment key={o.id}>
               <li
-                className={[selected.includes(o.id) && 'selected', (o.instances.length > 1 || o.hasConfig || o.painted) && 'with-meta']
+                className={[
+                  selected.includes(o.id) && selectedVolume?.object !== o.id && 'selected',
+                  (o.instances.length > 1 || o.hasConfig || o.painted) && 'with-meta',
+                ]
                   .filter(Boolean)
                   .join(' ')}
                 onMouseDown={(e) => {
@@ -482,7 +484,7 @@ function ObjectsCard() {
               {o.volumes?.map((v) => {
                 const name = tr(SHAPE_NAMES[v.shape]);
                 const on = selectedVolume?.object === o.id && selectedVolume.volume === v.id;
-                const Icon = v.type === 'support_blocker' ? ShieldMinus : ShieldPlus;
+                const Icon = v.type === 'support_blocker' ? SupportBlockerIcon : SupportEnforcerIcon;
                 return (
                   <li
                     key={v.id}
@@ -494,7 +496,7 @@ function ObjectsCard() {
                     <span className="name" data-tip={name}>
                       {name}
                     </span>
-                    <span className="meta">{tr(v.type === 'support_blocker' ? 'Support Blocker' : 'Support Enforcer')}</span>
+                    <span className="meta">{tr(TYPE_NAMES[v.type])}</span>
                     <button
                       className="icon-btn small"
                       aria-label={t('Delete {name}', { name })}

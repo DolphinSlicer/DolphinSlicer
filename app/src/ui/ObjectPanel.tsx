@@ -11,7 +11,15 @@ import { deleteObject, rotateZ } from '../state/actions';
 import { type Axis, type Coordinates, manipulation, mirror, resetScale, scaleBy3, setPosition, setRotation } from '../state/manipulate';
 import { formatNumber } from '../state/prefs';
 import { type AxisHint, set, useApp } from '../state/store';
-import { deleteVolume, SHAPE_NAMES, selectedVolume, setVolumeMatrix, volumeMatrixFor, volumeWorld } from '../state/supportVolumes';
+import {
+  deleteVolume,
+  SHAPE_NAMES,
+  selectedVolume,
+  setVolumeMatrix,
+  TYPE_NAMES,
+  volumeMatrixFor,
+  volumeWorld,
+} from '../state/supportVolumes';
 import { Select } from './Select';
 
 const IN = 25.4;
@@ -347,6 +355,21 @@ export function VolumePanel() {
   const sel = selectedVolume({ selectedVolume: selectedV, selected, objects });
   const imperial = useApp((s) => s.prefs.units === 'imperial');
   const [uniform, setUniform] = useState(true);
+  // The focused field's axis, drawn on the volume (Viewport.updateAxisHint): world axes for the
+  // position, desktop's angles for the rotation, the volume's own axes for the size.
+  const hints = useMemo(() => {
+    const per = (kind: AxisHint['kind'], frame: AxisHint['frame'], all = false) =>
+      ([0, 1, 2] as Axis[]).map((axis): AxisHint => ({ kind, axis, frame, ...(all && { all }) }));
+    return { position: per('move', 'world'), rotation: per('rotate', 'euler'), size: per('scale', 'object', uniform) };
+  }, [uniform]);
+  const volumeId = sel?.volume.id;
+  useEffect(
+    () => () => {
+      shown.focus = shown.hover = null;
+      sync();
+    },
+    [volumeId],
+  );
   if (!sel) return null;
   const { object, volume } = sel;
   const at = volumeWorld(object, volume);
@@ -376,14 +399,10 @@ export function VolumePanel() {
   );
   const set3 = (list: readonly number[], a: Axis, n: number) => list.map((x, i) => (i === a ? n : x));
   return (
-    <section
-      className="card object-panel"
-      aria-label={tr(volume.type === 'support_blocker' ? 'Support Blocker' : 'Support Enforcer')}
-      data-testid="volume-panel"
-    >
+    <section className="card object-panel" aria-label={tr(TYPE_NAMES[volume.type])} data-testid="volume-panel">
       <div className="card-head">
         <h2 className="op-name" data-tip={name}>
-          {name} <span className="count">{tr(volume.type === 'support_blocker' ? 'Support Blocker' : 'Support Enforcer')}</span>
+          {name} <span className="count">{tr(TYPE_NAMES[volume.type])}</span>
         </h2>
         <div className="card-tools">
           <button
@@ -413,6 +432,7 @@ export function VolumePanel() {
             digits={2}
             label={`${t('Position')} ${AXES[a]}`}
             testid={`volume-position-${a}`}
+            hint={hints.position[a]!}
             onCommit={(n) => place({ position: set3(at.position, a, Math.max(-MAX_MM, Math.min(MAX_MM, n / k))) }, `vpos${a}`)}
           />
         ))}
@@ -422,6 +442,7 @@ export function VolumePanel() {
             digits={2}
             label={`${t('Rotation')} ${AXES[a]}`}
             testid={`volume-rotation-${a}`}
+            hint={hints.rotation[a]!}
             onCommit={(n) => place({ rotation: set3(at.rotation, a, n) }, `vrot${a}`)}
           />
         ))}
@@ -447,6 +468,7 @@ export function VolumePanel() {
               digits={2}
               label={`${t('Size')} ${AXES[a]}`}
               testid={`volume-size-${a}`}
+              hint={hints.size[a]!}
               onCommit={(n) => {
                 const mm = Math.min(MAX_MM, n / k);
                 if (!(mm >= MIN_MM)) return;

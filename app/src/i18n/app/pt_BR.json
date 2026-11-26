@@ -355,5 +355,6 @@
   "Save or discard your changes to get the latest presets.": "Salve ou descarte suas alterações para obter as predefinições mais recentes.",
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Mantida a versão mais recente de: {names}. A outra está na pasta \"Conflicts\" do servidor.",
   "Sync with server storage": "Sincronizar com o armazenamento no servidor",
-  "The API key is stored on the server too.": "A chave de API também é salva no servidor."
+  "The API key is stored on the server too.": "A chave de API também é salva no servidor.",
+  "Cone": "Cone"
 }

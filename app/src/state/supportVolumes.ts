@@ -5,19 +5,29 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { Euler, Matrix4, Quaternion, Vector3 } from 'three';
 import type { Mat4, SupportShape, SupportVolume } from '../engine/types';
+import { N_ } from '../i18n/i18n';
 import { footprint } from './actions';
 import { remember } from './history';
 import { get, type SceneObject, type SceneVolume, set, touchPlate } from './store';
 
 export const SUPPORT_SHAPES: SupportShape[] = ['cube', 'cylinder', 'sphere', 'cone', 'disc', 'torus'];
-/** Desktop's names (translated with its catalog). */
+/** Desktop's names, translated with its catalog (marked so the build bundles them). */
 export const SHAPE_NAMES: Record<SupportShape, string> = {
-  cube: 'Cube',
-  cylinder: 'Cylinder',
-  sphere: 'Sphere',
-  cone: 'Cone',
-  disc: 'Disc',
-  torus: 'Torus',
+  cube: N_('Cube'),
+  cylinder: N_('Cylinder'),
+  sphere: N_('Sphere'),
+  cone: N_('Cone'),
+  disc: N_('Disc'),
+  torus: N_('Torus'),
+};
+export const TYPE_NAMES: Record<SupportVolume['type'], string> = {
+  support_blocker: N_('Support Blocker'),
+  support_enforcer: N_('Support Enforcer'),
+};
+/** Desktop's menu entries (ADD_VOLUME_MENU_ITEMS). */
+export const ADD_NAMES: Record<SupportVolume['type'], string> = {
+  support_blocker: N_('Add Support Blocker'),
+  support_enforcer: N_('Add Support Enforcer'),
 };
 
 /** Desktop's sizes (primitive_size_fields), `side` a tenth of the bed's larger side. */
@@ -135,7 +145,8 @@ export function volumeWorld(o: SceneObject, v: SceneVolume) {
     q = new Quaternion(),
     scale = new Vector3();
   m.decompose(position, q, scale);
-  const r = new Euler().setFromQuaternion(q, 'XYZ');
+  // Desktop's angles (as the object panel's): about the world's X, then Y, then Z.
+  const r = new Euler().setFromQuaternion(q, 'ZYX');
   const extent = shapeExtent(v.shape, v.size);
   return {
     position: [position.x, position.y, position.z] as [number, number, number],
@@ -155,7 +166,7 @@ export function volumeMatrixFor(
   const [rx, ry, rz] = at.rotation.map((a) => (a * Math.PI) / 180) as [number, number, number];
   const world = new Matrix4().compose(
     new Vector3(...at.position),
-    new Quaternion().setFromEuler(new Euler(rx, ry, rz, 'XYZ')),
+    new Quaternion().setFromEuler(new Euler(rx, ry, rz, 'ZYX')),
     new Vector3(...at.size.map((x, i) => Math.max(x, 0.01) / extent[i]!)),
   );
   return new Matrix4().fromArray(o.instances[0]!).invert().multiply(world).toArray();
