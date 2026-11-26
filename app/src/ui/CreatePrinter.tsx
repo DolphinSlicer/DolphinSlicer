@@ -20,12 +20,14 @@ import {
   printerTemplates,
 } from '../state/actions';
 import { notify, useApp } from '../state/store';
+import { ComboInput } from './ComboInput';
 import { ask } from './Confirm';
 import { describeError } from './errors';
 import { Select } from './Select';
 
 /** Desktop's nozzle choices (CreatePresetsDialog nozzle_diameter_vec). */
 const NOZZLES = ['0.4', '0.15', '0.2', '0.25', '0.3', '0.35', '0.5', '0.6', '0.75', '0.8', '1.0', '1.2', '1.75'];
+const NOZZLE_OPTIONS = NOZZLES.map((value) => ({ value }));
 
 type Kind = 'printer' | 'nozzle';
 type Source = 'template' | 'current';
@@ -105,6 +107,8 @@ export function CreatePrinter({
   }, [step, variantModel]);
   const linkedNames = new Set([...(linked?.processes ?? []), ...(linked?.filaments ?? [])].map((x) => x.name));
   const brandModels = vendors.find((v) => v.name.toLowerCase() === brand.trim().toLowerCase())?.models ?? [];
+  const brandOptions = useMemo(() => vendors.map((v) => ({ value: v.name })), [vendors]);
+  const modelOptions = brandModels.map((m) => ({ value: m.name }));
   // Template printers of the chosen maker, once its profiles are loaded.
   const tplEntries = presets.printers.filter((p) => p.system && p.vendor === tplVendor);
   const tplModels = [...new Set(tplEntries.map((p) => p.model!))].sort();
@@ -262,34 +266,22 @@ export function CreatePrinter({
           {kind === 'printer' ? (
             <div className="row">
               <span className="caption">{t('Printer')}</span>
-              <input
-                type="text"
-                list="create-brands"
+              <ComboInput
                 placeholder={t('Input Custom Vendor')}
                 aria-label={t('Input Custom Vendor')}
                 value={brand}
-                onChange={(e) => setBrand(e.target.value)}
+                options={brandOptions}
+                onChange={setBrand}
                 data-testid="create-vendor"
               />
-              <input
-                type="text"
-                list="create-models"
+              <ComboInput
                 placeholder={t('Input Custom Model')}
                 aria-label={t('Input Custom Model')}
                 value={model}
-                onChange={(e) => setModel(e.target.value)}
+                options={modelOptions}
+                onChange={setModel}
                 data-testid="create-model"
               />
-              <datalist id="create-brands">
-                {vendors.map((v) => (
-                  <option key={v.id} value={v.name} />
-                ))}
-              </datalist>
-              <datalist id="create-models">
-                {brandModels.map((m) => (
-                  <option key={m.name} value={m.name} />
-                ))}
-              </datalist>
             </div>
           ) : (
             <div className="row">
@@ -308,22 +300,16 @@ export function CreatePrinter({
           )}
           <div className="row">
             <span className="caption">{t('Nozzle Diameter')}</span>
-            <input
-              type="text"
+            <ComboInput
               inputMode="decimal"
-              list="create-nozzles"
               className="num"
               value={nozzle}
-              onChange={(e) => setNozzle(e.target.value)}
+              options={NOZZLE_OPTIONS}
+              onChange={setNozzle}
               aria-label={t('Nozzle Diameter')}
               data-testid="create-nozzle"
             />
             <span className="muted">{t('mm')}</span>
-            <datalist id="create-nozzles">
-              {NOZZLES.map((n) => (
-                <option key={n} value={n} />
-              ))}
-            </datalist>
           </div>
           {kind === 'printer' && (
             <>
