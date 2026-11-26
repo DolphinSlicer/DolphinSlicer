@@ -16,7 +16,7 @@ import {
   tokenValid,
 } from '../drive/auth';
 import { findServerStorage, ServerFolder } from '../drive/server';
-import type { RemoteStore } from '../drive/storage';
+import { oneSync, type RemoteStore } from '../drive/storage';
 import { type SyncState, syncFiles } from '../drive/sync';
 import { t } from '../i18n/i18n';
 import { loadUserStore, onUserFilesSaved } from '../presets/userStore';
@@ -152,23 +152,26 @@ async function syncOnce() {
   setDrive({ status: 'syncing', message: undefined });
   try {
     let remote: RemoteStore;
-    if (server) remote = server;
+    if (server) remote = oneSync(server);
     else {
       const token = await accessToken(a!);
       if (!token) {
         expired();
         return;
       }
-      remote = new Drive(token);
+      remote = oneSync(new Drive(token));
     }
     const key = server ? `server:${server.base}` : a!.email;
     const store = await loadUserStore();
     // The files of presets with unsaved edits wait; the others are loaded, keeping those edits.
     const edited = editedPresetFiles(store.files);
+    // Presets, library and printers don't depend on each other: side by side.
     const sync = async (d: RemoteStore) => {
-      const r = await syncFiles(d, store.files, store.mtimes, loadState(key), (p) => !edited.has(p));
-      await syncModels(d);
-      await syncPrinters(d);
+      const [r] = await Promise.all([
+        syncFiles(d, store.files, store.mtimes, loadState(key), (p) => !edited.has(p)),
+        syncModels(d),
+        syncPrinters(d),
+      ]);
       return r;
     };
     let r: Awaited<ReturnType<typeof sync>>;
@@ -182,7 +185,7 @@ async function syncOnce() {
         expired();
         return;
       }
-      remote = new Drive(token);
+      remote = oneSync(new Drive(token));
       r = await sync(remote);
     }
     saveState(key, r.state);

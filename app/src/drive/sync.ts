@@ -10,7 +10,8 @@
 // otherwise those steps wait for the next sync.
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { UserFiles } from '../engine/protocol';
-import { type RemoteFile, type RemoteStore, tree as walkTree } from './storage';
+import { md5 } from './md5';
+import { pool, type RemoteFile, type RemoteStore, tree as walkTree } from './storage';
 
 /** `md5`: the Drive file's content checksum when synced (`version` for state saved before it). */
 export interface SyncedEntry {
@@ -142,7 +143,11 @@ export async function syncFiles(
   const tree = await walkTree(drive, root);
   const remote = Object.fromEntries(tree.files.map((f) => [f.path, f]));
   const local: Record<string, LocalFile> = {};
-  for (const [p, text] of Object.entries(files)) local[p] = { hash: await sha256(text), mtime: mtimes[p] ?? 0 };
+  await Promise.all(
+    Object.entries(files).map(async ([p, text]) => {
+      local[p] = { hash: await sha256(text), mtime: mtimes[p] ?? 0 };
+    }),
+  );
 
   const out: UserFiles = { ...files };
   const outMtimes = { ...mtimes };
@@ -150,21 +155,23 @@ export async function syncFiles(
   const r: SyncResult = { files: null, mtimes: outMtimes, state: { files: synced }, conflicts: [], waiting: 0, pushed: 0, pulled: 0 };
   let localChanged = false;
 
-  const folderFor = async (path: string) => {
-    const dir = path.includes('/') ? path.slice(0, path.lastIndexOf('/')) : '';
-    let id = tree.folders.get(dir);
-    if (id) return id;
-    let cur = '';
-    id = root;
-    for (const part of dir.split('/')) {
-      cur = cur ? `${cur}/${part}` : part;
-      id = tree.folders.get(cur) ?? (await drive.folder(id, part));
-      tree.folders.set(cur, id);
+  // Each folder made once, also when several uploads need it at the same time.
+  const made = new Map<string, Promise<string>>();
+  const folderAt = (dir: string): Promise<string> => {
+    const known = tree.folders.get(dir);
+    if (known) return Promise.resolve(known);
+    let id = made.get(dir);
+    if (!id) {
+      const cut = dir.lastIndexOf('/');
+      const [up, name] = cut < 0 ? ['', dir] : [dir.slice(0, cut), dir.slice(cut + 1)];
+      id = folderAt(up).then((parent) => drive.folder(parent, name));
+      made.set(dir, id);
     }
     return id;
   };
-  let conflictsId: string | undefined;
-  const conflicts = async () => (conflictsId ??= await drive.folder(app, 'Conflicts'));
+  const folderFor = (path: string) => folderAt(path.includes('/') ? path.slice(0, path.lastIndexOf('/')) : '');
+  let conflictsId: Promise<string> | undefined;
+  const conflicts = () => (conflictsId ??= drive.folder(app, 'Conflicts'));
   const push = async (path: string, id?: string) => {
     const text = files[path]!;
     const res = id ? await drive.update(id, text) : await drive.create(await folderFor(path), path.split('/').pop()!, text);
@@ -184,7 +191,8 @@ export async function syncFiles(
     r.pulled++;
   };
 
-  for (const s of plan(local, remote, state.files)) {
+  // The steps touch one path each: several at a time (a first sync has hundreds of files to fetch).
+  await pool(plan(local, remote, state.files), 8, async (s) => {
     switch (s.op) {
       case 'push':
         await push(s.path, s.id);
@@ -207,6 +215,13 @@ export async function syncFiles(
         localChanged = true;
         break;
       case 'resolve': {
+        // The same content on both sides (a first sync of presets this device has too): Drive's
+        // checksum tells, without downloading.
+        const R = remote[s.path]!;
+        if (R.md5 && R.md5 === md5(new TextEncoder().encode(files[s.path]!))) {
+          synced[s.path] = { id: s.id, version: R.version, md5: R.md5, hash: local[s.path]!.hash };
+          break;
+        }
         const text = await drive.download(s.id);
         const hash = await sha256(text);
         if (hash === local[s.path]!.hash) {
@@ -238,7 +253,7 @@ export async function syncFiles(
         delete synced[s.path];
         break;
     }
-  }
+  });
   if (localChanged) r.files = out;
   return r;
 }
