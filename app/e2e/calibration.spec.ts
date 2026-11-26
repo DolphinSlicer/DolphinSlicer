@@ -10,8 +10,8 @@ test('the temperature tower: its model, the filament changed for it, its tempera
   await page.getByTestId('open-calibration').click();
   await page.getByTestId('calibration-menu').getByRole('menuitem', { name: 'Temperature' }).click();
   const dialog = page.getByTestId('calib-dialog');
-  // Desktop's checks of the range.
-  await dialog.getByRole('textbox', { name: 'End temp' }).fill('228');
+  // Desktop's checks of the range (the end, rounded down to steps of 5, must be 5 below the start).
+  await dialog.getByRole('textbox', { name: 'End temp' }).fill('230');
   await dialog.getByTestId('calib-ok').click();
   await expect(dialog.getByRole('alert')).toContainText('Start temp >= End temp + 5');
   await dialog.getByRole('radio', { name: 'PETG' }).check();

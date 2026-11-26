@@ -51,7 +51,9 @@ export function useModal<T extends HTMLElement>() {
     return () => {
       document.removeEventListener('keydown', onKey, true);
       open.splice(open.indexOf(el), 1);
-      if (back?.isConnected) back.focus({ preventScroll: true });
+      // Unless the user put it elsewhere meanwhile (the dialog closes with an animation).
+      const at = document.activeElement;
+      if (back?.isConnected && (!at || at === document.body || el.contains(at))) back.focus({ preventScroll: true });
     };
   }, []);
   return ref;

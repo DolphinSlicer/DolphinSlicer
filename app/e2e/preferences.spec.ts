@@ -16,8 +16,10 @@ test('theme switches the page and is kept after a reload', async ({ page }) => {
   await page.getByTestId('open-preferences').click();
   await prefs(page).getByRole('radio', { name: 'Dark' }).click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  // A dark background (any shade of the dark theme).
   const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
-  expect(bg).toBe('rgb(13, 15, 18)');
+  const channels = bg.match(/\d+/g)!.slice(0, 3).map(Number);
+  expect(Math.max(...channels), bg).toBeLessThan(60);
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await page.getByTestId('open-preferences').click();

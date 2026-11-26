@@ -129,8 +129,10 @@ function bindViewport(vp: Viewport, home: HTMLButtonElement): () => void {
     if (!covered) vp.setCubeAt(gap, gap);
     else if (side) vp.setCubeAt(Math.round(Math.max(...cards.map((r) => r.right)) - c.left + 12), gap);
     else vp.setCubeAt(gap, Math.round(c.bottom - Math.min(...cards.map((r) => r.top)) + 12));
-    home.style.left = `${vp.cube.left}px`;
-    home.style.bottom = `${vp.cube.bottom + vp.cube.size - 12}px`;
+    // The button is placed in its container, which the canvas may not fill (beside the docked panel).
+    const box = (home.offsetParent ?? document.body).getBoundingClientRect();
+    home.style.left = `${c.left - box.left + vp.cube.left}px`;
+    home.style.bottom = `${box.bottom - c.bottom + vp.cube.bottom + vp.cube.size - 12}px`;
   };
   const cubeObs = new ResizeObserver(placeCube);
   cubeObs.observe(vp.renderer.domElement);

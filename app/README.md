@@ -28,6 +28,10 @@ npm run e2e              # Playwright: Chromium, multithreaded (port 4183) and s
 BENCH_GCODE=big.gcode npx playwright test bench --project=mt    # preview benchmark (opt-in)
 ```
 
+CI runs the end-to-end tests on every pull request and on `main` (the `e2e` jobs in
+`.github/workflows/deploy.yml`: each project in two shards, about 15 minutes). A failed job keeps
+its Playwright report and traces as an artifact.
+
 Printers (opt-in; Linux with Docker, as root for the simulated GPIO chip):
 
 ```sh

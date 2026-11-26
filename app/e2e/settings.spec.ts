@@ -155,7 +155,7 @@ test('switching to another process asks before discarding unsaved edits', async 
   const otherFilament = (await options(filament, { values: true })).find((v) => v && v !== current);
   await choose(filament, otherFilament!);
   await expect(filament).toHaveAttribute('data-value', otherFilament!);
-  await expect(page.getByTestId('confirm')).toHaveCount(0);
+  await expect(page.getByTestId('confirm')).toBeHidden();
 
   const process = page.getByTestId('process');
   const other = (await options(process, { values: true })).find((v) => v !== '0.20mm Standard @MyKlipper');
@@ -182,7 +182,7 @@ test('another nozzle keeps unsaved print settings that fit it', async ({ page })
   const nozzle = page.getByTestId('nozzle');
   await choose(nozzle, '0.6');
   await expect(nozzle).toHaveAttribute('data-value', '0.6');
-  await expect(page.getByTestId('confirm')).toHaveCount(0);
+  await expect(page.getByTestId('confirm')).toBeHidden();
   await page.getByTestId('edit-print').click();
   await expect((await field(page, 'layer_height')).locator('input')).toHaveValue('0.25');
 
@@ -277,12 +277,15 @@ test('bed shape, excluded area and collision volumes are edited visually', async
   await page.getByTestId('bed-apply').click();
   await expect(page.getByTestId('edit-printable_area')).toContainText('Round, Ø 220 mm');
   await expect(await field(page, 'printable_area')).toHaveClass(/dirty/);
+  // Closed (after its close animation), before the next one opens.
+  await expect(page.getByTestId('bed-apply')).toHaveCount(0);
 
   // Excluded area: a rectangle.
   await page.getByTestId('edit-bed_exclude_area').click();
   await page.getByRole('radio', { name: 'Rectangle' }).click();
   await page.getByTestId('bed-apply').click();
   await expect(page.getByTestId('edit-bed_exclude_area')).toContainText(/mm at /);
+  await expect(page.getByTestId('bed-apply')).toHaveCount(0);
 
   // Collision volumes: one, limited in height.
   await page.getByTestId('settings-search').fill('collision');
@@ -662,7 +665,7 @@ test('compare presets side by side: the other preset’s values beside these, an
   await expect(page.getByTestId('settings-save')).toBeEnabled();
   // Only the differences, from every page; then all of them taken over.
   await page.getByTestId('settings-only-diff').check();
-  await expect(page.locator('.settings .field[data-key="wall_loops"]')).toBeVisible();
+  await expect(page.locator('.settings .field[data-key="top_shell_layers"]')).toBeVisible();
   await expect(page.locator('.settings .field[data-key="layer_height"]')).toHaveCount(0);
   await page.getByTestId('settings-copy-all').click();
   await expect(page.getByText('No matching settings.')).toBeVisible();

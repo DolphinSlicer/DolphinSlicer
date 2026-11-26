@@ -193,7 +193,7 @@ test('create a filament as desktop does: from a filament, or copying a preset pe
   await expect((await field(page, 'filament_vendor')).locator('input')).toHaveValue('Acme');
 });
 
-test('a new variant shares its printer’s print settings and filaments, by choice', async ({ page }) => {
+test('a new variant uses its printer’s print settings and filaments', async ({ page }) => {
   await start(page);
   await choose(page.getByTestId('printer'), { label: 'Add or remove printers…' });
   const wizard = page.getByTestId('wizard');
@@ -216,26 +216,22 @@ test('a new variant shares its printer’s print settings and filaments, by choi
   const own = filaments.filter((f) => f.endsWith('@Acme Cube 0.4 nozzle'));
   expect(own).toEqual(['Generic PETG @Acme Cube 0.4 nozzle', 'Generic PLA @Acme Cube 0.4 nozzle']);
 
-  // Create variant…: its printer's presets, all to be shared; one left out.
+  // Create variant…: it uses its printer's presets (listed), and copies are optional.
   await choose(page.getByTestId('nozzle'), { label: 'Create variant…' });
   await form.getByTestId('create-nozzle').fill('0.6');
   await form.getByTestId('create-next').click();
-  const sharedFilaments = form.getByTestId('create-shared-filaments').getByRole('checkbox');
-  await expect(sharedFilaments).toHaveCount(2);
-  for (const c of await sharedFilaments.all()) await expect(c).toBeChecked();
-  await expect(form.getByTestId('create-shared-processes').getByRole('checkbox').first()).toBeChecked();
-  // Copies are optional now, and don't repeat the shared ones.
+  await expect(form.getByTestId('create-shared-filaments').getByRole('listitem')).toHaveText(own);
+  await expect(form.getByTestId('create-shared-processes').getByRole('listitem').first()).toBeVisible();
+  // The copies to choose from don't repeat the shared ones.
   await expect(form.getByTestId('create-filaments')).not.toContainText('@Acme Cube 0.4 nozzle');
-  await form.getByTestId('create-shared-filaments').getByRole('checkbox', { name: 'Generic PETG @Acme Cube 0.4 nozzle' }).uncheck();
   await form.getByTestId('create-submit').click();
 
-  // The variant uses the shared presets; the one left out stays with the 0.4.
+  // The variant uses the shared presets.
   await expect(wizard).toHaveCount(0);
   await expect(page.getByTestId('printer')).toHaveAttribute('data-value', 'Acme Cube 0.6 nozzle');
   await expect(page.getByTestId('filament')).toHaveAttribute('data-value', 'Generic PLA @Acme Cube 0.4 nozzle');
   const shared = await options(page.getByTestId('filament'));
-  expect(shared).toContain('Generic PLA @Acme Cube 0.4 nozzle');
-  expect(shared).not.toContain('Generic PETG @Acme Cube 0.4 nozzle');
+  expect(shared).toEqual(expect.arrayContaining(own));
   expect(await options(page.getByTestId('process'))).toEqual(expect.arrayContaining([expect.stringMatching(/@Acme Cube 0\.4 nozzle$/)]));
 
   // Kept across reloads (the presets' files name the variant).

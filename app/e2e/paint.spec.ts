@@ -77,7 +77,8 @@ test('paint support enforcers and blockers, undo them, and slice with them', asy
   await expect(page.getByTestId('object-panel')).toBeVisible();
   await page.getByTestId('slice').click();
   await expect(page.getByTestId('notice-warning')).toContainText('Support enforcers are used but support is not enabled');
-  // Erase all.
+  // Erase all (painting is in Prepare; the slice opened the preview).
+  await page.getByRole('tab', { name: 'Prepare' }).click();
   await page.keyboard.press('l');
   await page.getByTestId('paint-erase-all').click();
   await expect.poll(() => painted(page)).toBe(false);
