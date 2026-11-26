@@ -29,7 +29,7 @@ BENCH_GCODE=big.gcode npx playwright test bench --project=mt    # preview benchm
 ```
 
 CI runs the end-to-end tests on every pull request and on `main` (the `e2e` jobs in
-`.github/workflows/deploy.yml`: each project in two shards, about 15 minutes). A failed job keeps
+`.github/workflows/deploy.yml`: each project in two shards, about 7 minutes). A failed job keeps
 its Playwright report and traces as an artifact.
 
 Printers (opt-in; Linux with Docker, as root for the simulated GPIO chip):

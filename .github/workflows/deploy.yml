@@ -106,10 +106,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: npm, cache-dependency-path: app/package-lock.json }
+      # Where a local engine build puts them: the build and the tests that load the engine
+      # directly (settingsCoverage.spec.ts) find them there.
       - uses: actions/download-artifact@v4
-        with: { name: engine-st, path: .work/engine-st }
+        with: { name: engine-st, path: .work/build-engine-st/dist }
       - uses: actions/download-artifact@v4
-        with: { name: engine-mt, path: .work/engine-mt }
+        with: { name: engine-mt, path: .work/build-engine-mt/dist }
       - name: Fetch OrcaSlicer sources
         run: bash -c 'source engine/scripts/common.sh && fetch_orca'
       - name: Install
@@ -117,9 +119,6 @@ jobs:
         run: npm ci
       - name: Build
         working-directory: app
-        env:
-          ENGINE_DIST_ST: ${{ github.workspace }}/.work/engine-st
-          ENGINE_DIST_MT: ${{ github.workspace }}/.work/engine-mt
         run: npm run build
       - name: Install the browser
         working-directory: app
