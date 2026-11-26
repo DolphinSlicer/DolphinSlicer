@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { expect, test } from '@playwright/test';
 
-test('the temperature tower: its model, the filament changed for it, its temperatures', async ({ page }) => {
+test('the temperature tower: its model, the filament changed for it, its temperatures', { tag: '@engine' }, async ({ page }) => {
   await page.goto('/');
   await expect(page.getByTestId('app')).toHaveAttribute('data-engine-ready', 'yes');
   await expect(page.getByTestId('process')).not.toHaveAttribute('data-value', '');

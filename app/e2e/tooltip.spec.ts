@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { expect, test } from '@playwright/test';
 
-test('tooltips show soon after the pointer rests, also on disabled buttons', async ({ page }) => {
+test('tooltips show soon after the pointer rests, also on disabled buttons', { tag: '@browser' }, async ({ page }) => {
   await page.goto('/');
   await expect(page.getByTestId('app')).toHaveAttribute('data-engine-ready', 'yes');
   expect(await page.locator('[title]').count()).toBe(0);

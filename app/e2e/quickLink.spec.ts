@@ -27,7 +27,7 @@ async function site(page: Page) {
 
 const link = (...models: string[]) => `/?${models.map((m) => `model=${encodeURIComponent(m)}`).join('&')}`;
 
-test('a slice-now link opens the model on the plate, ready to slice', async ({ page }) => {
+test('a slice-now link opens the model on the plate, ready to slice', { tag: '@browser' }, async ({ page }) => {
   await site(page);
   await page.goto(link('https://models.example.test/files/cube.stl'));
   await expect(page.getByTestId('object-list')).toContainText('cube.stl');

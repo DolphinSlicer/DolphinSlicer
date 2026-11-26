@@ -51,7 +51,7 @@ test('each preset type keeps its settings page, as desktop’s tabs', async ({ p
   await expect(current).toHaveText('Cooling');
 });
 
-test('an edited setting is used by the next slice, and can be reset to the system value', async ({ page }) => {
+test('an edited setting is used by the next slice, and can be reset to the system value', { tag: '@engine' }, async ({ page }) => {
   await ready(page);
   await page.getByTestId('file-input').setInputFiles({ name: 'box.stl', mimeType: 'model/stl', buffer: boxStl(20, 20, 10) });
   await page.getByTestId('edit-print').click();
@@ -96,7 +96,7 @@ test('settings that do not apply are hidden or greyed out, as on desktop', async
   await expect(page.getByRole('tooltip')).toContainText(/wall loops/i, { timeout: 1000 });
 });
 
-test('a setting’s description shows from its name, by pointer, in both themes', async ({ page }) => {
+test('a setting’s description shows from its name, by pointer, in both themes', { tag: '@browser' }, async ({ page }) => {
   await ready(page);
   await page.getByTestId('edit-print').click();
   const lh = await field(page, 'layer_height');
@@ -194,7 +194,7 @@ test('another nozzle keeps unsaved print settings that fit it', async ({ page })
   await expect(page.getByTestId('process')).not.toHaveAttribute('data-value', '0.20mm Standard @MyKlipper');
 });
 
-test('save as a user preset, keep it across reloads, export and delete it', async ({ page }) => {
+test('save as a user preset, keep it across reloads, export and delete it', { tag: '@browser' }, async ({ page }) => {
   await ready(page);
   await page.getByTestId('edit-print').click();
   const density = await field(page, 'sparse_infill_density');
@@ -233,7 +233,7 @@ test('save as a user preset, keep it across reloads, export and delete it', asyn
   await expect.poll(() => options(page.getByTestId('settings-preset'))).not.toContain('My strong process');
 });
 
-test('a desktop user preset file can be imported and sliced with', async ({ page }) => {
+test('a desktop user preset file can be imported and sliced with', { tag: '@engine' }, async ({ page }) => {
   await ready(page);
   // The format desktop OrcaSlicer writes for a user process preset.
   const preset = {
@@ -258,7 +258,7 @@ test('a desktop user preset file can be imported and sliced with', async ({ page
   expect(g).toContain('; print_settings_id = Desktop fine');
 });
 
-test('bed shape, excluded area and collision volumes are edited visually', async ({ page }) => {
+test('bed shape, excluded area and collision volumes are edited visually', { tag: '@browser' }, async ({ page }) => {
   await ready(page);
   await page.getByTestId('edit-printer').click();
   await page.getByTestId('settings-search').fill('area');
@@ -368,10 +368,12 @@ test('information closes by itself after a few seconds, not while the pointer is
   const notice = page.getByTestId('notice-info');
   await expect(notice.locator('.notice-timer')).toBeVisible();
   await notice.hover();
-  await page.waitForTimeout(6000);
+  // The timer's length (5 s in the app) shortened, so the test need not wait for it.
+  await page.addStyleTag({ content: '.notice-timer { animation-duration: 1s !important; }' });
+  await page.waitForTimeout(1500);
   await expect(notice).toBeVisible();
   await page.mouse.move(5, 5);
-  await expect(notice).toBeHidden({ timeout: 7000 });
+  await expect(notice).toBeHidden({ timeout: 3000 });
 });
 
 test('clicking a setting’s name opens the setting’s section of the OrcaSlicer wiki beside the settings', async ({ page }) => {

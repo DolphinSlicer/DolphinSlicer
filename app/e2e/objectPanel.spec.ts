@@ -12,7 +12,7 @@ async function enter(page: Page, kind: string, axis: number, value: string) {
 }
 const values = (page: Page, kind: string) => Promise.all([0, 1, 2].map((a) => field(page, kind, a).inputValue()));
 
-test('edit position, rotation, scale and size of the selected object', async ({ page }) => {
+test('edit position, rotation, scale and size of the selected object', { tag: '@browser' }, async ({ page }) => {
   await page.goto('/');
   await expect(page.getByTestId('app')).toHaveAttribute('data-engine-ready', 'yes');
   await page.getByTestId('file-input').setInputFiles([{ name: 'box.stl', mimeType: 'model/stl', buffer: boxStl(30, 20, 15) }]);
@@ -144,7 +144,7 @@ test('edit position, rotation, scale and size of the selected object', async ({ 
   await expect(page.getByTestId('object-panel')).toHaveCount(0);
 });
 
-test('a rotated, stretched and mirrored object slices', async ({ page }) => {
+test('a rotated, stretched and mirrored object slices', { tag: '@engine' }, async ({ page }) => {
   await page.goto('/');
   await expect(page.getByTestId('app')).toHaveAttribute('data-engine-ready', 'yes');
   await page.getByTestId('file-input').setInputFiles([{ name: 'box.stl', mimeType: 'model/stl', buffer: boxStl(20, 20, 10) }]);

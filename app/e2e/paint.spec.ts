@@ -34,7 +34,7 @@ const topOfBox = (page: Page) =>
   });
 const painted = (page: Page) => page.evaluate(() => (window as unknown as Win).__orca.store.getState().objects[0]!.painted);
 
-test('paint support enforcers and blockers, undo them, and slice with them', async ({ page }) => {
+test('paint support enforcers and blockers, undo them, and slice with them', { tag: ['@engine', '@browser'] }, async ({ page }) => {
   await page.goto('/');
   await expect(page.getByTestId('app')).toHaveAttribute('data-engine-ready', 'yes');
   if (!(await page.evaluate(() => !!(window as unknown as { __orca?: { viewport?: object } }).__orca?.viewport))) return;

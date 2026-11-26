@@ -13,7 +13,7 @@ async function ready(page: Page) {
   await expect(page.getByTestId('process')).not.toHaveAttribute('data-value', '');
 }
 
-test('add, find, tag, open and delete library models', async ({ page }) => {
+test('add, find, tag, open and delete library models', { tag: '@browser' }, async ({ page }) => {
   await page.goto('/');
   await ready(page);
   await page.getByTestId('tab-library').click();

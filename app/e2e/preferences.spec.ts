@@ -11,7 +11,7 @@ async function ready(page: Page) {
 }
 const prefs = (page: Page) => page.getByTestId('preferences');
 
-test('theme switches the page and is kept after a reload', async ({ page }) => {
+test('theme switches the page and is kept after a reload', { tag: '@browser' }, async ({ page }) => {
   await ready(page);
   await page.getByTestId('open-preferences').click();
   await prefs(page).getByRole('radio', { name: 'Dark' }).click();
@@ -27,7 +27,7 @@ test('theme switches the page and is kept after a reload', async ({ page }) => {
   await expect(page.locator('html')).not.toHaveAttribute('data-theme', /./);
 });
 
-test('language changes the app and the settings text, and is kept', async ({ page }) => {
+test('language changes the app and the settings text, and is kept', { tag: '@browser' }, async ({ page }) => {
   await ready(page);
   await page.getByTestId('open-preferences').click();
   await choose(page.getByTestId('pref-language'), 'de');

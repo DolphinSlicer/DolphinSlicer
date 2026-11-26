@@ -15,7 +15,7 @@ async function start(page: Page) {
   await expect(page.getByTestId('printer')).toHaveAttribute('data-value', 'MyKlipper 0.4 nozzle');
 }
 
-test('first start opens the wizard; only added printers and filaments are listed', async ({ page }) => {
+test('first start opens the wizard; only added printers and filaments are listed', { tag: '@browser' }, async ({ page }) => {
   await start(page);
   await expect(wizard(page)).toBeVisible();
   await expect(page.getByTestId('vendor')).toHaveCount(0);
@@ -73,7 +73,7 @@ test('a Bambu Studio preset imports, loading the profiles it builds on', async (
   await expect(page.getByTestId('wizard-import-result')).toContainText('My Bambu PLA');
 });
 
-test('a PrusaSlicer config is converted, with notes on what is not 1:1, and slices', async ({ page }) => {
+test('a PrusaSlicer config is converted, with notes on what is not 1:1, and slices', { tag: '@engine' }, async ({ page }) => {
   const { readFileSync } = await import('node:fs');
   const { boxStl } = await import('./models');
   await start(page);
