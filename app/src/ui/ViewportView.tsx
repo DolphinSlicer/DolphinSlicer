@@ -9,6 +9,7 @@ import { geometries, isOnBed, onPreviewData, parsedGcode } from '../state/action
 import { endStroke, onPaintRender, overhangLimit, paintPointer, paintWheel } from '../state/paintActions';
 import { layOnFace, moveInstances, select } from '../state/plate';
 import { set, useApp } from '../state/store';
+import { moveVolume, selectVolume } from '../state/supportVolumes';
 
 /** Lay-on-face sides per mesh and rotation (the last few). */
 const planeCache = new Map<string, FacePlane[]>();
@@ -81,6 +82,8 @@ function createViewport(canvas: HTMLCanvasElement): Viewport {
     isOnBed,
     menu: (id, x, y) => set({ menu: { id, x, y } }),
     layOnFace,
+    selectVolume: (id, volume) => selectVolume(id, volume),
+    volumeMoved: (id, volume, dx, dy) => moveVolume(id, volume, dx, dy),
     paint: (ev) => paintPointer(ev),
     paintEnd: endStroke,
     paintWheel,
@@ -97,7 +100,7 @@ function bindViewport(vp: Viewport, home: HTMLButtonElement): () => void {
     const s = useApp.getState();
     scheme();
     vp.setBed(s.presets.bed);
-    vp.setObjects(s.objects, geometries, s.selected);
+    vp.setObjects(s.objects, geometries, s.selected, s.selectedVolume);
     if (s.view === 'prepare' || s.view === 'preview') vp.setMode(s.view);
   };
   apply();
@@ -140,8 +143,13 @@ function bindViewport(vp: Viewport, home: HTMLButtonElement): () => void {
   requestAnimationFrame(placeCube);
   const unsub = useApp.subscribe((s, prev) => {
     if (s.presets.bed !== prev.presets.bed) vp.setBed(s.presets.bed);
-    if (s.objects !== prev.objects || s.selected !== prev.selected || s.presets.bed !== prev.presets.bed)
-      vp.setObjects(s.objects, geometries, s.selected);
+    if (
+      s.objects !== prev.objects ||
+      s.selected !== prev.selected ||
+      s.selectedVolume !== prev.selectedVolume ||
+      s.presets.bed !== prev.presets.bed
+    )
+      vp.setObjects(s.objects, geometries, s.selected, s.selectedVolume);
     if (s.view !== prev.view && (s.view === 'prepare' || s.view === 'preview')) vp.setMode(s.view);
     if (s.prefs.theme !== prev.prefs.theme) scheme();
     if (s.axisHint !== prev.axisHint) vp.setAxisHint(s.axisHint);

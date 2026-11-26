@@ -1,10 +1,11 @@
 // The plate's toolbar over the 3D view (as desktop's), and its context menu (a right click on an
 // object, the plate or the object list). Commands and shortcuts: plateCommands.ts.
 // SPDX-License-Identifier: AGPL-3.0-or-later
+import { ChevronRight } from 'lucide-react';
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { t } from '../i18n/i18n';
-import { set, useApp } from '../state/store';
-import { COMMANDS, type Command, VIEWS } from './plateCommands';
+import { type AppState, set, useApp } from '../state/store';
+import { COMMANDS, type Command, SUPPORT_MENUS, type Submenu, VIEWS } from './plateCommands';
 
 const C = COMMANDS;
 const GROUPS: Command[][] = [
@@ -50,11 +51,13 @@ export function PlateToolbar() {
 }
 
 // Fit view frames the selection: on an object's menu (a right click selects the object).
-const OBJECT_MENU: (Command | null)[] = [
+const OBJECT_MENU: (Command | Submenu | null)[] = [
   C.copy,
   C.cut,
   C.paste,
   C.clone,
+  null,
+  ...SUPPORT_MENUS,
   null,
   C.addInstance,
   C.removeInstance,
@@ -66,7 +69,7 @@ const OBJECT_MENU: (Command | null)[] = [
   null,
   C.delete,
 ];
-const PLATE_MENU: (Command | null)[] = [
+const PLATE_MENU: (Command | Submenu | null)[] = [
   C.paste,
   C.selectAll,
   null,
@@ -106,7 +109,9 @@ export function PlateMenu() {
   const close = () => set({ menu: null });
   const items = menu.id ? OBJECT_MENU : PLATE_MENU;
   const move = (e: React.KeyboardEvent, by: number) => {
-    const list = [...ref.current!.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')];
+    const list = [
+      ...ref.current!.querySelectorAll<HTMLButtonElement>(':scope > button:not(:disabled), :scope > .submenu > button:not(:disabled)'),
+    ];
     const i = list.indexOf(document.activeElement as HTMLButtonElement);
     list[(i + by + list.length) % list.length]?.focus();
     e.preventDefault();
@@ -143,6 +148,8 @@ export function PlateMenu() {
         {items.map((c, i) =>
           c === null ? (
             <hr key={i} />
+          ) : 'items' in c ? (
+            <SubmenuItem key={c.id} sub={c} s={s} close={close} />
           ) : (
             <button
               key={c.id}
@@ -162,6 +169,87 @@ export function PlateMenu() {
           ),
         )}
       </div>
+    </div>
+  );
+}
+
+/** An entry with more beside it: open while pointed at, by a click, or by → (← closes it). */
+function SubmenuItem({ sub, s, close }: { sub: Submenu; s: AppState; close: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [left, setLeft] = useState(false);
+  const self = useRef<HTMLDivElement>(null);
+  const list = useRef<HTMLDivElement>(null);
+  const enabled = sub.enabled(s);
+  // Beside the menu, on the left when the right has no room.
+  useLayoutEffect(() => {
+    const el = list.current;
+    if (!open || !el) return;
+    setLeft(self.current!.getBoundingClientRect().right + el.offsetWidth > innerWidth - 4);
+  }, [open]);
+  const focusFirst = () => requestAnimationFrame(() => list.current?.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus());
+  return (
+    <div
+      ref={self}
+      className="submenu"
+      onPointerEnter={() => enabled && setOpen(true)}
+      onPointerLeave={() => setOpen(false)}
+      onKeyDown={(e) => {
+        if (e.key === 'ArrowRight' && enabled && !open) {
+          e.preventDefault();
+          e.stopPropagation();
+          setOpen(true);
+          focusFirst();
+        } else if (e.key === 'ArrowLeft' && open) {
+          e.preventDefault();
+          e.stopPropagation();
+          setOpen(false);
+          self.current?.querySelector<HTMLButtonElement>(':scope > button')?.focus();
+        } else if (open && (e.key === 'ArrowDown' || e.key === 'ArrowUp') && list.current?.contains(document.activeElement)) {
+          e.preventDefault();
+          e.stopPropagation();
+          const all = [...list.current.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')];
+          const i = all.indexOf(document.activeElement as HTMLButtonElement);
+          all[(i + (e.key === 'ArrowDown' ? 1 : -1) + all.length) % all.length]?.focus();
+        }
+      }}
+    >
+      <button
+        type="button"
+        role="menuitem"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        disabled={!enabled}
+        data-testid={`menu-${sub.id}`}
+        onClick={() => {
+          setOpen(true);
+          focusFirst();
+        }}
+      >
+        {sub.icon ? <sub.icon size={15} /> : <span />}
+        <span>{sub.label()}</span>
+        <ChevronRight size={14} className="submenu-arrow" />
+      </button>
+      {open && (
+        <div ref={list} className={`menu submenu-list${left ? ' left' : ''}`} role="menu" aria-label={sub.label()}>
+          {sub.items.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              role="menuitem"
+              disabled={!c.enabled(s)}
+              data-testid={`menu-${c.id}`}
+              onClick={() => {
+                close();
+                c.run();
+              }}
+            >
+              {c.icon ? <c.icon size={15} /> : <span />}
+              <span>{c.label()}</span>
+              <kbd>{c.keys}</kbd>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

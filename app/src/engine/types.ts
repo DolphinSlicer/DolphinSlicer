@@ -28,12 +28,30 @@ export type Mat4 = number[];
  */
 export type PaintData = [number, string][][];
 
+/** Desktop's generic shapes (Add support blocker / enforcer). */
+export type SupportShape = 'cube' | 'cylinder' | 'sphere' | 'cone' | 'disc' | 'torus';
+
+/**
+ * A support blocker or enforcer: a generic shape of an object. `size` as desktop's size dialog
+ * has it (cube: x y z; cylinder, cone, disc: diameter height; sphere: diameter; torus: inner
+ * diameter, tube diameter); the shape centred on its origin, placed by `matrix` in the object's
+ * coordinates (the instance's matrix applies on top).
+ */
+export interface SupportVolume {
+  type: 'support_blocker' | 'support_enforcer';
+  shape: SupportShape;
+  size: number[];
+  matrix: Mat4;
+}
+
 export interface LayoutObject {
   /** Index of the object in load order (all objects of file 0, then file 1, …). Listed again: a copy. */
   index: number;
   instances: { matrix: Mat4 }[];
   /** Painted supports (absent: as loaded). */
   supports?: PaintData;
+  /** Support blockers and enforcers added to it (besides those of a desktop project). */
+  volumes?: SupportVolume[];
 }
 
 export interface Layout {

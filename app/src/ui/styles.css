@@ -1435,6 +1435,16 @@ input[type="checkbox"].switch:disabled {
 .objects li:not(.with-meta) .name {
   grid-row: 1 / span 2;
 }
+/* An object's support blockers and enforcers, under it in desktop's colours. */
+.objects li.volume {
+  padding-left: 27px;
+}
+.objects li.volume.support_blocker .obj-icon {
+  color: #e05252;
+}
+.objects li.volume.support_enforcer .obj-icon {
+  color: #6b6bff;
+}
 .objects .meta {
   grid-column: 2;
   font-size: 11.5px;
@@ -1809,6 +1819,26 @@ input[type="checkbox"].switch:disabled {
   font: inherit;
   font-size: 12px;
   color: var(--muted);
+}
+/* An entry with more beside it (PlateToolbar.tsx, SubmenuItem). */
+.submenu {
+  position: relative;
+}
+.submenu > button {
+  width: 100%;
+}
+.menu .submenu-arrow {
+  justify-self: end;
+  color: var(--muted);
+}
+.submenu-list {
+  position: absolute;
+  top: -5px;
+  left: calc(100% + 2px);
+}
+.submenu-list.left {
+  left: auto;
+  right: calc(100% + 2px);
 }
 .menu hr {
   border: 0;
