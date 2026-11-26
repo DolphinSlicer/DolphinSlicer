@@ -14,6 +14,14 @@ export interface ObjectInfo {
   painted: boolean;
   bbox: { min: [number, number, number]; max: [number, number, number] };
   instances: { matrix: number[]; printable: boolean }[];
+  /** Its support blockers and enforcers (a project's): the mesh in the volume's coordinates. */
+  support_volumes?: {
+    type: 'support_blocker' | 'support_enforcer';
+    name: string;
+    matrix: number[];
+    positions: number[];
+    indices: number[];
+  }[];
 }
 
 export interface ModelInfo {

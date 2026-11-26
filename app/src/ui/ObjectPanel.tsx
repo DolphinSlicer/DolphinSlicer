@@ -13,11 +13,11 @@ import { formatNumber } from '../state/prefs';
 import { type AxisHint, set, useApp } from '../state/store';
 import {
   deleteVolume,
-  SHAPE_NAMES,
   selectedVolume,
   setVolumeMatrix,
   TYPE_NAMES,
   volumeMatrixFor,
+  volumeName,
   volumeWorld,
 } from '../state/supportVolumes';
 import { Select } from './Select';
@@ -375,7 +375,7 @@ export function VolumePanel() {
   const at = volumeWorld(object, volume);
   const k = imperial ? 1 / IN : 1;
   const unit = imperial ? 'in' : t('mm');
-  const name = tr(SHAPE_NAMES[volume.shape]);
+  const name = volumeName(volume);
   const place = (change: Partial<{ position: number[]; rotation: number[]; size: number[] }>, key: string) =>
     setVolumeMatrix(
       object.id,

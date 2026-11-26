@@ -2,7 +2,7 @@
 // their instances; copies of an object are more instances of it, unless painted otherwise or
 // with other support blockers and enforcers.
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import type { LayoutObject, Mat4, PaintData } from '../engine/types';
+import type { LayoutObject, LoadedSupportVolume, Mat4, PaintData, SupportShape, SupportVolume } from '../engine/types';
 import type { SceneObject, SceneVolume } from './store';
 
 /**
@@ -36,7 +36,8 @@ export function engineLayoutWithOwners(objects: SceneObject[]) {
         index: o.index,
         instances: [],
         ...(o.supports ? { supports: o.supports } : {}),
-        ...(o.volumes?.length ? { volumes: volumes(o.volumes) } : {}),
+        // All of them, always: one the model came with and that was deleted goes.
+        volumes: volumes(o.volumes),
       };
       byKey.set(key, e);
       owners.set(e, []);
@@ -48,5 +49,8 @@ export function engineLayoutWithOwners(objects: SceneObject[]) {
   return { layout, owners: layout.map((e) => owners.get(e)!) };
 }
 
-/** The volumes as the engine takes them (without the app's ids). */
-const volumes = (list: SceneVolume[] | undefined) => (list ?? []).map(({ type, shape, size, matrix }) => ({ type, shape, size, matrix }));
+/** The volumes as the engine takes them: generic shapes, and the model's own by their number. */
+const volumes = (list: SceneVolume[] | undefined): (SupportVolume | LoadedSupportVolume)[] =>
+  (list ?? []).map(({ type, shape, size, matrix, loaded }) =>
+    loaded !== undefined ? { type, loaded, matrix } : { type, shape: shape as SupportShape, size, matrix },
+  );

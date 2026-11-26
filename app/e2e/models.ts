@@ -112,6 +112,53 @@ export function plain3mfOf(boxes: { size: [number, number, number]; at?: [number
   });
 }
 
+/**
+ * An OrcaSlicer project 3MF (its 3MF writer's layout: an object made of components, their types in
+ * Metadata/model_settings.config): a pillar with a slab overhanging both sides, and a support
+ * blocker around all of it.
+ */
+export function projectWithBlocker(): Buffer {
+  const box = ([x0, y0, z0]: [number, number, number], [x1, y1, z1]: [number, number, number]) => {
+    const v = [z0, z1].flatMap((z) => [y0, y1].flatMap((y) => [x0, x1].map((x) => [x, y, z])));
+    const t = [
+      [0, 2, 3],
+      [0, 3, 1],
+      [4, 5, 7],
+      [4, 7, 6],
+      [0, 1, 5],
+      [0, 5, 4],
+      [2, 6, 7],
+      [2, 7, 3],
+      [0, 4, 6],
+      [0, 6, 2],
+      [1, 3, 7],
+      [1, 7, 5],
+    ];
+    return { v, t };
+  };
+  const mesh = (boxes: ReturnType<typeof box>[]) => {
+    const verts: number[][] = [],
+      tris: number[][] = [];
+    for (const b of boxes) {
+      const o = verts.length;
+      verts.push(...b.v);
+      tris.push(...b.t.map((t) => t.map((i) => i + o)));
+    }
+    return `<mesh><vertices>${verts.map(([x, y, z]) => `<vertex x="${x}" y="${y}" z="${z}"/>`).join('')}</vertices><triangles>${tris.map(([a, b, c]) => `<triangle v1="${a}" v2="${b}" v3="${c}"/>`).join('')}</triangles></mesh>`;
+  };
+  const tee = mesh([box([-5, -5, 0], [5, 5, 20]), box([-25, -5, 20], [25, 5, 24])]);
+  const blocker = mesh([box([-40, -15, 0], [40, 15, 40])]);
+  return storedZip({
+    '[Content_Types].xml':
+      '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/></Types>',
+    '_rels/.rels':
+      '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>',
+    '3D/3dmodel.model': `<?xml version="1.0" encoding="UTF-8"?><model unit="millimeter" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"><metadata name="Application">OrcaSlicer-2.3.0</metadata><metadata name="BambuStudio:3mfVersion">1</metadata><resources><object id="1" type="model">${tee}</object><object id="2" type="model">${blocker}</object><object id="3" name="tee" type="model"><components><component objectid="1"/><component objectid="2"/></components></object></resources><build><item objectid="3" transform="1 0 0 0 1 0 0 0 1 100 100 0"/></build></model>`,
+    'Metadata/model_settings.config':
+      '<?xml version="1.0" encoding="UTF-8"?><config><object id="3"><metadata key="name" value="tee"/><part id="1" subtype="normal_part"><metadata key="name" value="tee"/></part><part id="2" subtype="support_blocker"><metadata key="name" value="Big blocker"/></part></object></config>',
+  });
+}
+
 /** A zip archive of uncompressed entries. */
 function storedZip(files: Record<string, string>): Buffer {
   const local: Buffer[] = [],

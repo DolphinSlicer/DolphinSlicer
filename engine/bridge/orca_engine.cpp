@@ -535,6 +535,23 @@ const char *orca_model_info(void *p)
         json inst = json::array();
         for (const ModelInstance *i : o->instances)
             inst.push_back({{"matrix", matrix_json(i->get_matrix())}, {"printable", i->printable}});
+        // Its support blockers and enforcers (a project's), in their order: the layout names them
+        // by it. The mesh in the volume's coordinates, the matrix into the object's.
+        json supports = json::array();
+        for (const ModelVolume *v : o->volumes) {
+            if (!v->is_support_modifier()) continue;
+            const indexed_triangle_set &its = v->mesh().its;
+            json pos = json::array(), idx = json::array();
+            for (const auto &x : its.vertices) { pos.push_back(x.x()); pos.push_back(x.y()); pos.push_back(x.z()); }
+            for (const auto &t : its.indices) { idx.push_back(t[0]); idx.push_back(t[1]); idx.push_back(t[2]); }
+            supports.push_back({
+                {"type", v->is_support_blocker() ? "support_blocker" : "support_enforcer"},
+                {"name", v->name},
+                {"matrix", matrix_json(v->get_matrix())},
+                {"positions", std::move(pos)},
+                {"indices", std::move(idx)},
+            });
+        }
         objs.push_back({
             {"name", o->name},
             {"parts", parts},
@@ -546,6 +563,7 @@ const char *orca_model_info(void *p)
             {"painted", o->is_fdm_support_painted()},
             {"bbox", {{"min", {bb.min.x(), bb.min.y(), bb.min.z()}}, {"max", {bb.max.x(), bb.max.y(), bb.max.z()}}}},
             {"instances", inst},
+            {"support_volumes", std::move(supports)},
         });
     }
     json plates = json::array();
@@ -736,7 +754,9 @@ int orca_set_layout(void *p, const char *json_text)
         // Support blockers and enforcers per object (index in `plan`): a generic shape each, its
         // mesh centred around its origin (as desktop's add_volume), placed by its matrix in the
         // object's coordinates.
-        struct Shape { ModelVolumeType type; TriangleMesh mesh; Transform3d matrix; };
+        // `loaded`: the object's own support volume of that number (as orca_model_info lists them)
+        // kept, moved; one not listed goes. Without `volumes`, the object's stay as loaded.
+        struct Shape { ModelVolumeType type; TriangleMesh mesh; Transform3d matrix; int loaded = -1; };
         std::vector<std::pair<size_t, std::vector<Shape>>> shapes;
         std::vector<bool> used(e.model.objects.size(), false);
         for (const json &o : j["objects"]) {
@@ -765,20 +785,28 @@ int orca_set_layout(void *p, const char *json_text)
                 }
                 paint.emplace_back(plan.size(), sup);
             }
-            if (const json &vols = o.value("volumes", json()); vols.is_array() && !vols.empty()) {
+            if (const json &vols = o.value("volumes", json()); vols.is_array()) {
                 std::vector<Shape> list;
+                size_t own = 0;
+                for (const ModelVolume *mv : e.model.objects[idx]->volumes) own += mv->is_support_modifier();
                 for (const json &v : vols) {
                     const std::string type = v.is_object() ? v.value("type", "") : "";
                     if (type != "support_blocker" && type != "support_enforcer")
                         return e.fail(ORCA_INVALID_INPUT, "Layout: a volume must be a support blocker or enforcer");
-                    std::vector<double> size;
-                    for (const json &x : v.value("size", json::array())) size.push_back(x.is_number() ? x.get<double>() : -1.);
-                    TriangleMesh mesh = generic_shape(v.value("shape", ""), size);
-                    if (mesh.empty()) return e.fail(ORCA_INVALID_INPUT, "Layout: unknown volume shape or size");
-                    Transform3d m = Transform3d::Identity();
-                    if (!matrix_from_json(v.value("matrix", json()), m))
+                    Shape sh{type == "support_blocker" ? ModelVolumeType::SUPPORT_BLOCKER : ModelVolumeType::SUPPORT_ENFORCER, TriangleMesh(),
+                             Transform3d::Identity()};
+                    if (!matrix_from_json(v.value("matrix", json()), sh.matrix))
                         return e.fail(ORCA_INVALID_INPUT, "Layout: volume matrix must be 16 numbers");
-                    list.push_back({type == "support_blocker" ? ModelVolumeType::SUPPORT_BLOCKER : ModelVolumeType::SUPPORT_ENFORCER, std::move(mesh), m});
+                    if (const json &l = v.value("loaded", json()); l.is_number_unsigned()) {
+                        sh.loaded = l.get<int>();
+                        if (size_t(sh.loaded) >= own) return e.fail(ORCA_INVALID_INPUT, "Layout: no such support volume in the object");
+                    } else {
+                        std::vector<double> size;
+                        for (const json &x : v.value("size", json::array())) size.push_back(x.is_number() ? x.get<double>() : -1.);
+                        sh.mesh = generic_shape(v.value("shape", ""), size);
+                        if (sh.mesh.empty()) return e.fail(ORCA_INVALID_INPUT, "Layout: unknown volume shape or size");
+                    }
+                    list.push_back(std::move(sh));
                 }
                 shapes.emplace_back(plan.size(), std::move(list));
             }
@@ -811,12 +839,30 @@ int orca_set_layout(void *p, const char *json_text)
             for (ModelVolume *mv : e.model.objects[k]->volumes)
                 if (mv->is_model_part()) { orca_bridge::set_volume_facets(mv->supported_facets, n < sup.size() ? sup[n] : json()); ++n; }
         }
-        for (auto &[k, list] : shapes)
+        for (auto &[k, list] : shapes) {
+            ModelObject *o = e.model.objects[k];
+            // The object's own, by number: kept (moved, the type set) if listed, else deleted.
+            std::vector<ModelVolume *> own;
+            for (ModelVolume *mv : o->volumes)
+                if (mv->is_support_modifier()) own.push_back(mv);
+            std::vector<bool> keep(own.size(), false);
+            for (const Shape &sh : list)
+                if (sh.loaded >= 0) {
+                    keep[sh.loaded] = true;
+                    own[sh.loaded]->set_type(sh.type);
+                    own[sh.loaded]->set_transformation(Geometry::Transformation(sh.matrix));
+                }
+            for (size_t i = own.size(); i-- > 0;)
+                if (!keep[i])
+                    for (size_t j = 0; j < o->volumes.size(); ++j)
+                        if (o->volumes[j] == own[i]) { o->delete_volume(j); break; }
             for (Shape &sh : list) {
-                ModelVolume *v = e.model.objects[k]->add_volume(std::move(sh.mesh), sh.type);
+                if (sh.loaded >= 0) continue;
+                ModelVolume *v = o->add_volume(std::move(sh.mesh), sh.type);
                 v->set_transformation(Geometry::Transformation(sh.matrix));
                 v->name = sh.type == ModelVolumeType::SUPPORT_BLOCKER ? "Support blocker" : "Support enforcer";
             }
+        }
         return ORCA_OK;
     } catch (const std::exception &ex) {
         return e.fail(ORCA_INVALID_INPUT, "Layout rejected", ex.what());

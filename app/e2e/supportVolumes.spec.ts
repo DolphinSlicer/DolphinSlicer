@@ -2,6 +2,7 @@
 // menu, listed under it, placed with its panel, and kept away supports in the slice.
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { expect, type Page, test } from '@playwright/test';
+import { projectWithBlocker } from './models';
 
 /** A pillar with a slab on top that overhangs both sides: supports under the slab. */
 function teeStl(): Buffer {
@@ -117,4 +118,42 @@ test('a support blocker keeps supports away; enforcers are added the same way', 
   await page.keyboard.press(process.platform === 'darwin' ? 'Meta+z' : 'Control+z');
   await expect(volumeRow).toHaveCount(2);
   await expect(page.getByTestId('object-list').locator('li:not(.volume)')).toHaveCount(1);
+});
+
+test('a project’s own support blocker is listed, and can be moved, deleted and brought back', { tag: '@engine' }, async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByTestId('app')).toHaveAttribute('data-engine-ready', 'yes');
+  await page.getByTestId('edit-print').click();
+  await page.getByTestId('settings-search').fill('enable support');
+  const supports = page.locator('.settings .field[data-key="enable_support"] input[type=checkbox]');
+  await supports.click();
+  await expect(supports).toBeChecked();
+  await page.getByRole('tab', { name: 'Prepare' }).click();
+  await page.getByTestId('file-input').setInputFiles({ name: 'tee.3mf', mimeType: 'model/3mf', buffer: projectWithBlocker() });
+
+  // Listed with its name from the file; it keeps supports away.
+  const volumeRow = page.getByTestId('volume-row');
+  await expect(volumeRow).toHaveCount(1);
+  await expect(volumeRow).toContainText('Big blocker');
+  await expect(volumeRow).toContainText('Support Blocker');
+  expect(await supportMoves(page)).toBe(0);
+
+  // Its size as the file has it; moved off the object, the supports come back.
+  await volumeRow.click();
+  await expect(page.getByTestId('volume-size-0')).toHaveValue('80');
+  await page.getByTestId('volume-position-0').fill('20');
+  await page.getByTestId('volume-position-0').press('Enter');
+  const away = await supportMoves(page);
+  expect(away).toBeGreaterThan(0);
+
+  // Deleted: still supports. Both undone: none again.
+  await volumeRow.click();
+  await page.keyboard.press('Delete');
+  await expect(volumeRow).toHaveCount(0);
+  expect(await supportMoves(page)).toBe(away);
+  const undo = process.platform === 'darwin' ? 'Meta+z' : 'Control+z';
+  await page.keyboard.press(undo);
+  await page.keyboard.press(undo);
+  await expect(volumeRow).toHaveCount(1);
+  expect(await supportMoves(page)).toBe(0);
 });

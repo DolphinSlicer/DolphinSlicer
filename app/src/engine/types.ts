@@ -44,14 +44,24 @@ export interface SupportVolume {
   matrix: Mat4;
 }
 
+/** A support volume of the object as loaded (a project's), by its number: kept, placed by `matrix`. */
+export interface LoadedSupportVolume {
+  type: SupportVolume['type'];
+  loaded: number;
+  matrix: Mat4;
+}
+
 export interface LayoutObject {
   /** Index of the object in load order (all objects of file 0, then file 1, …). Listed again: a copy. */
   index: number;
   instances: { matrix: Mat4 }[];
   /** Painted supports (absent: as loaded). */
   supports?: PaintData;
-  /** Support blockers and enforcers added to it (besides those of a desktop project). */
-  volumes?: SupportVolume[];
+  /**
+   * Its support blockers and enforcers, all of them: shapes added, and its own as loaded by number
+   * (one not listed goes). Absent: as loaded.
+   */
+  volumes?: (SupportVolume | LoadedSupportVolume)[];
 }
 
 export interface Layout {

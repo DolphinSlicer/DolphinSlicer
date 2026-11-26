@@ -26,7 +26,7 @@ import { cancelSlice, deleteObject, downloadGcode, importFiles, isModelFile, ope
 import { addModels, addPlateToLibrary } from '../state/libraryActions';
 import { select } from '../state/plate';
 import { dismiss, isStale, notify, set, useApp } from '../state/store';
-import { deleteVolume, SHAPE_NAMES, selectedVolume, selectVolume, TYPE_NAMES } from '../state/supportVolumes';
+import { deleteVolume, selectedVolume, selectVolume, TYPE_NAMES, volumeName } from '../state/supportVolumes';
 import { About } from './About';
 import { CalibrationButton } from './Calibration';
 import { ConfirmHost } from './Confirm';
@@ -482,7 +482,7 @@ function ObjectsCard() {
               </li>
               {/* Its support blockers and enforcers, as desktop's object list shows them. */}
               {o.volumes?.map((v) => {
-                const name = tr(SHAPE_NAMES[v.shape]);
+                const name = volumeName(v);
                 const on = selectedVolume?.object === o.id && selectedVolume.volume === v.id;
                 const Icon = v.type === 'support_blocker' ? SupportBlockerIcon : SupportEnforcerIcon;
                 return (

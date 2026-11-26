@@ -47,6 +47,7 @@ import { describeError } from '../ui/errors';
 import { loadedCounts, onCollect, remember } from './history';
 import { addPrinterLink, renamePrinterLinks } from './printerActions';
 import { BED_KEY, dismissAbout, get, notify, type SceneObject, type SourceFile, set, touchPlate } from './store';
+import { loadedVolumes } from './supportVolumes';
 
 // ── services ─────────────────────────────────────────────────────────────────────────────
 /** Auxiliary engine (always single-threaded): model inspection and presets. */
@@ -1107,6 +1108,7 @@ function addInspected(file: SourceFile, info: ModelInfo, geos: BufferGeometry[],
       hasConfig: o.has_config,
       instances,
       painted: o.painted,
+      ...(o.support_volumes?.length ? { volumes: loadedVolumes(o.support_volumes) } : {}),
     };
   });
   loadedCounts.push(info.objects.length);

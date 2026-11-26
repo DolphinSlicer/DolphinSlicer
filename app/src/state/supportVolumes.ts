@@ -4,8 +4,10 @@
 // right front corner on the bed, upright and unscaled whatever the object's rotation and scale.
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { Euler, Matrix4, Quaternion, Vector3 } from 'three';
+import type { ObjectInfo } from '../engine/protocol';
 import type { Mat4, SupportShape, SupportVolume } from '../engine/types';
-import { N_ } from '../i18n/i18n';
+import { N_, tr } from '../i18n/i18n';
+import { registerSupportMesh } from '../view/supportShapes';
 import { footprint } from './actions';
 import { remember } from './history';
 import { get, type SceneObject, type SceneVolume, set, touchPlate } from './store';
@@ -24,6 +26,9 @@ export const TYPE_NAMES: Record<SupportVolume['type'], string> = {
   support_blocker: N_('Support Blocker'),
   support_enforcer: N_('Support Enforcer'),
 };
+/** Its name: the shape's, or for one the model came with, the file's (else its type). */
+export const volumeName = (v: SceneVolume) => (v.shape === 'mesh' ? v.name || tr(TYPE_NAMES[v.type]) : tr(SHAPE_NAMES[v.shape]));
+
 /** Desktop's menu entries (ADD_VOLUME_MENU_ITEMS). */
 export const ADD_NAMES: Record<SupportVolume['type'], string> = {
   support_blocker: N_('Add Support Blocker'),
@@ -46,9 +51,10 @@ export function defaultSize(shape: SupportShape, side: number): number[] {
   }
 }
 
-/** The shape's extent along its own axes (before its matrix). */
-export function shapeExtent(shape: SupportShape, size: number[]): [number, number, number] {
+/** The shape's extent along its own axes (before its matrix); a model's own: its `size`. */
+export function shapeExtent(shape: SupportShape | 'mesh', size: number[]): [number, number, number] {
   switch (shape) {
+    case 'mesh':
     case 'cube':
       return [size[0]!, size[1]!, size[2]!];
     case 'sphere':
@@ -63,6 +69,29 @@ export function shapeExtent(shape: SupportShape, size: number[]): [number, numbe
 }
 
 let nextId = 1;
+
+/** The support blockers and enforcers a model came with (a project's), as the engine lists them. */
+export function loadedVolumes(list: NonNullable<ObjectInfo['support_volumes']>): SceneVolume[] {
+  return list.map((v, loaded) => {
+    const min = [Infinity, Infinity, Infinity],
+      max = [-Infinity, -Infinity, -Infinity];
+    for (let i = 0; i < v.positions.length; i++) {
+      const a = i % 3;
+      min[a] = Math.min(min[a]!, v.positions[i]!);
+      max[a] = Math.max(max[a]!, v.positions[i]!);
+    }
+    return {
+      id: `v${nextId++}`,
+      type: v.type,
+      shape: 'mesh',
+      size: max.map((x, a) => Math.max(x - min[a]!, 0.01)),
+      matrix: v.matrix,
+      loaded,
+      mesh: registerSupportMesh(v.positions, v.indices),
+      ...(v.name ? { name: v.name } : {}),
+    };
+  });
+}
 
 const objectOf = (id: string) => get().objects.find((o) => o.id === id);
 const withVolumes = (o: SceneObject, volumes: SceneVolume[]): SceneObject => ({ ...o, volumes });

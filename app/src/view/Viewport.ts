@@ -42,7 +42,7 @@ import type { Bed } from '../model/bed';
 import type { AxisHint, SceneObject } from '../state/store';
 import { GcodeLayer } from './gcodeLayer';
 import { NEUTRAL, PaintLayer } from './paintLayer';
-import { supportShapeGeometry } from './supportShapes';
+import { volumeGeometry } from './supportShapes';
 import { type CubeLabels, ViewCube } from './viewCube';
 
 export interface ViewportEvents {
@@ -602,7 +602,7 @@ export class Viewport {
     for (const o of objects)
       for (const v of o.volumes ?? []) {
         const on = selected?.object === o.id && selected.volume === v.id;
-        const geo = supportShapeGeometry(v.shape, v.size);
+        const geo = volumeGeometry(v);
         o.instances.forEach((inst, k) => {
           const mesh = new Mesh(geo, VOLUME_MAT[on ? (`${v.type}_selected` as const) : v.type]);
           mesh.matrixAutoUpdate = false;
