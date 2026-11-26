@@ -6,12 +6,20 @@ const API = 'https://www.googleapis.com/drive/v3';
 const UPLOAD = 'https://www.googleapis.com/upload/drive/v3';
 const FOLDER = 'application/vnd.google-apps.folder';
 
-import type { Child, RemoteStore, Written } from './storage';
+import { type Child, type RemoteFile, type RemoteStore, type Tree, usableName, type Written } from './storage';
 
 /** The token was rejected (expired or revoked): sign in again. */
 export class AuthExpired extends Error {}
 
-type ChildJson = { id: string; name: string; mimeType: string; version: string; md5Checksum?: string; modifiedTime: string };
+type ChildJson = {
+  id: string;
+  name: string;
+  mimeType: string;
+  version: string;
+  md5Checksum?: string;
+  modifiedTime: string;
+  parents?: string[];
+};
 type WrittenJson = { id: string; version: string; md5Checksum?: string };
 const written = (r: WrittenJson): Written => ({ id: r.id, version: r.version, md5: r.md5Checksum });
 
@@ -54,6 +62,52 @@ export class Drive implements RemoteStore {
       pageToken = r.nextPageToken ?? '';
     } while (pageToken);
     return out;
+  }
+
+  /**
+   * Every file below a folder in one listing (pages of 1000): with the drive.file scope Drive lists
+   * only what this app made, so all of it is the app's folders and files. Paths come from the
+   * parents.
+   */
+  async tree(root: string): Promise<Tree> {
+    const all: ChildJson[] = [];
+    let pageToken = '';
+    do {
+      const r = await this.json<{ files: ChildJson[]; nextPageToken?: string }>(
+        `${API}/files?${new URLSearchParams({ q: 'trashed = false', fields: 'nextPageToken,files(id,name,mimeType,parents,version,md5Checksum,modifiedTime)', pageSize: '1000', spaces: 'drive', ...(pageToken ? { pageToken } : {}) })}`,
+      );
+      all.push(...r.files);
+      pageToken = r.nextPageToken ?? '';
+    } while (pageToken);
+    const byId = new Map(all.map((f) => [f.id, f]));
+    // A path below root, or null when not below it.
+    const paths = new Map<string, string | null>([[root, '']]);
+    const pathOf = (id: string, depth = 0): string | null => {
+      if (paths.has(id)) return paths.get(id)!;
+      const f = byId.get(id);
+      const parent = f?.parents?.[0];
+      let p: string | null = null;
+      if (f && parent && depth < 64 && usableName(f.name)) {
+        const up = pathOf(parent, depth + 1);
+        if (up !== null) p = up ? `${up}/${f.name}` : f.name;
+      }
+      paths.set(id, p);
+      return p;
+    };
+    const files: RemoteFile[] = [],
+      folders = new Map<string, string>([['', root]]);
+    const seen = new Set<string>();
+    for (const f of all) {
+      const path = pathOf(f.id);
+      if (!path) continue;
+      if (f.mimeType === FOLDER) {
+        if (!folders.has(path)) folders.set(path, f.id);
+      } else if (!seen.has(path)) {
+        seen.add(path);
+        files.push({ id: f.id, path, version: f.version, md5: f.md5Checksum, modifiedTime: f.modifiedTime });
+      }
+    }
+    return { files, folders };
   }
 
   /** The folder of this name in parent, created if missing. */

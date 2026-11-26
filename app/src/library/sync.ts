@@ -6,7 +6,7 @@
 // reach the other devices). Model files are uploaded once and never change; they are downloaded
 // only when a model is opened.
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import type { RemoteStore } from '../drive/storage';
+import { pool, type RemoteStore } from '../drive/storage';
 import type { LibraryEntry } from './store';
 
 export interface LibraryIndex {
@@ -69,19 +69,20 @@ export async function syncLibrary(
   const entries = mergeEntries(local, remote);
   let uploaded = 0;
   const present = new Set(children.map((f) => f.id));
-  for (const [i, e] of entries.entries()) {
+  // A few at a time: model files are large.
+  await pool([...entries.entries()], 3, async ([i, e]) => {
     if (e.deleted) {
       if (e.driveId && present.has(e.driveId)) await drive.trash(e.driveId);
-      continue;
+      return;
     }
-    if (e.driveId) continue;
+    if (e.driveId) return;
     const bytes = await readFile(e.id);
-    if (!bytes) continue; // Added on another device that hasn't uploaded it yet.
+    if (!bytes) return; // Added on another device that hasn't uploaded it yet.
     entries[i] = { ...e, driveId: await drive.upload(folder, e.file, bytes, mimeFor(e.file)) };
     uploaded++;
     // Remember each upload right away, so an interrupted sync doesn't upload it twice.
     await onUploaded?.([entries[i]!]);
-  }
+  });
   const text = `${JSON.stringify({ version: 1, entries } satisfies LibraryIndex, null, 1)}\n`;
   if (text !== remoteText) {
     if (indexFile) await drive.update(indexFile.id, text);

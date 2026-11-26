@@ -296,10 +296,11 @@ beforeEach(() => {
       if (!m) return new Response('bad path', { status: 400 });
       const [, upload, id] = m;
       if (method === 'GET' && !id) {
-        const parent = /'([^']+)' in parents/.exec(url.searchParams.get('q') ?? '')![1]!;
+        // A folder's children, or (without "in parents") everything, as Drive lists them.
+        const parent = /'([^']+)' in parents/.exec(url.searchParams.get('q') ?? '')?.[1];
         const files = drive
-          .filter((f) => f.parents.includes(parent))
-          .map(({ id, name, mimeType }) => ({ id, name, mimeType, version: '1', modifiedTime: '2026-01-01T00:00:00Z' }));
+          .filter((f) => parent === undefined || f.parents.includes(parent))
+          .map(({ id, name, mimeType, parents }) => ({ id, name, mimeType, parents, version: '1', modifiedTime: '2026-01-01T00:00:00Z' }));
         return Response.json({ files });
       }
       if (method === 'GET' && url.searchParams.get('alt') === 'media') return new Response(drive.find((f) => f.id === id)!.content);

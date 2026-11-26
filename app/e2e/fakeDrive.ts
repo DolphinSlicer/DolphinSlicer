@@ -22,6 +22,10 @@ export class FakeDrive {
   token = 'fake-token';
   /** File downloads (alt=media) so far. */
   downloads = 0;
+  /** Drive API requests so far. */
+  requests = 0;
+  /** How long each Drive request takes (ms), as over a real connection. */
+  delay = 0;
   /**
    * As Google's Drive does at times: a file's version moves on again after an upload, with the
    * content as it was ("every change made to the file on the server, even those not visible").
@@ -153,6 +157,8 @@ export class FakeDrive {
   private async handle(route: Route) {
     const req = route.request();
     if (req.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: CORS });
+    this.requests++;
+    if (this.delay) await new Promise((r) => setTimeout(r, this.delay));
     // The upload session URL carries its own authorization (as Google's does).
     const session = new URL(req.url()).searchParams.has('upload_id');
     if (!session && req.headers().authorization !== `Bearer ${this.token}`)
@@ -188,8 +194,10 @@ export class FakeDrive {
     if (kind === 'about') return json({ user: { emailAddress: 'tester@example.com' } });
     if (!id && req.method() === 'GET') {
       bump();
+      // A folder's children, or (without "in parents") everything, with the parents.
       const parent = /'([^']+)' in parents/.exec(url.searchParams.get('q') ?? '')?.[1];
-      return json({ files: [...this.items.values()].filter((it) => !it.trashed && it.parents.includes(parent!)).map(meta) });
+      const list = [...this.items.values()].filter((it) => !it.trashed && (parent === undefined || it.parents.includes(parent)));
+      return json({ files: list.map((it) => ({ ...meta(it), parents: it.parents })) });
     }
     if (!id && req.method() === 'POST' && !upload) {
       const b = req.postDataJSON() as { name: string; mimeType: string; parents: string[] };

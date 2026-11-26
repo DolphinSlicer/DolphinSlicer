@@ -72,14 +72,22 @@ export class ServerFolder implements RemoteStore {
     return this.call(this.url(id), { method: 'PUT', body, signal, headers: { 'Content-Type': type } });
   }
 
+  /** One upload after the other: each looks for a free name, then takes it. */
+  private uploading: Promise<unknown> = Promise.resolve();
+
   /** A new file never replaces one of the same name (two models may have the same file name). */
-  async upload(parent: string, name: string, bytes: ArrayBuffer, mimeType = 'application/octet-stream', signal?: AbortSignal) {
-    const taken = new Set((await this.children(parent)).map((c) => c.name));
-    let free = name;
-    for (let n = 2; taken.has(free); n++) free = name.replace(/(\.[^.]+)?$/, (ext) => ` (${n})${ext}`);
-    const id = join(parent, free);
-    await this.put(id, bytes, mimeType, signal);
-    return id;
+  upload(parent: string, name: string, bytes: ArrayBuffer, mimeType = 'application/octet-stream', signal?: AbortSignal) {
+    const run = async () => {
+      const taken = new Set((await this.children(parent)).map((c) => c.name));
+      let free = name;
+      for (let n = 2; taken.has(free); n++) free = name.replace(/(\.[^.]+)?$/, (ext) => ` (${n})${ext}`);
+      const id = join(parent, free);
+      await this.put(id, bytes, mimeType, signal);
+      return id;
+    };
+    const done = this.uploading.then(run, run);
+    this.uploading = done.catch(() => {});
+    return done;
   }
 
   async create(parent: string, name: string, text: string): Promise<Written> {
