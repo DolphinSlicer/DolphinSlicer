@@ -59,7 +59,8 @@ type Row = { kind: 'group'; label: string; rows: Row[] } | (Entry & { nav: numbe
 
 const isGroup = (i: SelectItem): i is SelectGroup => 'group' in i;
 const allOptions = (items: SelectItem[]) => items.flatMap((i) => (isGroup(i) ? i.options : [i]));
-const fold = (s: string) => s.toLocaleLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '');
+/** For comparing names: lower case, without accents. */
+export const fold = (s: string) => s.toLocaleLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '');
 const lineCount = (rows: Row[]) => rows.reduce((n, r) => n + (r.kind === 'group' ? 1 + r.rows.length : 1), 0);
 
 const NO_ACTIONS: SelectAction[] = [];
@@ -178,31 +179,7 @@ export function Select({ value, items, onChange, actions = NO_ACTIONS, disabled,
       tr = trigger.current;
     if (!open || !el || !tr) return;
     if (!el.matches(':popover-open')) el.showPopover?.();
-    const place = () => {
-      const r = tr.getBoundingClientRect();
-      const vw = window.innerWidth,
-        vh = window.innerHeight;
-      if (window.matchMedia('(max-width: 600px)').matches) {
-        el.dataset.sheet = '';
-        Object.assign(el.style, { top: '', left: '', bottom: '', width: '', minWidth: '', maxWidth: '', maxHeight: '' });
-        return;
-      }
-      delete el.dataset.sheet;
-      el.style.minWidth = `${r.width}px`;
-      el.style.maxWidth = `${Math.min(vw - 2 * MARGIN, Math.max(r.width, 460))}px`;
-      el.style.width = fixedWidth ? el.style.maxWidth : '';
-      const below = vh - r.bottom - GAP - MARGIN,
-        above = r.top - GAP - MARGIN;
-      el.style.maxHeight = '';
-      const natural = Math.min(el.scrollHeight, 380);
-      const down = below >= natural || below >= above;
-      el.style.maxHeight = `${Math.min(380, down ? below : above)}px`;
-      if (down) delete el.dataset.up;
-      else el.dataset.up = '';
-      el.style.top = down ? `${r.bottom + GAP}px` : '';
-      el.style.bottom = down ? '' : `${vh - r.top + GAP}px`;
-      el.style.left = `${Math.max(MARGIN, Math.min(r.left, vw - el.offsetWidth - MARGIN))}px`;
-    };
+    const place = () => placePopup(el, tr, { fixedWidth });
     place();
     const onScroll = (e: Event) => {
       if (!el.contains(e.target as Node)) place();
@@ -485,4 +462,34 @@ function Swatch({ color }: { color: string }) {
   return (
     <span className="select-swatch" aria-hidden style={isColor(color) ? { background: color.slice(0, 7) } : { visibility: 'hidden' }} />
   );
+}
+
+/**
+ * Put a popup in the top layer next to its field: below it, or above when there is more room there;
+ * on a phone (no `anchored`), as a sheet at the bottom of the screen.
+ */
+export function placePopup(el: HTMLElement, anchor: HTMLElement, { fixedWidth = false, anchored = false } = {}) {
+  const r = anchor.getBoundingClientRect();
+  const vw = window.innerWidth,
+    vh = window.innerHeight;
+  if (!anchored && window.matchMedia('(max-width: 600px)').matches) {
+    el.dataset.sheet = '';
+    Object.assign(el.style, { top: '', left: '', bottom: '', width: '', minWidth: '', maxWidth: '', maxHeight: '' });
+    return;
+  }
+  delete el.dataset.sheet;
+  el.style.minWidth = `${r.width}px`;
+  el.style.maxWidth = `${Math.min(vw - 2 * MARGIN, Math.max(r.width, 460))}px`;
+  el.style.width = fixedWidth ? el.style.maxWidth : '';
+  const below = vh - r.bottom - GAP - MARGIN,
+    above = r.top - GAP - MARGIN;
+  el.style.maxHeight = '';
+  const natural = Math.min(el.scrollHeight, 380);
+  const down = below >= natural || below >= above;
+  el.style.maxHeight = `${Math.min(380, down ? below : above)}px`;
+  if (down) delete el.dataset.up;
+  else el.dataset.up = '';
+  el.style.top = down ? `${r.bottom + GAP}px` : '';
+  el.style.bottom = down ? '' : `${vh - r.top + GAP}px`;
+  el.style.left = `${Math.max(MARGIN, Math.min(r.left, vw - el.offsetWidth - MARGIN))}px`;
 }

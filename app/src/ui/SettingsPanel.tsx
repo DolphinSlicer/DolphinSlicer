@@ -44,6 +44,7 @@ import { notify, useApp } from '../state/store';
 import { BED_KEYS, type BedKey, BedSettingControl } from './BedEditor';
 import { CodeArea } from './CodeArea';
 import { ColorPicker } from './ColorPicker';
+import { ComboInput, type ComboOption } from './ComboInput';
 import { CompatiblePrintersControl } from './CompatiblePrinters';
 import { ask } from './Confirm';
 import { DocsPanel } from './DocsPanel';
@@ -1114,33 +1115,26 @@ export function Field({
       />
     );
   } else {
-    const listId = def.enum_values && def.gui_type?.endsWith('_open') ? `dl-${k}` : undefined;
+    // Desktop's editable combo box: its values to pick, or any other.
+    const suggestions =
+      def.enum_values && def.gui_type?.endsWith('_open')
+        ? def.enum_values.map((v, i) => ({ value: v, label: def.enum_labels?.[i] ? tr(def.enum_labels[i]) : undefined }))
+        : undefined;
     // Percentages show as the number, the unit beside it (desktop's OptionsGroup); a typed "%"
     // is fine. They are stored with the "%".
     const percent = base === 'percent';
     const numeric = NUMERIC.includes(base);
     input = (
-      <>
-        <TextInput
-          value={percent ? current.replace(/%$/, '') : current}
-          list={listId}
-          readOnly={def.readonly}
-          onCommit={(v) => {
-            v = numeric ? decimalPoint(v) : v;
-            send(percent && v.trim() !== '' ? `${v.trim().replace(/%$/, '')}%` : v);
-          }}
-          numeric={numeric}
-        />
-        {listId && (
-          <datalist id={listId}>
-            {def.enum_values!.map((v, i) => (
-              <option key={v} value={v}>
-                {tr(def.enum_labels?.[i] ?? '')}
-              </option>
-            ))}
-          </datalist>
-        )}
-      </>
+      <TextInput
+        value={percent ? current.replace(/%$/, '') : current}
+        options={suggestions}
+        readOnly={def.readonly}
+        onCommit={(v) => {
+          v = numeric ? decimalPoint(v) : v;
+          send(percent && v.trim() !== '' ? `${v.trim().replace(/%$/, '')}%` : v);
+        }}
+        numeric={numeric}
+      />
     );
   }
   const wide =
@@ -1273,7 +1267,7 @@ function TextInput({
   value,
   onCommit,
   numeric,
-  list,
+  options,
   readOnly,
   placeholder,
   line,
@@ -1281,7 +1275,8 @@ function TextInput({
   value: string;
   onCommit: (v: string) => void;
   numeric?: boolean;
-  list?: string;
+  /** Values to pick from, besides typing one. */
+  options?: ComboOption[];
   readOnly?: boolean;
   placeholder?: string;
   line?: boolean;
@@ -1295,29 +1290,25 @@ function TextInput({
     if (sent.current && !refused) setV(value);
     sent.current = false;
   }, [stamp]); // eslint-disable-line react-hooks/exhaustive-deps
-  const done = () => {
-    if (v !== value) {
+  const done = (next = v) => {
+    if (next !== value) {
       sent.current = true;
-      onCommit(v);
+      onCommit(next);
     }
   };
-  return (
-    <input
-      type="text"
-      inputMode={numeric ? 'decimal' : undefined}
-      className={numeric ? 'num' : line ? 'line' : undefined}
-      value={v}
-      list={list}
-      readOnly={readOnly}
-      placeholder={placeholder}
-      onChange={(e) => setV(e.target.value)}
-      onBlur={done}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') done();
-        if (e.key === 'Escape') setV(value);
-      }}
-    />
-  );
+  const props = {
+    inputMode: numeric ? ('decimal' as const) : undefined,
+    className: numeric ? 'num' : line ? 'line' : undefined,
+    readOnly,
+    placeholder,
+    onBlur: () => done(),
+    onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') done();
+      if (e.key === 'Escape') setV(value);
+    },
+  };
+  if (options) return <ComboInput {...props} value={v} options={options} onChange={setV} onPick={done} />;
+  return <input type="text" {...props} value={v} onChange={(e) => setV(e.target.value)} />;
 }
 
 function TextArea({

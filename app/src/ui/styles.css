@@ -378,6 +378,23 @@ input:disabled {
   background-repeat: no-repeat;
   background-position: right 10px center;
 }
+/* A text field with suggestions (ComboInput.tsx), with the dropdown's arrow. */
+.combo {
+  display: inline-flex;
+  min-width: 0;
+}
+.combo > input[type="text"] {
+  width: 100%;
+  padding-right: 30px;
+  background-image: var(--chevron);
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+/* Nothing to suggest (models of a vendor typed in): a plain field. */
+.combo[data-empty] > input[type="text"] {
+  padding-right: 10px;
+  background-image: none;
+}
 .select-value {
   flex: 1;
   min-width: 0;
@@ -2591,6 +2608,9 @@ input[type="checkbox"].switch:disabled {
   width: 100%;
   max-width: 420px;
 }
+.field .control .combo > input.num {
+  width: 116px;
+}
 .field .control input.num {
   width: 96px;
   text-align: right;
@@ -3687,6 +3707,17 @@ fieldset.bed-volume legend {
   width: 200px;
   flex: 1 1 200px;
   max-width: 300px;
+}
+.create-form .row .combo:has(> input:not(.num)) {
+  flex: 1 1 200px;
+  max-width: 300px;
+}
+.create-form .row .combo > input:not(.num) {
+  width: 100%;
+  max-width: none;
+}
+.create-form .row .combo > input.num {
+  width: 100px;
 }
 .create-form .row input.num {
   width: 80px;
