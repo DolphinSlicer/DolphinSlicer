@@ -13,7 +13,7 @@ async function ready(page: Page) {
   await expect(page.getByTestId('process')).not.toHaveAttribute('data-value', '');
 }
 
-test('add, find, tag, open and delete library models', async ({ page }) => {
+test('add, find, tag, open and delete library models', { tag: '@browser' }, async ({ page }) => {
   await page.goto('/');
   await ready(page);
   await page.getByTestId('tab-library').click();
@@ -63,7 +63,7 @@ test('add, find, tag, open and delete library models', async ({ page }) => {
   await expect(confirm).toContainText('Delete Big cube from the library?');
   await expect(confirm.getByRole('button', { name: 'Delete', exact: true })).toBeFocused();
   await page.keyboard.press('Escape');
-  await expect(confirm).toHaveCount(0);
+  await expect(confirm).toBeHidden();
   await expect(del).toBeFocused();
   await del.click();
   await answer(page, 'Cancel');

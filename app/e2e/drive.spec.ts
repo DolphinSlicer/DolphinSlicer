@@ -28,7 +28,7 @@ async function connect(page: Page) {
   await page.keyboard.press('Escape');
 }
 
-test('user presets sync between devices through Drive', async ({ browser, baseURL }) => {
+test('user presets sync between devices through Drive', { tag: '@browser' }, async ({ browser, baseURL }) => {
   const drive = new FakeDrive();
   const a = await device(browser, drive, baseURL!);
   await connect(a);

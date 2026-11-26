@@ -21,14 +21,14 @@ async function importStl(page: Page, name: string, data: Buffer) {
   await expect(page.getByTestId('object-list')).toContainText(name);
 }
 
-test('engine flavour matches cross-origin isolation', async ({ page }, info) => {
+test('engine flavour matches cross-origin isolation', { tag: ['@engine', '@browser'] }, async ({ page }, info) => {
   await ready(page);
   const flavor = flavorOf(info.project.name);
   await expect(page.getByTestId('app')).toHaveAttribute('data-engine', flavor);
   expect(await page.evaluate(() => crossOriginIsolated)).toBe(flavor === 'mt');
 });
 
-test('import → slice → cancel → slice → download', async ({ page }) => {
+test('import → slice → cancel → slice → download', { tag: ['@engine', '@browser'] }, async ({ page }) => {
   const errors = await ready(page);
   // A detailed sphere takes long enough to cancel in both builds.
   await importStl(page, 'sphere.stl', sphereStl(45, 512));
@@ -91,7 +91,7 @@ test('import → slice → cancel → slice → download', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test('out of memory shows a clear error and the app recovers', async ({ page }) => {
+test('out of memory shows a clear error and the app recovers', { tag: '@engine' }, async ({ page }) => {
   // Debug hook: the worker holds back ~3.9 GB of the 4 GB wasm heap before slicing.
   await ready(page, '/?debug&reserveHeapMB=3900');
   await importStl(page, 'sphere.stl', sphereStl(45, 256));
@@ -114,7 +114,7 @@ test('about dialog links to the source (AGPL)', async ({ page }) => {
   expect(await privacy.text()).toContain('support@dolphinslicer.net');
 });
 
-test('3MF project keeps positions and per-object settings', async ({ page }) => {
+test('3MF project keeps positions and per-object settings', { tag: ['@engine', '@browser'] }, async ({ page }) => {
   await ready(page);
   const { readFileSync } = await import('node:fs');
   const buf = readFileSync(new URL('../../engine/test/fixtures/multi.3mf', import.meta.url));

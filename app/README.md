@@ -24,9 +24,16 @@ npm run lint             # Biome: lint, format and import order, as CI checks th
 npm run check            # Biome: format and apply the safe fixes
 npm run build            # assets + typecheck + production build + 25 MiB per-file check
 npm run build:app        # typecheck + production build, without the engine (as CI does)
-npm run e2e              # Playwright: Chromium, multithreaded (port 4183) and single-threaded (4184)
+npm run e2e              # Playwright: all in Chrome, multithreaded (port 4183); @engine tests also
+                         # single-threaded (4184), @browser tests also in Firefox
 BENCH_GCODE=big.gcode npx playwright test bench --project=mt    # preview benchmark (opt-in)
 ```
+
+Tag a test `@engine` when it slices in a way the single-threaded engine could differ in, and
+`@browser` when it uses a browser feature Firefox may handle differently (files, downloads,
+storage, popovers, dialogs, popups, keys, WebGL). CI runs the end-to-end tests on every pull request
+and on `main` (the `e2e` jobs in `.github/workflows/deploy.yml`, four shards). A failed job keeps
+its Playwright report and traces as an artifact.
 
 Printers (opt-in; Linux with Docker, as root for the simulated GPIO chip):
 

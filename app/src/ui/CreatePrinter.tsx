@@ -71,8 +71,6 @@ export function CreatePrinter({
   const [filter, setFilter] = useState('');
   // A new nozzle (variant) shares the user's presets made for its model, all by default.
   const [linked, setLinked] = useState<{ processes: PresetEntry[]; filaments: PresetEntry[] } | null>(null);
-  const [shareProcesses, setShareProcesses] = useState<Set<string>>(new Set());
-  const [shareFilaments, setShareFilaments] = useState<Set<string>>(new Set());
 
   // Printers a nozzle can be added to: system printers and the user's own roots, one per model.
   const basePrinters = useMemo(() => {
@@ -94,10 +92,7 @@ export function CreatePrinter({
     let live = true;
     linkedPresets(variantModel).then(
       (r) => {
-        if (!live) return;
-        setLinked(r);
-        setShareProcesses(new Set(r.processes.map((x) => x.name)));
-        setShareFilaments(new Set(r.filaments.map((x) => x.name)));
+        if (live) setLinked(r);
       },
       (e) => notify({ kind: 'error', ...describeError(e) }),
     );
@@ -185,9 +180,15 @@ export function CreatePrinter({
       return setError(
         t('You have not yet chosen which printer preset to create based on. Please choose the vendor and model of the printer'),
       );
-    const sharing = linked ? [...shareProcesses, ...shareFilaments] : [];
-    if (!filaments.size && !(linked && shareFilaments.size)) return setError(t('You need to select at least one filament preset.'));
-    if (!processes.size && !(linked && shareProcesses.size)) return setError(t('You need to select at least one process preset.'));
+    // A variant uses all of its model's presets: those of its printer come with being its child
+    // (OrcaSlicer's parent rule), the others name it among their printers.
+    // The ones in use first: the variant starts with the first it shares.
+    const inUse = new Set([presets.state?.process, presets.state?.filaments[0]]);
+    const sharing = linked
+      ? [...linked.processes, ...linked.filaments].map((x) => x.name).sort((a, b) => Number(inUse.has(b)) - Number(inUse.has(a)))
+      : [];
+    if (!filaments.size && !linked?.filaments.length) return setError(t('You need to select at least one filament preset.'));
+    if (!processes.size && !linked?.processes.length) return setError(t('You need to select at least one process preset.'));
     setError(null);
     const base = basePrinters.find((p) => p.name === existing);
     const [x, y, ox, oy] = [num(size.x), num(size.y), num(origin.x), num(origin.y)];
@@ -231,7 +232,7 @@ export function CreatePrinter({
   };
 
   // A changed choice answers the last message.
-  useEffect(() => setError(null), [processes, filaments, shareProcesses, shareFilaments, template, kind, brand, model, existing]);
+  useEffect(() => setError(null), [processes, filaments, template, kind, brand, model, existing]);
   const toggle = (set: Set<string>, update: (s: Set<string>) => void, name: string) => {
     const s = new Set(set);
     if (s.has(name)) s.delete(name);
@@ -381,22 +382,8 @@ export function CreatePrinter({
             <>
               <p className="muted">{t('The new variant uses these presets of {model} too.', { model: variantModel })}</p>
               <div className="create-templates">
-                <TemplateList
-                  title={t('Print settings')}
-                  entries={linked.processes}
-                  chosen={shareProcesses}
-                  onToggle={(n) => toggle(shareProcesses, setShareProcesses, n)}
-                  onAll={(on) => setShareProcesses(on ? new Set(linked.processes.map((x) => x.name)) : new Set())}
-                  testid="create-shared-processes"
-                />
-                <TemplateList
-                  title={t('Filaments')}
-                  entries={linked.filaments}
-                  chosen={shareFilaments}
-                  onToggle={(n) => toggle(shareFilaments, setShareFilaments, n)}
-                  onAll={(on) => setShareFilaments(on ? new Set(linked.filaments.map((x) => x.name)) : new Set())}
-                  testid="create-shared-filaments"
-                />
+                <TemplateList title={t('Print settings')} entries={linked.processes} testid="create-shared-processes" />
+                <TemplateList title={t('Filaments')} entries={linked.filaments} testid="create-shared-filaments" />
               </div>
             </>
           )}
@@ -538,9 +525,10 @@ function TemplateList({
 }: {
   title: string;
   entries: PresetEntry[];
-  chosen: Set<string>;
-  onToggle: (name: string) => void;
-  onAll: (on: boolean) => void;
+  /** Without: a list to read, not to choose from. */
+  chosen?: Set<string>;
+  onToggle?: (name: string) => void;
+  onAll?: (on: boolean) => void;
   tools?: React.ReactNode;
   testid: string;
 }) {
@@ -548,21 +536,29 @@ function TemplateList({
     <section className="template-list" data-testid={testid}>
       <div className="template-head">
         <h3>{title}</h3>
-        <button type="button" className="link" onClick={() => onAll(true)}>
-          {t('Select All')}
-        </button>
-        <button type="button" className="link" onClick={() => onAll(false)}>
-          {t('Deselect All')}
-        </button>
+        {onAll && (
+          <>
+            <button type="button" className="link" onClick={() => onAll(true)}>
+              {t('Select All')}
+            </button>
+            <button type="button" className="link" onClick={() => onAll(false)}>
+              {t('Deselect All')}
+            </button>
+          </>
+        )}
       </div>
       {tools}
       <ul>
         {entries.map((e) => (
           <li key={e.name}>
-            <label>
-              <input type="checkbox" checked={chosen.has(e.name)} onChange={() => onToggle(e.name)} />
+            {chosen ? (
+              <label>
+                <input type="checkbox" checked={chosen.has(e.name)} onChange={() => onToggle?.(e.name)} />
+                <span>{e.name}</span>
+              </label>
+            ) : (
               <span>{e.name}</span>
-            </label>
+            )}
           </li>
         ))}
       </ul>

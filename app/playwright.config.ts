@@ -1,5 +1,7 @@
-// End-to-end tests in Chromium, twice: cross-origin isolated (multithreaded engine) and without
-// isolation (single-threaded fallback). Both run against the production build (vite preview).
+// End-to-end tests against the production build (vite preview). Every test runs once in Chrome,
+// cross-origin isolated (mt, the multithreaded engine). Tests tagged @engine (the slicing paths)
+// run again without isolation (st, the single-threaded fallback), and those tagged @browser (files,
+// downloads, storage, popovers, dialogs, popups, keys, WebGL) again in Firefox.
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import { execSync } from 'node:child_process';
@@ -90,7 +92,9 @@ export default defineConfig({
   testDir: 'e2e',
   timeout: 180_000,
   expect: { timeout: 60_000 },
-  fullyParallel: false,
+  // One test at a time (slicing and the software 3D view need the CPU); split into shards by test,
+  // not by file, so the shards take about as long (CI).
+  fullyParallel: true,
   workers: 1,
   reporter: [['list'], ['html', { open: 'never' }]],
   // Stable Google Chrome (`npx playwright install chrome`), not the bundled Chromium build:
@@ -108,12 +112,14 @@ export default defineConfig({
     {
       name: 'st',
       testIgnore: ONLY_PRINTER_PROJECTS,
+      grep: /@engine/,
       use: { ...chrome, baseURL: 'http://localhost:4184/', storageState: library('http://localhost:4184') },
       metadata: { flavor: 'st' },
     },
     {
       name: 'firefox-mt',
       testIgnore: ONLY_PRINTER_PROJECTS,
+      grep: /@browser/,
       use: { ...devices['Desktop Firefox'], baseURL: 'http://localhost:4183/', storageState: library('http://localhost:4183') },
       metadata: { flavor: 'mt' },
     },

@@ -17,7 +17,7 @@ async function start(page: Page) {
   await expect(page.getByTestId('object-panel')).toBeVisible();
 }
 
-test('copy, paste, clone, instances, delete, undo and redo by keyboard', async ({ page }) => {
+test('copy, paste, clone, instances, delete, undo and redo by keyboard', { tag: '@browser' }, async ({ page }) => {
   await start(page);
   await page.keyboard.press(`${mod}+c`);
   await page.keyboard.press(`${mod}+v`);
@@ -302,7 +302,7 @@ test('deleted objects are neither sliced nor added to the library', async ({ pag
   await expect(page.getByTestId('library-card')).toHaveAttribute('data-name', 'kept');
 });
 
-test('leaving the page with objects on the plate asks first', async ({ page }) => {
+test('leaving the page with objects on the plate asks first', { tag: '@browser' }, async ({ page }) => {
   await start(page);
   // Browsers ask only after the user did something on the page.
   await page.getByTestId('object-list').locator('li').first().click();
@@ -315,7 +315,7 @@ test('leaving the page with objects on the plate asks first', async ({ page }) =
   await expect(rows(page)).toHaveCount(1);
 });
 
-test('number keys pick desktop’s camera views; Fit view frames the selection', async ({ page }) => {
+test('number keys pick desktop’s camera views; Fit view frames the selection', { tag: '@browser' }, async ({ page }) => {
   await start(page);
   if (!(await hasViewport(page))) return;
   await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());

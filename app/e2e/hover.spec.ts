@@ -10,7 +10,7 @@ async function hoveredAt(page: Page, x: number, y: number): Promise<boolean> {
   return (await page.locator('canvas').evaluate((c) => c.style.cursor)) === 'grab';
 }
 
-test('the hover glow starts on the model, not on its bounding box', async ({ page }) => {
+test('the hover glow starts on the model, not on its bounding box', { tag: '@browser' }, async ({ page }) => {
   await page.goto('/');
   await expect(page.getByTestId('app')).toHaveAttribute('data-engine-ready', 'yes');
   // Headless Firefox on a machine without a GPU has no WebGL: no 3D view to hover.
@@ -19,26 +19,36 @@ test('the hover glow starts on the model, not on its bounding box', async ({ pag
   await page.getByTestId('file-input').setInputFiles({ name: 'ball.stl', mimeType: 'model/stl', buffer: sphereStl(40, 600) });
   await expect(page.getByTestId('object-list').getByText('ball')).toBeVisible();
 
-  // Find the ball: a coarse grid, then its outline's edge left, right, up and down of the center
-  // by bisection.
+  // The ball's center on screen (the 3D view's camera), then its outline's edge left, right, up
+  // and down of it by bisection.
   const box = (await page.locator('canvas').boundingBox())!;
-  const hits: { x: number; y: number }[] = [];
-  const N = 16;
-  for (let i = 1; i < N; i++) {
-    for (let j = 1; j < N; j++) {
-      const x = box.x + (box.width * i) / N,
-        y = box.y + (box.height * j) / N;
-      if (await hoveredAt(page, x, y)) hits.push({ x, y });
-    }
-  }
-  expect(hits.length).toBeGreaterThan(0);
-  const cx = hits.reduce((a, h) => a + h.x, 0) / hits.length,
-    cy = hits.reduce((a, h) => a + h.y, 0) / hits.length;
+  const { cx, cy } = await page.evaluate(() => {
+    type V = { clone(): V; applyMatrix4(m: unknown): V; project(c: unknown): V; x: number; y: number };
+    const vp = (
+      window as unknown as {
+        __orca: {
+          viewport: {
+            camera: unknown;
+            renderer: { domElement: HTMLCanvasElement };
+            meshes: Map<
+              string,
+              { matrixWorld: unknown; geometry: { boundingSphere: { center: V } | null; computeBoundingSphere(): void } }[]
+            >;
+          };
+        };
+      }
+    ).__orca.viewport;
+    const mesh = [...vp.meshes.values()][0]![0]!;
+    if (!mesh.geometry.boundingSphere) mesh.geometry.computeBoundingSphere();
+    const p = mesh.geometry.boundingSphere!.center.clone().applyMatrix4(mesh.matrixWorld).project(vp.camera);
+    const r = vp.renderer.domElement.getBoundingClientRect();
+    return { cx: r.left + ((p.x + 1) / 2) * r.width, cy: r.top + ((1 - p.y) / 2) * r.height };
+  });
   expect(await hoveredAt(page, cx, cy)).toBe(true);
   const edge = async (dx: number, dy: number) => {
     let inside = 0,
       outside = Math.max(box.width, box.height);
-    while (outside - inside > 1) {
+    while (outside - inside > 2) {
       const mid = (inside + outside) / 2;
       if (await hoveredAt(page, cx + dx * mid, cy + dy * mid)) inside = mid;
       else outside = mid;

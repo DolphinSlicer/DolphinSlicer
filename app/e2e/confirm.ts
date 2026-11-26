@@ -8,5 +8,6 @@ export async function answer(page: Page, button: string, text?: string | RegExp)
   await expect(dialog).toBeVisible();
   if (text) await expect(dialog).toContainText(text);
   await dialog.getByRole('button', { name: button, exact: true }).click();
-  await expect(dialog).toHaveCount(0);
+  // Closed, it stays in the page (hidden) for its close animation.
+  await expect(dialog).toBeHidden();
 }

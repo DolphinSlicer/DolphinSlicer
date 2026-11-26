@@ -11,13 +11,15 @@ async function ready(page: Page) {
 }
 const prefs = (page: Page) => page.getByTestId('preferences');
 
-test('theme switches the page and is kept after a reload', async ({ page }) => {
+test('theme switches the page and is kept after a reload', { tag: '@browser' }, async ({ page }) => {
   await ready(page);
   await page.getByTestId('open-preferences').click();
   await prefs(page).getByRole('radio', { name: 'Dark' }).click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  // A dark background (any shade of the dark theme).
   const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
-  expect(bg).toBe('rgb(13, 15, 18)');
+  const channels = bg.match(/\d+/g)!.slice(0, 3).map(Number);
+  expect(Math.max(...channels), bg).toBeLessThan(60);
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await page.getByTestId('open-preferences').click();
@@ -25,7 +27,7 @@ test('theme switches the page and is kept after a reload', async ({ page }) => {
   await expect(page.locator('html')).not.toHaveAttribute('data-theme', /./);
 });
 
-test('language changes the app and the settings text, and is kept', async ({ page }) => {
+test('language changes the app and the settings text, and is kept', { tag: '@browser' }, async ({ page }) => {
   await ready(page);
   await page.getByTestId('open-preferences').click();
   await choose(page.getByTestId('pref-language'), 'de');

@@ -104,6 +104,9 @@ test('a new variant of a printer goes to the printers linked to it', async ({ pa
   const form = page.getByTestId('wizard');
   await form.getByTestId('create-nozzle').fill('0.3');
   await form.getByTestId('create-next').click();
+  // At least one filament and one process for it (desktop asks for them too).
+  await form.getByTestId('create-filaments').getByRole('checkbox').first().check();
+  await form.getByTestId('create-processes').getByRole('button', { name: 'Select All', exact: true }).click();
   await form.getByTestId('create-submit').click();
   await expect(form).toHaveCount(0);
   const variant = (await page.getByTestId('printer').getAttribute('data-value'))!;

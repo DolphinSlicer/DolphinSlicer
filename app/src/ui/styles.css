@@ -3791,6 +3791,11 @@ fieldset.bed-volume legend {
 .template-list li label:hover {
   background: var(--elev);
 }
+/* A list to read (the presets a new variant shares): the rows line up with the checkbox lists'. */
+.template-list li > span {
+  display: block;
+  padding: 3px 6px;
+}
 button.link {
   border: none;
   background: none;

@@ -1,6 +1,7 @@
 # Deploys main to Cloudflare Pages (dolphinslicer.app), and each pull request from this repository
-# to a preview (<branch>.dolphinslicer.pages.dev, linked in a PR comment). Pull requests from forks
-# get no preview: their workflows have no secrets. The engines come from build-engine.yml.
+# to a preview (<branch>.dolphinslicer.pages.dev, linked in a PR comment), and runs the end-to-end
+# tests on the same engines. Pull requests from forks get neither: their workflows have no secrets.
+# The engines come from build-engine.yml.
 name: deploy
 on:
   push:
@@ -87,3 +88,49 @@ jobs:
           done
           echo "live site serves ${live:-nothing}, built $built" >&2
           exit 1
+
+  # End-to-end tests (app/e2e, Playwright) against the production build, in four shards side by
+  # side (playwright.config.ts picks the tests of each project). The printer tests (PRINTER_E2E)
+  # need Docker printers and stay local.
+  e2e:
+    name: e2e (${{ matrix.shard }}/4)
+    needs: engine
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: app/package-lock.json }
+      # Where a local engine build puts them: the build and the tests that load the engine
+      # directly (settingsCoverage.spec.ts) find them there.
+      - uses: actions/download-artifact@v4
+        with: { name: engine-st, path: .work/build-engine-st/dist }
+      - uses: actions/download-artifact@v4
+        with: { name: engine-mt, path: .work/build-engine-mt/dist }
+      - name: Fetch OrcaSlicer sources
+        run: bash -c 'source engine/scripts/common.sh && fetch_orca'
+      - name: Install
+        working-directory: app
+        run: npm ci
+      - name: Build
+        working-directory: app
+        run: npm run build
+      # Chrome comes with the runner.
+      - name: Install Firefox
+        working-directory: app
+        run: npx playwright install --with-deps firefox
+      - name: Test
+        working-directory: app
+        run: npx playwright test --shard=${{ matrix.shard }}/4 --reporter=list,html
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-report-${{ matrix.shard }}
+          path: |
+            app/playwright-report
+            app/test-results
+          retention-days: 7

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { expect, test } from '@playwright/test';
 
-test('dropdowns work with the keyboard, search long lists and run their actions', async ({ page }) => {
+test('dropdowns work with the keyboard, search long lists and run their actions', { tag: '@browser' }, async ({ page }) => {
   await page.goto('/');
   await expect(page.getByTestId('app')).toHaveAttribute('data-engine-ready', 'yes');
   const process = page.getByTestId('process');
