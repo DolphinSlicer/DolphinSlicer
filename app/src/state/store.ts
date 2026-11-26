@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { create } from 'zustand';
 import type { CalibParams, PresetEntry, PresetState } from '../engine/protocol';
-import type { Mat4, PaintData, Progress, SliceErrorCode, SliceStats } from '../engine/types';
+import type { Mat4, PaintData, Progress, SliceErrorCode, SliceStats, SupportVolume } from '../engine/types';
 import type { Language } from '../i18n/i18n';
 import type { LibraryEntry } from '../library/store';
 import type { Bed } from '../model/bed';
@@ -73,6 +73,13 @@ export interface SceneObject {
   supports?: PaintData;
   /** Support enforcers or blockers are painted. */
   painted: boolean;
+  /** Support blockers and enforcers added in the app (desktop's Add support blocker / enforcer). */
+  volumes?: SceneVolume[];
+}
+
+/** A support blocker or enforcer of an object; `id` is unique within the object. */
+export interface SceneVolume extends SupportVolume {
+  id: string;
 }
 
 export interface Notice {
@@ -148,6 +155,8 @@ export interface AppState {
   objects: SceneObject[];
   /** Selected objects (ids); the object panel shows when there is one. */
   selected: string[];
+  /** A support blocker or enforcer of the selected object, selected in it (its panel shows). */
+  selectedVolume: { object: string; volume: string } | null;
   /** Lay on face (desktop's flatten gizmo) is on for the one selected object. */
   layOnFace: boolean;
   /** Support painting (desktop's paint-on supports) on this object, and its tool's settings. */
@@ -208,6 +217,7 @@ export const useApp = create<AppState>()(() => ({
   files: [],
   objects: [],
   selected: [],
+  selectedVolume: null,
   layOnFace: false,
   painting: null,
   paint: {

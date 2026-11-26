@@ -19,6 +19,7 @@ import {
   Trash2,
   Undo2,
 } from 'lucide-react';
+import type { ComponentType } from 'react';
 import { t, tr } from '../i18n/i18n';
 import { cancelSlice } from '../state/actions';
 import { setPaint, stopPainting, togglePainting } from '../state/paintActions';
@@ -42,11 +43,22 @@ import {
   undo,
 } from '../state/plate';
 import { type AppState, get } from '../state/store';
+import { ADD_NAMES, addSupportVolume, SHAPE_NAMES, SUPPORT_SHAPES } from '../state/supportVolumes';
 import { Viewport } from '../view/Viewport';
+import { SupportBlockerIcon, SupportEnforcerIcon } from './supportIcons';
 import { viewport } from './ViewportView';
 
 export const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
 const CTRL = isMac ? '⌘' : 'Ctrl+';
+
+/** A menu entry that opens more entries beside it (desktop's Add Support Blocker ▸ Cube, …). */
+export interface Submenu {
+  id: string;
+  label: () => string;
+  icon?: ComponentType<{ size?: number; className?: string }>;
+  enabled: (s: AppState) => boolean;
+  items: Command[];
+}
 
 export interface Command {
   id: string;
@@ -114,6 +126,22 @@ export const COMMANDS = {
   deleteAll: { id: 'delete-all', label: () => t('Delete all'), keys: `${CTRL}D`, icon: Eraser, enabled: any, run: deleteAll },
   fitView: { id: 'fit-view', label: () => t('Fit view'), keys: '', icon: Focus, enabled: () => true, run: () => fitView() },
 } satisfies Record<string, Command>;
+
+/** Desktop's Add Support Blocker / Add Support Enforcer, a shape each, for the one selected object. */
+const supportVolumeMenu = (type: 'support_blocker' | 'support_enforcer'): Submenu => ({
+  id: type === 'support_blocker' ? 'add-blocker' : 'add-enforcer',
+  label: () => tr(ADD_NAMES[type]),
+  icon: type === 'support_blocker' ? SupportBlockerIcon : SupportEnforcerIcon,
+  enabled: (s) => s.selected.length === 1 && !s.painting,
+  items: SUPPORT_SHAPES.map((shape) => ({
+    id: `${type === 'support_blocker' ? 'blocker' : 'enforcer'}-${shape}`,
+    label: () => tr(SHAPE_NAMES[shape]),
+    keys: '',
+    enabled: (s) => s.selected.length === 1 && !s.painting,
+    run: () => addSupportVolume(type, shape),
+  })),
+});
+export const SUPPORT_MENUS = [supportVolumeMenu('support_blocker'), supportVolumeMenu('support_enforcer')];
 
 /**
  * Desktop's camera views (MainFrame: Ctrl+0 default, Ctrl+1–6 the sides, Ctrl+7 the plate),

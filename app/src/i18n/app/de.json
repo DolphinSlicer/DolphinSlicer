@@ -366,5 +366,6 @@
   "Save or discard your changes to get the latest presets.": "Speichern oder verwerfen Sie Ihre Änderungen, um die neuesten Profile zu laden.",
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Neuere Version behalten von: {names}. Die andere liegt im Ordner „Conflicts“ auf dem Server.",
   "Sync with server storage": "Mit dem Serverspeicher synchronisieren",
-  "The API key is stored on the server too.": "Der API-Schlüssel wird auch auf dem Server gespeichert."
+  "The API key is stored on the server too.": "Der API-Schlüssel wird auch auf dem Server gespeichert.",
+  "Torus": "Torus"
 }

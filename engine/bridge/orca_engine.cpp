@@ -158,6 +158,24 @@ bool matrix_from_json(const json &j, Transform3d &m)
     return true;
 }
 
+// Desktop's generic shapes (GUI_ObjectList.cpp: create_mesh, primitive_angle_step): `size` as its
+// size dialog has them (cube x y z; cylinder, cone, disc: diameter height; sphere: diameter; torus:
+// inner diameter, tube diameter). Empty for an unknown shape or a size that isn't positive.
+TriangleMesh generic_shape(const std::string &shape, const std::vector<double> &size)
+{
+    auto step = [](double radius) { return std::clamp(2. * std::acos(1. - std::min(1., 0.002 / radius)), 2. * PI / 720., 2. * PI / 16.); };
+    auto ok = [&](size_t n) { return size.size() == n && std::all_of(size.begin(), size.end(), [](double v) { return v > 0 && v < 1e5; }); };
+    if (shape == "cube" && ok(3)) return TriangleMesh(its_make_cube(size[0], size[1], size[2]));
+    if ((shape == "cylinder" || shape == "disc") && ok(2)) return TriangleMesh(its_make_cylinder(0.5 * size[0], size[1], step(0.5 * size[0])));
+    if (shape == "cone" && ok(2)) return TriangleMesh(its_make_cone(0.5 * size[0], size[1], step(0.5 * size[0])));
+    if (shape == "sphere" && ok(1)) return TriangleMesh(its_make_sphere(0.5 * size[0], step(0.5 * size[0])));
+    if (shape == "torus" && ok(2)) {
+        const double tube = 0.5 * size[1], radius = 0.5 * size[0] + tube;
+        return TriangleMesh(its_make_torus(radius, tube, step(radius + tube), step(tube)));
+    }
+    return TriangleMesh();
+}
+
 void quiet_logging()
 {
     // libslic3r logs a lot at info/debug level; keep warnings and errors only.
@@ -715,6 +733,11 @@ int orca_set_layout(void *p, const char *json_text)
         // Painted supports per object (index in `plan`): one entry per model part, in desktop's
         // 3MF form (orca_paint_data); absent: as loaded.
         std::vector<std::pair<size_t, json>> paint;
+        // Support blockers and enforcers per object (index in `plan`): a generic shape each, its
+        // mesh centred around its origin (as desktop's add_volume), placed by its matrix in the
+        // object's coordinates.
+        struct Shape { ModelVolumeType type; TriangleMesh mesh; Transform3d matrix; };
+        std::vector<std::pair<size_t, std::vector<Shape>>> shapes;
         std::vector<bool> used(e.model.objects.size(), false);
         for (const json &o : j["objects"]) {
             if (!o.contains("index") || !o["index"].is_number_unsigned())
@@ -741,6 +764,23 @@ int orca_set_layout(void *p, const char *json_text)
                     ++k;
                 }
                 paint.emplace_back(plan.size(), sup);
+            }
+            if (const json &vols = o.value("volumes", json()); vols.is_array() && !vols.empty()) {
+                std::vector<Shape> list;
+                for (const json &v : vols) {
+                    const std::string type = v.is_object() ? v.value("type", "") : "";
+                    if (type != "support_blocker" && type != "support_enforcer")
+                        return e.fail(ORCA_INVALID_INPUT, "Layout: a volume must be a support blocker or enforcer");
+                    std::vector<double> size;
+                    for (const json &x : v.value("size", json::array())) size.push_back(x.is_number() ? x.get<double>() : -1.);
+                    TriangleMesh mesh = generic_shape(v.value("shape", ""), size);
+                    if (mesh.empty()) return e.fail(ORCA_INVALID_INPUT, "Layout: unknown volume shape or size");
+                    Transform3d m = Transform3d::Identity();
+                    if (!matrix_from_json(v.value("matrix", json()), m))
+                        return e.fail(ORCA_INVALID_INPUT, "Layout: volume matrix must be 16 numbers");
+                    list.push_back({type == "support_blocker" ? ModelVolumeType::SUPPORT_BLOCKER : ModelVolumeType::SUPPORT_ENFORCER, std::move(mesh), m});
+                }
+                shapes.emplace_back(plan.size(), std::move(list));
             }
             plan.emplace_back(idx, std::move(mats));
         }
@@ -771,6 +811,12 @@ int orca_set_layout(void *p, const char *json_text)
             for (ModelVolume *mv : e.model.objects[k]->volumes)
                 if (mv->is_model_part()) { orca_bridge::set_volume_facets(mv->supported_facets, n < sup.size() ? sup[n] : json()); ++n; }
         }
+        for (auto &[k, list] : shapes)
+            for (Shape &sh : list) {
+                ModelVolume *v = e.model.objects[k]->add_volume(std::move(sh.mesh), sh.type);
+                v->set_transformation(Geometry::Transformation(sh.matrix));
+                v->name = sh.type == ModelVolumeType::SUPPORT_BLOCKER ? "Support blocker" : "Support enforcer";
+            }
         return ORCA_OK;
     } catch (const std::exception &ex) {
         return e.fail(ORCA_INVALID_INPUT, "Layout rejected", ex.what());

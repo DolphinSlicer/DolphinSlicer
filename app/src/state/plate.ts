@@ -11,6 +11,7 @@ import { layOnFaceRotation } from '../model/layOnFace';
 import { arrangeAll, clearPlate, deleteObjects, footprint, geometries, newObjectId, translateTo } from './actions';
 import { loadedCounts, redo, remember, undo } from './history';
 import { get, notify, type SceneObject, type SourceFile, set, touchPlate } from './store';
+import { deleteVolume, selectedVolume } from './supportVolumes';
 
 export { arrangeAll, clearPlate, redo, undo };
 
@@ -39,19 +40,22 @@ export function select(id: string | null, mode: 'replace' | 'toggle' | 'range' =
   if (mode !== 'range') anchor = id;
   // Lay on face stays on while the same one object is selected.
   const keep = s.layOnFace && next.length === 1 && next[0] === s.selected[0] && s.selected.length === 1;
-  set({ selected: next, layOnFace: keep });
+  set({ selected: next, layOnFace: keep, selectedVolume: null });
 }
 
 export function selectAll() {
-  set((s) => ({ selected: s.objects.map((o) => o.id), layOnFace: false }));
+  set((s) => ({ selected: s.objects.map((o) => o.id), layOnFace: false, selectedVolume: null }));
 }
 
 export function deselectAll() {
-  set({ selected: [], layOnFace: false });
+  set({ selected: [], layOnFace: false, selectedVolume: null });
 }
 
+/** The selected support blocker or enforcer, else the selected objects (as desktop's Delete). */
 export function deleteSelected() {
-  deleteObjects(get().selected);
+  const v = selectedVolume();
+  if (v) deleteVolume(v.object.id, v.volume.id);
+  else deleteObjects(get().selected);
 }
 
 export { clearPlate as deleteAll };

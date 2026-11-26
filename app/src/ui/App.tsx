@@ -20,19 +20,20 @@ import {
   Upload,
   X,
 } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { t, tr } from '../i18n/i18n';
 import { cancelSlice, deleteObject, downloadGcode, importFiles, isModelFile, openGcode, readNow, slice } from '../state/actions';
 import { addModels, addPlateToLibrary } from '../state/libraryActions';
 import { select } from '../state/plate';
 import { dismiss, isStale, notify, set, useApp } from '../state/store';
+import { deleteVolume, SHAPE_NAMES, selectedVolume, selectVolume, TYPE_NAMES } from '../state/supportVolumes';
 import { About } from './About';
 import { CalibrationButton } from './Calibration';
 import { ConfirmHost } from './Confirm';
 import { describeError } from './errors';
 import { LibraryView } from './LibraryView';
 import { LibraryWizard } from './LibraryWizard';
-import { ObjectPanel } from './ObjectPanel';
+import { ObjectPanel, VolumePanel } from './ObjectPanel';
 import { PaintPanel } from './PaintPanel';
 import { PlateMenu, PlateToolbar } from './PlateToolbar';
 import { Preferences } from './Preferences';
@@ -45,6 +46,7 @@ import { QuickSearch } from './QuickSearch';
 import { QuickSettings } from './QuickSettings';
 import { SegmentThumb } from './SegmentThumb';
 import { importPresetFiles, PRESET_FILES, SettingsPanel } from './SettingsPanel';
+import { SupportBlockerIcon, SupportEnforcerIcon } from './supportIcons';
 import { useFit } from './useFit';
 import { ViewportView } from './ViewportView';
 
@@ -65,6 +67,7 @@ const TOPBAR_STEPS = ['labels', 'brand', 'tight', 'icons', 'slice'] as const;
 export function App() {
   const view = useApp((s) => s.view);
   const painting = useApp((s) => s.painting);
+  const volumeSelected = useApp((s) => selectedVolume(s) !== null);
   const sliceState = useApp((s) => s.slice);
   const engine = useApp((s) => s.engine);
   const importing = useApp((s) => s.importing);
@@ -252,7 +255,7 @@ export function App() {
           <ObjectsCard />
         </aside>
         {view === 'prepare' && <PlateToolbar />}
-        {view === 'prepare' && (painting ? <PaintPanel /> : <ObjectPanel />)}
+        {view === 'prepare' && (painting ? <PaintPanel /> : volumeSelected ? <VolumePanel /> : <ObjectPanel />)}
         <PlateMenu />
         {((importing && view === 'prepare') || (parsing && view === 'preview')) && (
           <div className="loading-overlay" role="status" aria-label={t('Loading model')} data-testid="importing">
@@ -367,6 +370,7 @@ function SendButton({ onClick }: { onClick: () => void }) {
 function ObjectsCard() {
   const objects = useApp((s) => s.objects);
   const selected = useApp((s) => s.selected);
+  const selectedVolume = useApp((s) => s.selectedVolume);
   const importing = useApp((s) => s.importing);
   const slicing = useApp((s) => s.slice.state === 'running');
   const fileInput = useRef<HTMLInputElement>(null);
@@ -429,50 +433,85 @@ function ObjectsCard() {
       {objects.length > 0 ? (
         <ul className="objects" data-testid="object-list">
           {objects.map((o) => (
-            <li
-              key={o.id}
-              className={[selected.includes(o.id) && 'selected', (o.instances.length > 1 || o.hasConfig || o.painted) && 'with-meta']
-                .filter(Boolean)
-                .join(' ')}
-              onMouseDown={(e) => {
-                if (e.shiftKey) e.preventDefault();
-              }}
-              // Ctrl (Cmd) adds to or takes from the selection; Shift selects a range, as desktop's object list.
-              onClick={(e) => select(o.id, e.ctrlKey || e.metaKey ? 'toggle' : e.shiftKey ? 'range' : 'replace')}
-              onContextMenu={(e) => {
-                e.preventDefault();
-                if (!selected.includes(o.id)) select(o.id);
-                set({ menu: { id: o.id, x: e.clientX, y: e.clientY } });
-              }}
-            >
-              <Box size={15} className="obj-icon" />
-              <span className="name" data-tip={o.name}>
-                {o.name}
-              </span>
-              {(o.instances.length > 1 || o.hasConfig || o.painted) && (
-                // As desktop's object list: copies, own settings, painted supports.
-                <span className="meta">
-                  {[
-                    o.instances.length > 1 ? `×${o.instances.length}` : '',
-                    o.hasConfig ? t('custom settings') : '',
-                    o.painted ? tr('Support Painting') : '',
-                  ]
-                    .filter(Boolean)
-                    .join(' · ')}
-                </span>
-              )}
-              <button
-                className="icon-btn small"
-                aria-label={t('Delete {name}', { name: o.name })}
-                data-tip={t('Delete')}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  deleteObject(o.id);
+            <Fragment key={o.id}>
+              <li
+                className={[
+                  selected.includes(o.id) && selectedVolume?.object !== o.id && 'selected',
+                  (o.instances.length > 1 || o.hasConfig || o.painted) && 'with-meta',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+                onMouseDown={(e) => {
+                  if (e.shiftKey) e.preventDefault();
+                }}
+                // Ctrl (Cmd) adds to or takes from the selection; Shift selects a range, as desktop's object list.
+                onClick={(e) => select(o.id, e.ctrlKey || e.metaKey ? 'toggle' : e.shiftKey ? 'range' : 'replace')}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  if (!selected.includes(o.id)) select(o.id);
+                  set({ menu: { id: o.id, x: e.clientX, y: e.clientY } });
                 }}
               >
-                <Trash2 size={14} />
-              </button>
-            </li>
+                <Box size={15} className="obj-icon" />
+                <span className="name" data-tip={o.name}>
+                  {o.name}
+                </span>
+                {(o.instances.length > 1 || o.hasConfig || o.painted) && (
+                  // As desktop's object list: copies, own settings, painted supports.
+                  <span className="meta">
+                    {[
+                      o.instances.length > 1 ? `×${o.instances.length}` : '',
+                      o.hasConfig ? t('custom settings') : '',
+                      o.painted ? tr('Support Painting') : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </span>
+                )}
+                <button
+                  className="icon-btn small"
+                  aria-label={t('Delete {name}', { name: o.name })}
+                  data-tip={t('Delete')}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteObject(o.id);
+                  }}
+                >
+                  <Trash2 size={14} />
+                </button>
+              </li>
+              {/* Its support blockers and enforcers, as desktop's object list shows them. */}
+              {o.volumes?.map((v) => {
+                const name = tr(SHAPE_NAMES[v.shape]);
+                const on = selectedVolume?.object === o.id && selectedVolume.volume === v.id;
+                const Icon = v.type === 'support_blocker' ? SupportBlockerIcon : SupportEnforcerIcon;
+                return (
+                  <li
+                    key={v.id}
+                    className={`volume with-meta ${v.type}${on ? ' selected' : ''}`}
+                    data-testid="volume-row"
+                    onClick={() => selectVolume(o.id, v.id)}
+                  >
+                    <Icon size={15} className="obj-icon" />
+                    <span className="name" data-tip={name}>
+                      {name}
+                    </span>
+                    <span className="meta">{tr(TYPE_NAMES[v.type])}</span>
+                    <button
+                      className="icon-btn small"
+                      aria-label={t('Delete {name}', { name })}
+                      data-tip={t('Delete')}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteVolume(o.id, v.id);
+                      }}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </li>
+                );
+              })}
+            </Fragment>
           ))}
         </ul>
       ) : (

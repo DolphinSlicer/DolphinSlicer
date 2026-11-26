@@ -18,7 +18,7 @@ import {
   LineLoop,
   LineSegments,
   type Material,
-  type Matrix4,
+  Matrix4,
   Mesh,
   MeshBasicMaterial,
   MeshStandardMaterial,
@@ -42,6 +42,7 @@ import type { Bed } from '../model/bed';
 import type { AxisHint, SceneObject } from '../state/store';
 import { GcodeLayer } from './gcodeLayer';
 import { NEUTRAL, PaintLayer } from './paintLayer';
+import { supportShapeGeometry } from './supportShapes';
 import { type CubeLabels, ViewCube } from './viewCube';
 
 export interface ViewportEvents {
@@ -54,6 +55,10 @@ export interface ViewportEvents {
   menu(id: string | null, x: number, y: number): void;
   /** A click on a side shown by lay on face. */
   layOnFace(id: string, normal: Vector3): void;
+  /** A click on a support blocker or enforcer of an object. */
+  selectVolume(id: string, volume: string): void;
+  /** A support blocker or enforcer dragged by (dx, dy) in the world. */
+  volumeMoved(id: string, volume: string, dx: number, dy: number): void;
   /**
    * Support painting: the pointer over the painted object (rays in world coordinates: the
    * pointer's, then back along its path to the last one sent). Resolves with where it is.
@@ -94,6 +99,26 @@ const MAT = {
   outside: new MeshStandardMaterial({ color: 0xc8c8c8, metalness: 0, roughness: 0.9, transparent: true, opacity: 0.6, flatShading: true }),
 };
 
+/** Support blockers and enforcers: desktop's colours (GLVolume), seen through; brighter selected. */
+const VOLUME_MAT = {
+  support_blocker: new MeshStandardMaterial({ color: 0xff3333, transparent: true, opacity: 0.45, depthWrite: false }),
+  support_enforcer: new MeshStandardMaterial({ color: 0x4d4dff, transparent: true, opacity: 0.45, depthWrite: false }),
+  support_blocker_selected: new MeshStandardMaterial({
+    color: 0xff3333,
+    transparent: true,
+    opacity: 0.75,
+    depthWrite: false,
+    emissive: 0x401010,
+  }),
+  support_enforcer_selected: new MeshStandardMaterial({
+    color: 0x4d4dff,
+    transparent: true,
+    opacity: 0.75,
+    depthWrite: false,
+    emissive: 0x101040,
+  }),
+};
+
 /** Scene colours per colour scheme (set by the app to match the page's theme). */
 const THEMES = {
   light: { background: 0xe2e1dc, plate: 0xf6f5f2, grid: 0xcdcac3, outline: 0x95918a, exclude: 0xefc8c2 },
@@ -112,7 +137,17 @@ export class Viewport {
   private bed: Bed | null = null;
   private frame = 0;
   private mode: 'prepare' | 'preview' = 'prepare';
-  private drag: { start: Vector3; meshes: { id: string; k: number; mesh: Mesh; matrix: Matrix4 }[] } | null = null;
+  private drag: {
+    start: Vector3;
+    meshes: { id: string; k: number; mesh: Mesh; matrix: Matrix4 }[];
+    /** The dragged instances' support volumes, moved along. */
+    followers: { mesh: Mesh; matrix: Matrix4 }[];
+  } | null = null;
+  /** Support blockers and enforcers, a mesh per volume and instance. */
+  private volumesGroup = new Group();
+  /** The selected support volume (its object is the one selected): the axis hint goes on it. */
+  private selectedVolume: { object: string; volume: string } | null = null;
+  private volumeDrag: { id: string; volume: string; start: Vector3; meshes: { mesh: Mesh; matrix: Matrix4 }[] } | null = null;
   private ray = new Raycaster();
   private resizeObs: ResizeObserver;
   private selected = new Set<string>();
@@ -148,7 +183,7 @@ export class Viewport {
     fill.position.set(1.5, 1, 0.6);
     this.scene.add(fill);
     this.scene.add(this.bedGroup, this.objectsGroup, this.gcode.group);
-    this.objectsGroup.add(this.selectionCorners, this.axisGroup);
+    this.objectsGroup.add(this.selectionCorners, this.axisGroup, this.volumesGroup);
     this.axisGroup.add(this.axisGizmo);
     this.resizeObs = new ResizeObserver(() => this.resize());
     this.resizeObs.observe(canvas);
@@ -505,8 +540,15 @@ export class Viewport {
     this.invalidate();
   }
 
-  setObjects(objects: SceneObject[], geometries: Map<string, BufferGeometry>, selected: string[]) {
+  setObjects(
+    objects: SceneObject[],
+    geometries: Map<string, BufferGeometry>,
+    selected: string[],
+    selectedVolume: { object: string; volume: string } | null = null,
+  ) {
     this.selected = new Set(selected);
+    this.selectedVolume = selectedVolume;
+    this.setVolumes(objects, selectedVolume);
     const seen = new Set<string>();
     for (const o of objects) {
       seen.add(o.id);
@@ -554,6 +596,24 @@ export class Viewport {
     this.invalidate();
   }
 
+  /** The objects' support blockers and enforcers, drawn anew (there are few). */
+  private setVolumes(objects: SceneObject[], selected: { object: string; volume: string } | null) {
+    this.volumesGroup.clear();
+    for (const o of objects)
+      for (const v of o.volumes ?? []) {
+        const on = selected?.object === o.id && selected.volume === v.id;
+        const geo = supportShapeGeometry(v.shape, v.size);
+        o.instances.forEach((inst, k) => {
+          const mesh = new Mesh(geo, VOLUME_MAT[on ? (`${v.type}_selected` as const) : v.type]);
+          mesh.matrixAutoUpdate = false;
+          mesh.matrix.fromArray(inst).multiply(new Matrix4().fromArray(v.matrix));
+          mesh.renderOrder = 1;
+          mesh.userData = { id: o.id, volume: v.id, k };
+          this.volumesGroup.add(mesh);
+        });
+      }
+  }
+
   // ── support painting ─────────────────────────────────────────────────────────────────
   private paintLayer = new PaintLayer();
   private painting: { id: string; brush: PaintBrush; limit: number } | null = null;
@@ -571,6 +631,8 @@ export class Viewport {
   setPainting(p: { id: string; brush: PaintBrush; highlightLimit: number } | null) {
     const was = this.painting?.id;
     this.painting = p ? { id: p.id, brush: p.brush, limit: p.highlightLimit } : null;
+    // The support volumes would be in the brush's way.
+    this.volumesGroup.visible = !p;
     if (!p) {
       this.paintLayer.hide();
       this.paintLayer.clear();
@@ -1024,8 +1086,16 @@ export class Viewport {
     this.axisSpin = null;
     this.axisGroup.position.set(0, 0, 0);
     const only = this.selected.size === 1 ? [...this.selected][0]! : null;
+    const sv = this.selectedVolume;
+    // On the selected support volume (its first instance's), else on the object.
+    const volumeMesh = sv
+      ? (this.volumesGroup.children as Mesh[]).find((m) => {
+          const d = m.userData as { id: string; volume: string; k: number };
+          return d.id === sv.object && d.volume === sv.volume && d.k === 0;
+        })
+      : undefined;
     const hint = this.axisHint,
-      mesh = only ? this.meshes.get(only)?.[0] : undefined;
+      mesh = volumeMesh ?? (only ? this.meshes.get(only)?.[0] : undefined);
     if (!hint || !mesh) return;
     mesh.updateMatrixWorld(true);
     const box = new Box3().setFromObject(mesh, true);
@@ -1174,6 +1244,22 @@ export class Viewport {
       return;
     }
     this.ray.setFromCamera(this.pointer(ev), this.camera);
+    // A support blocker or enforcer: selected, and dragged in a level plane through where it was taken.
+    const vhit = this.volumesGroup.visible ? this.ray.intersectObjects(this.volumesGroup.children, false)[0] : undefined;
+    if (vhit) {
+      const { id, volume } = vhit.object.userData as { id: string; volume: string };
+      this.events.selectVolume(id, volume);
+      const start = this.pickBedPoint(ev, vhit.point.z);
+      if (!start) return;
+      const meshes = (this.volumesGroup.children as Mesh[])
+        .filter((m) => (m.userData as { volume: string }).volume === volume && (m.userData as { id: string }).id === id)
+        .map((mesh) => ({ mesh, matrix: mesh.matrix.clone() }));
+      this.volumeDrag = { id, volume, start, meshes };
+      this.canvas.style.cursor = 'grabbing';
+      this.controls.enabled = false;
+      this.canvas.setPointerCapture(ev.pointerId);
+      return;
+    }
     const hit = this.ray.intersectObjects(
       this.objectsGroup.children.filter((o) => (o as Mesh).isMesh && o.parent === this.objectsGroup),
       false,
@@ -1189,7 +1275,8 @@ export class Viewport {
       this.events.select(id, true);
       return;
     }
-    if (!this.selected.has(id)) this.events.select(id, false);
+    // The object itself, also when one of its support volumes was selected.
+    if (!this.selected.has(id) || this.selectedVolume) this.events.select(id, false);
     const start = this.pickBedPoint(ev, 0);
     if (!start) return;
     // Several objects selected: they move together. One: the instance clicked.
@@ -1199,7 +1286,14 @@ export class Viewport {
             (this.meshes.get(sid) ?? []).map((m) => ({ id: sid, k: (m.userData as { k: number }).k, mesh: m, matrix: m.matrix.clone() })),
           )
         : [{ id, k, mesh, matrix: mesh.matrix.clone() }];
-    this.drag = { start, meshes };
+    const dragged = new Set(meshes.map((x) => `${x.id}/${x.k}`));
+    const followers = (this.volumesGroup.children as Mesh[])
+      .filter((m) => {
+        const d = m.userData as { id: string; k: number };
+        return dragged.has(`${d.id}/${d.k}`);
+      })
+      .map((mesh) => ({ mesh, matrix: mesh.matrix.clone() }));
+    this.drag = { start, meshes, followers };
     this.canvas.style.cursor = 'grabbing';
     this.controls.enabled = false;
     this.canvas.setPointerCapture(ev.pointerId);
@@ -1212,11 +1306,24 @@ export class Viewport {
       this.paintMove(ev);
       return;
     }
+    const vd = this.volumeDrag;
+    if (vd) {
+      const p = this.pickBedPoint(ev, vd.start.z);
+      if (!p) return;
+      for (const x of vd.meshes) {
+        x.mesh.matrix.copy(x.matrix);
+        x.mesh.matrix.elements[12]! += p.x - vd.start.x;
+        x.mesh.matrix.elements[13]! += p.y - vd.start.y;
+        x.mesh.matrixWorldNeedsUpdate = true;
+      }
+      this.invalidate();
+      return;
+    }
     const d = this.drag;
     if (!d) return;
     const p = this.pickBedPoint(ev, 0);
     if (!p) return;
-    for (const x of d.meshes) {
+    for (const x of [...d.meshes, ...d.followers]) {
       const m = x.matrix.clone();
       m.elements[12]! += p.x - d.start.x;
       m.elements[13]! += p.y - d.start.y;
@@ -1255,6 +1362,19 @@ export class Viewport {
       const moved = Math.hypot(ev.clientX - this.downOnEmpty.x, ev.clientY - this.downOnEmpty.y);
       this.downOnEmpty = null;
       if (moved < 4) this.events.select(null, false);
+    }
+    const vd = this.volumeDrag;
+    if (vd) {
+      this.volumeDrag = null;
+      this.controls.enabled = true;
+      this.canvas.style.cursor = '';
+      if (this.canvas.hasPointerCapture(ev.pointerId)) this.canvas.releasePointerCapture(ev.pointerId);
+      const first = vd.meshes[0];
+      if (!first) return;
+      const dx = first.mesh.matrix.elements[12]! - first.matrix.elements[12]!,
+        dy = first.mesh.matrix.elements[13]! - first.matrix.elements[13]!;
+      if (Math.hypot(dx, dy) > 1e-6) this.events.volumeMoved(vd.id, vd.volume, dx, dy);
+      return;
     }
     const d = this.drag;
     if (!d) return;

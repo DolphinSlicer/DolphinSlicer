@@ -6,11 +6,20 @@
 
 import { FlipHorizontal2, FlipVertical2, Lock, RotateCcw, RotateCw, Trash2, Unlock } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { t } from '../i18n/i18n';
+import { t, tr } from '../i18n/i18n';
 import { deleteObject, rotateZ } from '../state/actions';
 import { type Axis, type Coordinates, manipulation, mirror, resetScale, scaleBy3, setPosition, setRotation } from '../state/manipulate';
 import { formatNumber } from '../state/prefs';
 import { type AxisHint, set, useApp } from '../state/store';
+import {
+  deleteVolume,
+  SHAPE_NAMES,
+  selectedVolume,
+  setVolumeMatrix,
+  TYPE_NAMES,
+  volumeMatrixFor,
+  volumeWorld,
+} from '../state/supportVolumes';
 import { Select } from './Select';
 
 const IN = 25.4;
@@ -62,7 +71,8 @@ function NumField({
   label: string;
   disabled?: boolean;
   testid: string;
-  hint: AxisHint;
+  /** The axis to show on the object while the field has the focus. */
+  hint?: AxisHint;
 }) {
   const [draft, setDraft] = useState<string | null>(null);
   const shown = String(round(value, digits));
@@ -86,11 +96,11 @@ function NumField({
       onChange={(e) => setDraft(e.target.value)}
       onBlur={() => {
         commit();
-        hideAxis(hint);
+        if (hint) hideAxis(hint);
       }}
       onFocus={(e) => {
         e.target.select();
-        showAxis(hint);
+        if (hint) showAxis(hint);
       }}
       onKeyDown={(e) => {
         if (e.key === 'Enter') {
@@ -329,6 +339,146 @@ export function ObjectPanel() {
         <dt>{t('Triangles:')}</dt>
         <dd>{sel.triangles.toLocaleString()}</dd>
       </dl>
+    </section>
+  );
+}
+
+/**
+ * The selected support blocker or enforcer: where it is, its rotation and size, in the world (the
+ * object's first instance), as desktop's manipulation panel shows a part.
+ */
+export function VolumePanel() {
+  // Stable parts of the state (a selector returning a new object each time would render forever).
+  const selectedV = useApp((s) => s.selectedVolume);
+  const selected = useApp((s) => s.selected);
+  const objects = useApp((s) => s.objects);
+  const sel = selectedVolume({ selectedVolume: selectedV, selected, objects });
+  const imperial = useApp((s) => s.prefs.units === 'imperial');
+  const [uniform, setUniform] = useState(true);
+  // The focused field's axis, drawn on the volume (Viewport.updateAxisHint): world axes for the
+  // position, desktop's angles for the rotation, the volume's own axes for the size.
+  const hints = useMemo(() => {
+    const per = (kind: AxisHint['kind'], frame: AxisHint['frame'], all = false) =>
+      ([0, 1, 2] as Axis[]).map((axis): AxisHint => ({ kind, axis, frame, ...(all && { all }) }));
+    return { position: per('move', 'world'), rotation: per('rotate', 'euler'), size: per('scale', 'object', uniform) };
+  }, [uniform]);
+  const volumeId = sel?.volume.id;
+  useEffect(
+    () => () => {
+      shown.focus = shown.hover = null;
+      sync();
+    },
+    [volumeId],
+  );
+  if (!sel) return null;
+  const { object, volume } = sel;
+  const at = volumeWorld(object, volume);
+  const k = imperial ? 1 / IN : 1;
+  const unit = imperial ? 'in' : t('mm');
+  const name = tr(SHAPE_NAMES[volume.shape]);
+  const place = (change: Partial<{ position: number[]; rotation: number[]; size: number[] }>, key: string) =>
+    setVolumeMatrix(
+      object.id,
+      volume.id,
+      volumeMatrixFor(object, volume, {
+        position: (change.position ?? at.position) as [number, number, number],
+        rotation: (change.rotation ?? at.rotation) as [number, number, number],
+        size: (change.size ?? at.size) as [number, number, number],
+      }),
+      key,
+    );
+  const row = (label: React.ReactNode, unitText: string, cells: (a: Axis) => React.ReactNode) => (
+    <>
+      <span className="op-label">{label}</span>
+      {([0, 1, 2] as Axis[]).map((a) => (
+        <span key={a}>{cells(a)}</span>
+      ))}
+      <span className="op-unit">{unitText}</span>
+      <span />
+    </>
+  );
+  const set3 = (list: readonly number[], a: Axis, n: number) => list.map((x, i) => (i === a ? n : x));
+  return (
+    <section className="card object-panel" aria-label={tr(TYPE_NAMES[volume.type])} data-testid="volume-panel">
+      <div className="card-head">
+        <h2 className="op-name" data-tip={name}>
+          {name} <span className="count">{tr(TYPE_NAMES[volume.type])}</span>
+        </h2>
+        <div className="card-tools">
+          <button
+            type="button"
+            className="icon-btn small"
+            onClick={() => deleteVolume(object.id, volume.id)}
+            data-tip={t('Delete')}
+            aria-label={t('Delete {name}', { name })}
+            data-testid="volume-delete"
+          >
+            <Trash2 size={15} />
+          </button>
+        </div>
+      </div>
+      <div className="op-grid">
+        <span />
+        {AXES.map((x, i) => (
+          <span key={x} className={`op-axis a${i}`}>
+            {x}
+          </span>
+        ))}
+        <span />
+        <span />
+        {row(t('Position'), unit, (a) => (
+          <NumField
+            value={at.position[a] * k}
+            digits={2}
+            label={`${t('Position')} ${AXES[a]}`}
+            testid={`volume-position-${a}`}
+            hint={hints.position[a]!}
+            onCommit={(n) => place({ position: set3(at.position, a, Math.max(-MAX_MM, Math.min(MAX_MM, n / k))) }, `vpos${a}`)}
+          />
+        ))}
+        {row(t('Rotation'), '°', (a) => (
+          <NumField
+            value={at.rotation[a]}
+            digits={2}
+            label={`${t('Rotation')} ${AXES[a]}`}
+            testid={`volume-rotation-${a}`}
+            hint={hints.rotation[a]!}
+            onCommit={(n) => place({ rotation: set3(at.rotation, a, n) }, `vrot${a}`)}
+          />
+        ))}
+        {row(
+          <>
+            {t('Size')}
+            <button
+              type="button"
+              className={`icon-btn small op-lock${uniform ? ' on' : ''}`}
+              aria-pressed={uniform}
+              data-tip={t('Uniform scale')}
+              aria-label={t('Uniform scale')}
+              onClick={() => setUniform((u) => !u)}
+              data-testid="volume-uniform"
+            >
+              {uniform ? <Lock size={14} /> : <Unlock size={14} />}
+            </button>
+          </>,
+          unit,
+          (a) => (
+            <NumField
+              value={at.size[a] * k}
+              digits={2}
+              label={`${t('Size')} ${AXES[a]}`}
+              testid={`volume-size-${a}`}
+              hint={hints.size[a]!}
+              onCommit={(n) => {
+                const mm = Math.min(MAX_MM, n / k);
+                if (!(mm >= MIN_MM)) return;
+                const r = mm / at.size[a];
+                place({ size: uniform ? at.size.map((x) => x * r) : set3(at.size, a, mm) }, `vsize${a}`);
+              }}
+            />
+          ),
+        )}
+      </div>
     </section>
   );
 }
