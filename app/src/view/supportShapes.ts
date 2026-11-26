@@ -21,8 +21,8 @@ let nextMesh = 1;
 export function registerSupportMesh(positions: number[], indices: number[]): string {
   const g = new BufferGeometry();
   g.setAttribute('position', new Float32BufferAttribute(positions, 3));
+  // No normals: the material is flat shaded (each triangle's own, from the screen).
   g.setIndex(new BufferAttribute(Uint32Array.from(indices), 1));
-  g.computeVertexNormals();
   const key = `m${nextMesh++}`;
   loaded.set(key, g);
   return key;
