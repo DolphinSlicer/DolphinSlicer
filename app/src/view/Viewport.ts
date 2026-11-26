@@ -137,7 +137,12 @@ export class Viewport {
   private bed: Bed | null = null;
   private frame = 0;
   private mode: 'prepare' | 'preview' = 'prepare';
-  private drag: { start: Vector3; meshes: { id: string; k: number; mesh: Mesh; matrix: Matrix4 }[] } | null = null;
+  private drag: {
+    start: Vector3;
+    meshes: { id: string; k: number; mesh: Mesh; matrix: Matrix4 }[];
+    /** The dragged instances' support volumes, moved along. */
+    followers: { mesh: Mesh; matrix: Matrix4 }[];
+  } | null = null;
   /** Support blockers and enforcers, a mesh per volume and instance. */
   private volumesGroup = new Group();
   /** The selected support volume (its object is the one selected): the axis hint goes on it. */
@@ -1281,7 +1286,14 @@ export class Viewport {
             (this.meshes.get(sid) ?? []).map((m) => ({ id: sid, k: (m.userData as { k: number }).k, mesh: m, matrix: m.matrix.clone() })),
           )
         : [{ id, k, mesh, matrix: mesh.matrix.clone() }];
-    this.drag = { start, meshes };
+    const dragged = new Set(meshes.map((x) => `${x.id}/${x.k}`));
+    const followers = (this.volumesGroup.children as Mesh[])
+      .filter((m) => {
+        const d = m.userData as { id: string; k: number };
+        return dragged.has(`${d.id}/${d.k}`);
+      })
+      .map((mesh) => ({ mesh, matrix: mesh.matrix.clone() }));
+    this.drag = { start, meshes, followers };
     this.canvas.style.cursor = 'grabbing';
     this.controls.enabled = false;
     this.canvas.setPointerCapture(ev.pointerId);
@@ -1311,7 +1323,7 @@ export class Viewport {
     if (!d) return;
     const p = this.pickBedPoint(ev, 0);
     if (!p) return;
-    for (const x of d.meshes) {
+    for (const x of [...d.meshes, ...d.followers]) {
       const m = x.matrix.clone();
       m.elements[12]! += p.x - d.start.x;
       m.elements[13]! += p.y - d.start.y;
