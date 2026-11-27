@@ -368,6 +368,7 @@
   "Sync with server storage": "Mit dem Serverspeicher synchronisieren",
   "The API key is stored on the server too.": "Der API-Schlüssel wird auch auf dem Server gespeichert.",
   "Torus": "Torus",
+  "Could not download {name}": "{name} konnte nicht heruntergeladen werden",
   "Download plate as 3MF": "Platte als 3MF herunterladen",
   "Could not save the plate": "Die Platte konnte nicht gespeichert werden",
   "Could not load the project’s settings": "Die Einstellungen des Projekts konnten nicht geladen werden"

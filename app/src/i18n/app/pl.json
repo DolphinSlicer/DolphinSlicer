@@ -360,6 +360,7 @@
   "Sync with server storage": "Synchronizuj z pamięcią na serwerze",
   "The API key is stored on the server too.": "Klucz API jest też zapisywany na serwerze.",
   "Torus": "Torus",
+  "Could not download {name}": "Nie udało się pobrać {name}",
   "Download plate as 3MF": "Pobierz płytę jako 3MF",
   "Could not save the plate": "Nie udało się zapisać płyty",
   "Could not load the project’s settings": "Nie udało się wczytać ustawień projektu"

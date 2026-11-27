@@ -353,6 +353,7 @@
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "新しい方のバージョンを保持しました: {names}。もう一方はサーバーの「Conflicts」フォルダーにあります。",
   "Sync with server storage": "サーバーストレージと同期",
   "The API key is stored on the server too.": "APIキーもサーバーに保存されます。",
+  "Could not download {name}": "{name} をダウンロードできませんでした",
   "Download plate as 3MF": "プレートを3MFでダウンロード",
   "Could not save the plate": "プレートを保存できませんでした",
   "Could not load the project’s settings": "プロジェクトの設定を読み込めませんでした"

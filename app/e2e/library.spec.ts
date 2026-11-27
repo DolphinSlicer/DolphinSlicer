@@ -150,3 +150,41 @@ test('library models sync between devices through Drive', async ({ browser, base
   await b.getByTestId('tab-library').click();
   await expect(b.getByTestId('library-card')).toHaveCount(0);
 });
+
+test('a model’s menu opens, downloads, edits and deletes it', { tag: '@browser' }, async ({ page }) => {
+  await page.goto('/');
+  await ready(page);
+  await page.getByTestId('tab-library').click();
+  await page.getByTestId('library-input').setInputFiles([stl('Menu cube.stl', 12)]);
+  const card = page.getByTestId('library-card');
+  await expect(card).toHaveCount(1);
+
+  // Edit from the menu: renamed, which the download takes.
+  await card.click({ button: 'right' });
+  await page.getByTestId('library-menu').getByRole('menuitem', { name: 'Edit' }).click();
+  await expect(page.getByTestId('library-name')).toHaveValue('Menu cube');
+  await page.getByTestId('library-name').fill('Renamed cube');
+  await page.getByTestId('library-save').click();
+  await expect(card).toHaveAttribute('data-name', 'Renamed cube');
+
+  // Download: the model's file, named as in the library.
+  await card.click({ button: 'right' });
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByTestId('library-menu').getByRole('menuitem', { name: 'Download' }).click(),
+  ]);
+  expect(download.suggestedFilename()).toBe('Renamed cube.stl');
+  const bytes = Buffer.concat(await (await download.createReadStream()).toArray());
+  expect(bytes.equals(stl('Menu cube.stl', 12).buffer)).toBe(true);
+  await expect(page.getByTestId('library-menu')).toHaveCount(0);
+
+  // Open puts it on the plate; Delete asks first.
+  await card.click({ button: 'right' });
+  await page.getByTestId('library-menu').getByRole('menuitem', { name: 'Open on the plate' }).click();
+  await expect(page.getByTestId('object-list')).toContainText('Menu cube.stl');
+  await page.getByTestId('tab-library').click();
+  await card.click({ button: 'right' });
+  await page.getByTestId('library-menu').getByRole('menuitem', { name: 'Delete' }).click();
+  await answer(page, 'Delete');
+  await expect(card).toHaveCount(0);
+});

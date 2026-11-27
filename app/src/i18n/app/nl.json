@@ -369,6 +369,7 @@
   "Sync with server storage": "Synchroniseren met serveropslag",
   "The API key is stored on the server too.": "De API-sleutel wordt ook op de server opgeslagen.",
   "Torus": "Torus",
+  "Could not download {name}": "{name} kon niet worden gedownload",
   "Download plate as 3MF": "Plaat downloaden als 3MF",
   "Could not save the plate": "De plaat kon niet worden opgeslagen",
   "Could not load the project’s settings": "De instellingen van het project konden niet worden geladen"

@@ -351,6 +351,7 @@
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Збережено новішу версію: {names}. Інша знаходиться в папці «Conflicts» на сервері.",
   "Sync with server storage": "Синхронізувати зі сховищем на сервері",
   "The API key is stored on the server too.": "Ключ API також зберігається на сервері.",
+  "Could not download {name}": "Не вдалося завантажити {name}",
   "Download plate as 3MF": "Завантажити стіл як 3MF",
   "Could not save the plate": "Не вдалося зберегти стіл",
   "Could not load the project’s settings": "Не вдалося завантажити налаштування проєкту"

@@ -357,6 +357,7 @@
   "Sync with server storage": "Sincronizar com o armazenamento no servidor",
   "The API key is stored on the server too.": "A chave de API também é salva no servidor.",
   "Cone": "Cone",
+  "Could not download {name}": "Não foi possível baixar {name}",
   "Download plate as 3MF": "Baixar a placa como 3MF",
   "Could not save the plate": "Não foi possível salvar a placa",
   "Could not load the project’s settings": "Não foi possível carregar as configurações do projeto"

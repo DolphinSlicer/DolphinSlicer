@@ -349,6 +349,7 @@
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "已保留較新的版本：{names}。另一個版本位於伺服器的「Conflicts」資料夾中。",
   "Sync with server storage": "與伺服器儲存空間同步",
   "The API key is stored on the server too.": "API 金鑰也會儲存到伺服器。",
+  "Could not download {name}": "無法下載 {name}",
   "Download plate as 3MF": "將列印板下載為 3MF",
   "Could not save the plate": "無法儲存列印板",
   "Could not load the project’s settings": "無法載入專案的設定"

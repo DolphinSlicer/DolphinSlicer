@@ -125,6 +125,26 @@ async function modelBytes(e: LibraryEntry): Promise<ArrayBuffer | null> {
   return bytes;
 }
 
+/** Download a library model's file (a plate: its 3MF), named as it is in the library. */
+export async function downloadModel(id: string) {
+  const e = get().models.entries.find((x) => x.id === id);
+  if (!e) return;
+  try {
+    const bytes = await modelBytes(e);
+    if (!bytes) return;
+    const ext = e.file.includes('.') ? e.file.slice(e.file.lastIndexOf('.')) : '';
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([bytes]));
+    a.download = `${e.name.replace(/[/\\\0]/g, '_')}${ext}`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 10_000);
+  } catch (err) {
+    notify({ kind: 'error', ...describeError(err), title: t('Could not download {name}', { name: e.name }) });
+  }
+}
+
 /** Put a library model on the plate. */
 export async function openModel(id: string) {
   const e = get().models.entries.find((x) => x.id === id);

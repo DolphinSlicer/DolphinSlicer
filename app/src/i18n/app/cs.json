@@ -357,6 +357,7 @@
   "Sync with server storage": "Synchronizovat s úložištěm na serveru",
   "The API key is stored on the server too.": "API klíč se uloží i na server.",
   "Torus": "Torus",
+  "Could not download {name}": "{name} se nepodařilo stáhnout",
   "Download plate as 3MF": "Stáhnout podložku jako 3MF",
   "Could not save the plate": "Podložku se nepodařilo uložit",
   "Could not load the project’s settings": "Nastavení projektu se nepodařilo načíst"

@@ -350,6 +350,7 @@
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Bertsio berriena mantendu da: {names}. Bestea zerbitzariko «Conflicts» karpetan dago.",
   "Sync with server storage": "Sinkronizatu zerbitzariko biltegiarekin",
   "The API key is stored on the server too.": "API giltza zerbitzarian ere gordetzen da.",
+  "Could not download {name}": "Ezin izan da {name} deskargatu",
   "Download plate as 3MF": "Deskargatu plaka 3MF gisa",
   "Could not save the plate": "Ezin izan da plaka gorde",
   "Could not load the project’s settings": "Ezin izan dira proiektuaren ezarpenak kargatu"

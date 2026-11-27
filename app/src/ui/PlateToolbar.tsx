@@ -84,30 +84,56 @@ const PLATE_MENU: (Command | Submenu | null)[] = [
   ...VIEWS,
 ];
 
-/** The context menu, while open (state.menu). */
+/** The plate's context menu, while open (state.menu). */
 export function PlateMenu() {
+  const menu = useApp((s) => s.menu);
+  if (!menu) return null;
+  return (
+    <ContextMenu
+      x={menu.x}
+      y={menu.y}
+      items={menu.id ? OBJECT_MENU : PLATE_MENU}
+      label={t('Plate')}
+      testid="plate-menu"
+      onClose={() => set({ menu: null })}
+    />
+  );
+}
+
+/**
+ * A context menu at (x, y), kept inside the window, its first entry focused (the keyboard works
+ * in it); a click elsewhere, Escape or Tab closes it.
+ */
+export function ContextMenu({
+  x,
+  y,
+  items,
+  label,
+  testid,
+  onClose,
+}: {
+  x: number;
+  y: number;
+  items: (Command | Submenu | null)[];
+  label: string;
+  testid: string;
+  onClose: () => void;
+}) {
   const s = useApp();
-  const menu = s.menu;
   const ref = useRef<HTMLDivElement>(null);
   const [at, setAt] = useState<{ x: number; y: number } | null>(null);
   const openedAt = useRef(0);
-  // Inside the window, then the first item focused (so the keyboard works in it).
   useLayoutEffect(() => {
     const el = ref.current;
-    if (!menu || !el) {
-      setAt(null);
-      return;
-    }
+    if (!el) return;
     openedAt.current = performance.now();
     const r = el.getBoundingClientRect();
-    setAt({ x: Math.max(4, Math.min(menu.x, innerWidth - r.width - 4)), y: Math.max(4, Math.min(menu.y, innerHeight - r.height - 4)) });
-  }, [menu]);
+    setAt({ x: Math.max(4, Math.min(x, innerWidth - r.width - 4)), y: Math.max(4, Math.min(y, innerHeight - r.height - 4)) });
+  }, [x, y]);
   useEffect(() => {
     if (at) ref.current?.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus();
   }, [at]);
-  if (!menu) return null;
-  const close = () => set({ menu: null });
-  const items = menu.id ? OBJECT_MENU : PLATE_MENU;
+  const close = onClose;
   const move = (e: React.KeyboardEvent, by: number) => {
     const list = [
       ...ref.current!.querySelectorAll<HTMLButtonElement>(':scope > button:not(:disabled), :scope > .submenu > button:not(:disabled)'),
@@ -133,9 +159,9 @@ export function PlateMenu() {
         ref={ref}
         className="menu"
         role="menu"
-        aria-label={t('Plate')}
-        data-testid="plate-menu"
-        style={{ left: at?.x ?? menu.x, top: at?.y ?? menu.y, visibility: at ? 'visible' : 'hidden' }}
+        aria-label={label}
+        data-testid={testid}
+        style={{ left: at?.x ?? x, top: at?.y ?? y, visibility: at ? 'visible' : 'hidden' }}
         onKeyDown={(e) => {
           if (e.key === 'Escape' || e.key === 'Tab') {
             e.preventDefault();
