@@ -231,7 +231,7 @@
   "Access to your local network is blocked. Allow it in the site settings (the icon left of the address), then try again.": "ローカルネットワークへのアクセスがブロックされています。サイトの設定（アドレスの左のアイコン）で許可してから、もう一度お試しください。",
   "Add models": "モデルを追加",
   "Add printer": "プリンターを追加",
-  "Add to library": "ライブラリに追加",
+  "Save plate to library": "プレートをライブラリに保存",
   "Added to library": "ライブラリに追加しました",
   "Adding models": "モデルを追加中",
   "Allow this site in moonraker.conf, then restart Moonraker:": "moonraker.conf でこのサイトを許可し、Moonraker を再起動してください:",
@@ -352,5 +352,8 @@
   "Save or discard your changes to get the latest presets.": "最新のプリセットを取得するには、変更を保存するか破棄してください。",
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "新しい方のバージョンを保持しました: {names}。もう一方はサーバーの「Conflicts」フォルダーにあります。",
   "Sync with server storage": "サーバーストレージと同期",
-  "The API key is stored on the server too.": "APIキーもサーバーに保存されます。"
+  "The API key is stored on the server too.": "APIキーもサーバーに保存されます。",
+  "Download plate as 3MF": "プレートを3MFでダウンロード",
+  "Could not save the plate": "プレートを保存できませんでした",
+  "Could not load the project’s settings": "プロジェクトの設定を読み込めませんでした"
 }

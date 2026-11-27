@@ -233,7 +233,7 @@
   "Access to your local network is blocked. Allow it in the site settings (the icon left of the address), then try again.": "Dostęp do sieci lokalnej jest zablokowany. Zezwól na niego w ustawieniach witryny (ikona po lewej stronie adresu), a potem spróbuj ponownie.",
   "Add models": "Dodaj modele",
   "Add printer": "Dodaj drukarkę",
-  "Add to library": "Dodaj do biblioteki",
+  "Save plate to library": "Zapisz płytę w bibliotece",
   "Added to library": "Dodano do biblioteki",
   "Adding models": "Dodawanie modeli",
   "Allow this site in moonraker.conf, then restart Moonraker:": "Zezwól na tę witrynę w moonraker.conf, a potem uruchom ponownie Moonraker:",
@@ -359,5 +359,8 @@
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Zachowano nowszą wersję: {names}. Druga znajduje się w folderze „Conflicts” na serwerze.",
   "Sync with server storage": "Synchronizuj z pamięcią na serwerze",
   "The API key is stored on the server too.": "Klucz API jest też zapisywany na serwerze.",
-  "Torus": "Torus"
+  "Torus": "Torus",
+  "Download plate as 3MF": "Pobierz płytę jako 3MF",
+  "Could not save the plate": "Nie udało się zapisać płyty",
+  "Could not load the project’s settings": "Nie udało się wczytać ustawień projektu"
 }

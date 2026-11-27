@@ -233,7 +233,7 @@
   "Access to your local network is blocked. Allow it in the site settings (the icon left of the address), then try again.": "Prieiga prie vietinio tinklo užblokuota. Leiskite ją svetainės nustatymuose (piktograma kairėje nuo adreso) ir bandykite dar kartą.",
   "Add models": "Pridėti modelius",
   "Add printer": "Pridėti spausdintuvą",
-  "Add to library": "Pridėti į biblioteką",
+  "Save plate to library": "Įrašyti plokštę į biblioteką",
   "Added to library": "Pridėta į biblioteką",
   "Adding models": "Pridedami modeliai",
   "Allow this site in moonraker.conf, then restart Moonraker:": "Leiskite šią svetainę moonraker.conf faile, tada paleiskite Moonraker iš naujo:",
@@ -354,5 +354,8 @@
   "Save or discard your changes to get the latest presets.": "Išsaugokite arba atmeskite pakeitimus, kad gautumėte naujausius profilius.",
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Palikta naujesnė versija: {names}. Kita yra serverio aplanke „Conflicts“.",
   "Sync with server storage": "Sinchronizuoti su serverio saugykla",
-  "The API key is stored on the server too.": "API raktas taip pat saugomas serveryje."
+  "The API key is stored on the server too.": "API raktas taip pat saugomas serveryje.",
+  "Download plate as 3MF": "Atsisiųsti plokštę kaip 3MF",
+  "Could not save the plate": "Nepavyko įrašyti plokštės",
+  "Could not load the project’s settings": "Nepavyko įkelti projekto nustatymų"
 }

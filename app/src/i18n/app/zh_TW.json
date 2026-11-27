@@ -228,7 +228,7 @@
   "Access to your local network is blocked. Allow it in the site settings (the icon left of the address), then try again.": "對區域網路的存取已被封鎖。請在網站設定（網址左側的圖示）中允許存取，然後再試一次。",
   "Add models": "新增模型",
   "Add printer": "新增印表機",
-  "Add to library": "加入模型庫",
+  "Save plate to library": "將列印板儲存到模型庫",
   "Added to library": "已加入模型庫",
   "Adding models": "正在新增模型",
   "Allow this site in moonraker.conf, then restart Moonraker:": "請在 moonraker.conf 中允許此網站，然後重新啟動 Moonraker：",
@@ -348,5 +348,8 @@
   "Save or discard your changes to get the latest presets.": "請儲存或捨棄變更，以取得最新的預設。",
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "已保留較新的版本：{names}。另一個版本位於伺服器的「Conflicts」資料夾中。",
   "Sync with server storage": "與伺服器儲存空間同步",
-  "The API key is stored on the server too.": "API 金鑰也會儲存到伺服器。"
+  "The API key is stored on the server too.": "API 金鑰也會儲存到伺服器。",
+  "Download plate as 3MF": "將列印板下載為 3MF",
+  "Could not save the plate": "無法儲存列印板",
+  "Could not load the project’s settings": "無法載入專案的設定"
 }

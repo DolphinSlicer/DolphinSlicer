@@ -234,7 +234,7 @@
   "Access to your local network is blocked. Allow it in the site settings (the icon left of the address), then try again.": "Quyền truy cập mạng cục bộ đang bị chặn. Hãy cho phép trong cài đặt trang web (biểu tượng bên trái địa chỉ), rồi thử lại.",
   "Add models": "Thêm mô hình",
   "Add printer": "Thêm máy in",
-  "Add to library": "Thêm vào thư viện",
+  "Save plate to library": "Lưu bàn in vào thư viện",
   "Added to library": "Đã thêm vào thư viện",
   "Adding models": "Đang thêm mô hình",
   "Allow this site in moonraker.conf, then restart Moonraker:": "Hãy cho phép trang này trong moonraker.conf, rồi khởi động lại Moonraker:",
@@ -358,5 +358,8 @@
   "Save or discard your changes to get the latest presets.": "Hãy lưu hoặc hủy các thay đổi để lấy cài đặt sẵn mới nhất.",
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Đã giữ phiên bản mới hơn của: {names}. Phiên bản còn lại nằm trong thư mục \"Conflicts\" trên máy chủ.",
   "Sync with server storage": "Đồng bộ với lưu trữ trên máy chủ",
-  "The API key is stored on the server too.": "Khóa API cũng được lưu trên máy chủ."
+  "The API key is stored on the server too.": "Khóa API cũng được lưu trên máy chủ.",
+  "Download plate as 3MF": "Tải bàn in xuống dưới dạng 3MF",
+  "Could not save the plate": "Không thể lưu bàn in",
+  "Could not load the project’s settings": "Không thể tải thiết lập của dự án"
 }

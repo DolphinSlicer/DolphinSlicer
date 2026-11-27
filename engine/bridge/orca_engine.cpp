@@ -70,6 +70,8 @@ struct Engine
     bool               is_bbl_3mf = false;
     DynamicPrintConfig print_config;   // the CLI's m_print_config
     DynamicPrintConfig extra_config;   // the CLI's m_extra_config (no command-line overrides here)
+    // A project 3MF's settings (its project_settings.config), as loaded; empty for other files.
+    DynamicPrintConfig project_config;
     bool               has_model  = false;
     bool               has_config = false;
     // Desktop's calibration tests (orca_set_calib): what G-code export does for them.
@@ -484,6 +486,7 @@ int orca_load_model(void *p, const char *path, const char *format)
                                         &file_version, nullptr, nullptr, nullptr, 0);
         if (e.model.objects.empty())
             return e.fail(ORCA_INVALID_INPUT, "The file contains no objects.");
+        e.project_config = std::move(cfg_3mf);
         // Non-3MF inputs keep the loader's default instance at the origin. The host places them
         // with orca_set_layout (the web app arranges new objects itself).
         if (!is_3mf) center_new_objects(e.model, 0);
@@ -569,7 +572,36 @@ const char *orca_model_info(void *p)
     json plates = json::array();
     for (const PlateData *pd : e.plate_data)
         if (pd) plates.push_back({{"index", pd->plate_index + 1}, {"name", pd->plate_name}});
-    return e.ret(json{{"objects", objs}, {"plates", plates}, {"bbl_3mf", e.is_bbl_3mf}}.dump());
+    // A project's settings, each as its config file has it (orca_presets_load_project takes them).
+    json project = json::object();
+    for (const std::string &k : e.project_config.keys()) project[k] = e.project_config.opt_serialize(k);
+    return e.ret(json{{"objects", objs}, {"plates", plates}, {"bbl_3mf", e.is_bbl_3mf}, {"project_config", std::move(project)}}.dump());
+}
+
+// The plate as a project 3MF: the model as laid out (orca_set_layout: placement, painted
+// supports, support volumes; per-object settings as loaded) and the settings set with
+// orca_set_config, so OrcaSlicer and this app open it with them. One plate.
+int orca_export_3mf(void *p, const char *out_path)
+{
+    Engine &e = *as_engine(p);
+    if (e.running.load()) return e.fail(ORCA_INTERNAL, "A slice is running");
+    if (!e.has_model) return e.fail(ORCA_INVALID_INPUT, "No model loaded");
+    if (!e.has_config) return e.fail(ORCA_INVALID_CONFIG, "No config set");
+    try {
+        boost::filesystem::create_directories(boost::filesystem::path(out_path).parent_path());
+        DynamicPrintConfig cfg = e.print_config;
+        StoreParams        sp;
+        sp.path     = out_path;
+        sp.model    = &e.model;
+        sp.config   = &cfg;
+        sp.strategy = SaveStrategy::Silence | SaveStrategy::SplitModel | SaveStrategy::ShareMesh | SaveStrategy::Zip64;
+        if (!store_bbs_3mf(sp)) return e.fail(ORCA_INTERNAL, "Could not save the 3MF");
+        return ORCA_OK;
+    } catch (const std::bad_alloc &) {
+        return e.fail(ORCA_OOM, "Out of memory while saving the 3MF");
+    } catch (const std::exception &ex) {
+        return e.fail(ORCA_INTERNAL, "Could not save the 3MF", ex.what());
+    }
 }
 
 // Binary mesh dump for the host's 3D view. Per object, in object coordinates (volume

@@ -241,7 +241,7 @@
   "Access to your local network is blocked. Allow it in the site settings (the icon left of the address), then try again.": "Toegang tot uw lokale netwerk is geblokkeerd. Sta deze toe in de site-instellingen (het pictogram links van het adres) en probeer het opnieuw.",
   "Add models": "Modellen toevoegen",
   "Add printer": "Printer toevoegen",
-  "Add to library": "Aan bibliotheek toevoegen",
+  "Save plate to library": "Plaat opslaan in bibliotheek",
   "Added to library": "Aan bibliotheek toegevoegd",
   "Adding models": "Modellen worden toegevoegd",
   "Allow this site in moonraker.conf, then restart Moonraker:": "Sta deze site toe in moonraker.conf en herstart Moonraker:",
@@ -368,5 +368,8 @@
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Nieuwere versie behouden van: {names}. De andere staat in de map 'Conflicts' op de server.",
   "Sync with server storage": "Synchroniseren met serveropslag",
   "The API key is stored on the server too.": "De API-sleutel wordt ook op de server opgeslagen.",
-  "Torus": "Torus"
+  "Torus": "Torus",
+  "Download plate as 3MF": "Plaat downloaden als 3MF",
+  "Could not save the plate": "De plaat kon niet worden opgeslagen",
+  "Could not load the project’s settings": "De instellingen van het project konden niet worden geladen"
 }

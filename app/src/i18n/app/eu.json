@@ -226,7 +226,7 @@
   "Access to your local network is blocked. Allow it in the site settings (the icon left of the address), then try again.": "Sare lokalerako sarbidea blokeatuta dago. Baimendu gunearen ezarpenetan (helbidearen ezkerreko ikonoa), eta saiatu berriro.",
   "Add models": "Gehitu modeloak",
   "Add printer": "Gehitu inprimagailua",
-  "Add to library": "Gehitu liburutegira",
+  "Save plate to library": "Gorde plaka liburutegian",
   "Added to library": "Liburutegira gehitu da",
   "Adding models": "Modeloak gehitzen",
   "Allow this site in moonraker.conf, then restart Moonraker:": "Baimendu gune hau moonraker.conf fitxategian, eta berrabiarazi Moonraker:",
@@ -349,5 +349,8 @@
   "Save or discard your changes to get the latest presets.": "Gorde edo baztertu aldaketak aurrezarpen berrienak lortzeko.",
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Bertsio berriena mantendu da: {names}. Bestea zerbitzariko «Conflicts» karpetan dago.",
   "Sync with server storage": "Sinkronizatu zerbitzariko biltegiarekin",
-  "The API key is stored on the server too.": "API giltza zerbitzarian ere gordetzen da."
+  "The API key is stored on the server too.": "API giltza zerbitzarian ere gordetzen da.",
+  "Download plate as 3MF": "Deskargatu plaka 3MF gisa",
+  "Could not save the plate": "Ezin izan da plaka gorde",
+  "Could not load the project’s settings": "Ezin izan dira proiektuaren ezarpenak kargatu"
 }

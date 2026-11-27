@@ -231,7 +231,7 @@
   "Access to your local network is blocked. Allow it in the site settings (the icon left of the address), then try again.": "L’accès à votre réseau local est bloqué. Autorisez-le dans les paramètres du site (l’icône à gauche de l’adresse), puis réessayez.",
   "Add models": "Ajouter des modèles",
   "Add printer": "Ajouter une imprimante",
-  "Add to library": "Ajouter à la bibliothèque",
+  "Save plate to library": "Enregistrer le plateau dans la bibliothèque",
   "Added to library": "Ajouté à la bibliothèque",
   "Adding models": "Ajout des modèles",
   "Allow this site in moonraker.conf, then restart Moonraker:": "Autorisez ce site dans moonraker.conf, puis redémarrez Moonraker :",
@@ -359,5 +359,8 @@
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Version la plus récente conservée pour : {names}. L’autre se trouve dans le dossier « Conflicts » du serveur.",
   "Sync with server storage": "Synchroniser avec le stockage sur le serveur",
   "The API key is stored on the server too.": "La clé API est aussi enregistrée sur le serveur.",
-  "Cube": "Cube"
+  "Cube": "Cube",
+  "Download plate as 3MF": "Télécharger le plateau en 3MF",
+  "Could not save the plate": "Impossible d’enregistrer le plateau",
+  "Could not load the project’s settings": "Impossible de charger les paramètres du projet"
 }

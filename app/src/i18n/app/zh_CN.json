@@ -227,7 +227,7 @@
   "Access to your local network is blocked. Allow it in the site settings (the icon left of the address), then try again.": "对本地网络的访问被阻止。请在网站设置（地址左侧的图标）中允许访问，然后重试。",
   "Add models": "添加模型",
   "Add printer": "添加打印机",
-  "Add to library": "添加到模型库",
+  "Save plate to library": "将打印板保存到模型库",
   "Added to library": "已添加到模型库",
   "Adding models": "正在添加模型",
   "Allow this site in moonraker.conf, then restart Moonraker:": "请在 moonraker.conf 中允许此网站，然后重启 Moonraker：",
@@ -346,5 +346,8 @@
   "Save or discard your changes to get the latest presets.": "请保存或放弃更改，以获取最新的预设。",
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "已保留较新的版本：{names}。另一个版本位于服务器的“Conflicts”文件夹中。",
   "Sync with server storage": "与服务器存储同步",
-  "The API key is stored on the server too.": "API 密钥也会保存到服务器。"
+  "The API key is stored on the server too.": "API 密钥也会保存到服务器。",
+  "Download plate as 3MF": "将打印板下载为 3MF",
+  "Could not save the plate": "无法保存打印板",
+  "Could not load the project’s settings": "无法加载项目的设置"
 }
