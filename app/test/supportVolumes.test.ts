@@ -74,4 +74,24 @@ describe('support volumes', () => {
     // Without the app's ids.
     expect(Object.keys(layout[0]!.volumes![0]!).sort()).toEqual(['matrix', 'shape', 'size', 'type']);
   });
+
+  it('name the volumes a model came with by their number, and list none as none', () => {
+    const at = new Matrix4().makeTranslation(50, 50, 0);
+    const own: SceneVolume = {
+      id: 'v9',
+      type: 'support_enforcer',
+      shape: 'mesh',
+      size: [1, 2, 3],
+      matrix: new Matrix4().toArray(),
+      loaded: 1,
+      mesh: 'm1',
+    };
+    const [a, b] = engineLayout([object('a', 0, at, [own, cube('v1')]), object('b', 1, at)]);
+    expect(a!.volumes).toEqual([
+      { type: 'support_enforcer', loaded: 1, matrix: own.matrix },
+      { type: 'support_blocker', shape: 'cube', size: [10, 10, 10], matrix: new Matrix4().toArray() },
+    ]);
+    // An empty list: the engine drops those the object came with (deleted here).
+    expect(b!.volumes).toEqual([]);
+  });
 });

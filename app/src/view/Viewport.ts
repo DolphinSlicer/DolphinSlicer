@@ -42,7 +42,7 @@ import type { Bed } from '../model/bed';
 import type { AxisHint, SceneObject } from '../state/store';
 import { GcodeLayer } from './gcodeLayer';
 import { NEUTRAL, PaintLayer } from './paintLayer';
-import { supportShapeGeometry } from './supportShapes';
+import { volumeGeometry } from './supportShapes';
 import { type CubeLabels, ViewCube } from './viewCube';
 
 export interface ViewportEvents {
@@ -99,15 +99,19 @@ const MAT = {
   outside: new MeshStandardMaterial({ color: 0xc8c8c8, metalness: 0, roughness: 0.9, transparent: true, opacity: 0.6, flatShading: true }),
 };
 
-/** Support blockers and enforcers: desktop's colours (GLVolume), seen through; brighter selected. */
+/**
+ * Support blockers and enforcers: desktop's colours (GLVolume), seen through; brighter selected.
+ * Flat shaded as the objects (a mesh from a file keeps its sharp edges).
+ */
 const VOLUME_MAT = {
-  support_blocker: new MeshStandardMaterial({ color: 0xff3333, transparent: true, opacity: 0.45, depthWrite: false }),
-  support_enforcer: new MeshStandardMaterial({ color: 0x4d4dff, transparent: true, opacity: 0.45, depthWrite: false }),
+  support_blocker: new MeshStandardMaterial({ color: 0xff3333, transparent: true, opacity: 0.45, depthWrite: false, flatShading: true }),
+  support_enforcer: new MeshStandardMaterial({ color: 0x4d4dff, transparent: true, opacity: 0.45, depthWrite: false, flatShading: true }),
   support_blocker_selected: new MeshStandardMaterial({
     color: 0xff3333,
     transparent: true,
     opacity: 0.75,
     depthWrite: false,
+    flatShading: true,
     emissive: 0x401010,
   }),
   support_enforcer_selected: new MeshStandardMaterial({
@@ -115,6 +119,7 @@ const VOLUME_MAT = {
     transparent: true,
     opacity: 0.75,
     depthWrite: false,
+    flatShading: true,
     emissive: 0x101040,
   }),
 };
@@ -602,7 +607,7 @@ export class Viewport {
     for (const o of objects)
       for (const v of o.volumes ?? []) {
         const on = selected?.object === o.id && selected.volume === v.id;
-        const geo = supportShapeGeometry(v.shape, v.size);
+        const geo = volumeGeometry(v);
         o.instances.forEach((inst, k) => {
           const mesh = new Mesh(geo, VOLUME_MAT[on ? (`${v.type}_selected` as const) : v.type]);
           mesh.matrixAutoUpdate = false;

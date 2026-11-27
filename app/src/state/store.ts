@@ -77,9 +77,17 @@ export interface SceneObject {
   volumes?: SceneVolume[];
 }
 
-/** A support blocker or enforcer of an object; `id` is unique within the object. */
-export interface SceneVolume extends SupportVolume {
+/**
+ * A support blocker or enforcer of an object; `id` is unique within the object. A generic shape,
+ * or one the model came with (a project's): `shape` 'mesh', `size` its mesh's extent, `loaded`
+ * its number in the object, `mesh` the key of its mesh (view/supportShapes.ts), `name` the file's.
+ */
+export interface SceneVolume extends Omit<SupportVolume, 'shape'> {
   id: string;
+  shape: SupportVolume['shape'] | 'mesh';
+  loaded?: number;
+  mesh?: string;
+  name?: string;
 }
 
 export interface Notice {
