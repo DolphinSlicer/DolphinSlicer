@@ -1,0 +1,47 @@
+# When a pull request closes (merged or not), its preview deployments on Cloudflare Pages are
+# deleted, and with them <branch>.dolphinslicer.pages.dev. Pull requests from forks have none
+# (deploy.yml makes previews only for this repository's branches).
+name: preview cleanup
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: read
+
+# The pull request's deploy (deploy.yml): one still running is canceled, so no preview comes
+# after this.
+concurrency:
+  group: deploy-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  cleanup:
+    name: Delete the previews
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Delete the branch's preview deployments
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+        shell: python
+        run: |
+          import json, os, urllib.request
+          base = f"https://api.cloudflare.com/client/v4/accounts/{os.environ['CLOUDFLARE_ACCOUNT_ID']}/pages/projects/dolphinslicer/deployments"
+          def call(url, method="GET"):
+              req = urllib.request.Request(url, method=method, headers={"Authorization": f"Bearer {os.environ['CLOUDFLARE_API_TOKEN']}"})
+              return json.load(urllib.request.urlopen(req))
+          ids, page = [], 1
+          while True:
+              batch = call(f"{base}?env=preview&page={page}&per_page=25").get("result") or []
+              ids += [d["id"] for d in batch if d.get("deployment_trigger", {}).get("metadata", {}).get("branch") == os.environ["BRANCH"]]
+              if len(batch) < 25:
+                  break
+              page += 1
+          # force: also the branch's latest deployment, which its address points to.
+          for i in ids:
+              call(f"{base}/{i}?force=true", "DELETE")
+          print(f"Deleted {len(ids)} preview deployment(s) of {os.environ['BRANCH']}")
