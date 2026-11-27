@@ -630,6 +630,53 @@ const char *orca_presets_select_loses(void *p, const char *json_text)
     }
 }
 
+// Opening a project 3MF: its settings loaded as OrcaSlicer loads them (load_config_model): the
+// presets it names selected (one it names but this bundle lacks, made from its settings), its
+// values that differ kept as unsaved edits. Returns the printer's and filament's G-code settings
+// it changes, which the user should check before printing ({"gcode": [keys]}).
+const char *orca_presets_load_project(void *p, const char *json_text)
+{
+    Presets &ps = *as_presets(p);
+    if (!ps.bundle) { ps.fail(ORCA_INVALID_CONFIG, "Presets not loaded"); return nullptr; }
+    try {
+        const json j = json::parse(json_text ? json_text : "", nullptr, false);
+        if (!j.is_object() || !j.value("config", json()).is_object()) {
+            ps.fail(ORCA_INVALID_CONFIG, "Bad project settings");
+            return nullptr;
+        }
+        DynamicPrintConfig        cfg;
+        ConfigSubstitutionContext subs(ForwardCompatibilitySubstitutionRule::Enable);
+        for (const auto &[k, v] : j["config"].items()) {
+            if (!v.is_string() || !print_config_def.has(k)) continue;   // a newer slicer's setting
+            cfg.set_deserialize(k, v.get<std::string>(), subs);
+        }
+        PresetBundle &b = *ps.bundle;
+        b.load_config_model(j.value("name", std::string("project.3mf")), std::move(cfg));
+        b.update_compatible(PresetSelectCompatibleType::Never);
+        // The G-code the project changes: its edits of a preset this bundle has; for a preset made
+        // from the project's settings (a name this bundle lacks, or settings it doesn't list as
+        // changed), its G-code that differs from the preset it is based on, all of it without one.
+        std::set<std::string> changed;
+        for (PresetCollection *c : {static_cast<PresetCollection *>(&b.printers), &b.filaments}) {
+            for (const std::string &k : c->current_dirty_options()) changed.insert(k);
+            const Preset &sel = c->get_selected_preset();
+            if (!sel.is_external) continue;
+            if (const Preset *parent = c->get_selected_preset_parent(); parent && parent != &sel)
+                for (const std::string &k : c->current_different_from_parent_options()) changed.insert(k);
+            else
+                for (const std::string &k : sel.config.keys())
+                    if (const ConfigOptionString *o = sel.config.option<ConfigOptionString>(k); o && !o->value.empty()) changed.insert(k);
+        }
+        json gcode = json::array();
+        for (const std::string &k : changed)
+            if (k.find("gcode") != std::string::npos) gcode.push_back(k);
+        return ps.ret(json{{"gcode", gcode}}.dump());
+    } catch (const std::exception &ex) {
+        ps.fail(ORCA_INVALID_CONFIG, "Could not load the project's settings", ex.what());
+        return nullptr;
+    }
+}
+
 const char *orca_presets_state(void *p)
 {
     Presets &ps = *as_presets(p);

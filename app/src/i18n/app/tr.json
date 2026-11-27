@@ -353,5 +353,8 @@
   "Save or discard your changes to get the latest presets.": "En son ön ayarları almak için değişikliklerinizi kaydedin veya atın.",
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Daha yeni sürüm korundu: {names}. Diğeri sunucudaki \"Conflicts\" klasöründe.",
   "Sync with server storage": "Sunucu depolamasıyla eşitle",
-  "The API key is stored on the server too.": "API anahtarı sunucuda da saklanır."
+  "The API key is stored on the server too.": "API anahtarı sunucuda da saklanır.",
+  "Download plate as 3MF": "Plakayı 3MF olarak indir",
+  "Could not save the plate": "Plaka kaydedilemedi",
+  "Could not load the project’s settings": "Projenin ayarları yüklenemedi"
 }

@@ -7,7 +7,7 @@ import { dropFile, evict, type LibraryEntry, loadEntries, newId, readFile, remov
 import { syncLibrary } from '../library/sync';
 import { renderThumbnail } from '../library/thumbnail';
 import { describeError } from '../ui/errors';
-import { importFiles, inspectModel, isModelFile, liveFiles } from './actions';
+import { importFiles, inspectModel, isModelFile, plate3mf } from './actions';
 import { remoteStore, requestSync, syncing } from './driveActions';
 import { get, notify, set } from './store';
 
@@ -90,12 +90,16 @@ export async function addModels(
 }
 
 /** Add the models on the plate (their files as imported). */
+/** The plate as one project 3MF in the library (placement, support blockers, settings). */
 export async function addPlateToLibrary() {
-  // Not the files of objects deleted since.
-  const { files } = liveFiles();
-  if (!files.length) return;
-  const added = await addModels(files.map((f) => ({ name: f.name, bytes: f.bytes })));
-  if (added.length) notify({ kind: 'info', title: t('Added to library'), message: added.map((e) => e.name).join(', ') });
+  try {
+    const plate = await plate3mf();
+    if (!plate) return;
+    const added = await addModels([plate]);
+    if (added.length) notify({ kind: 'info', title: t('Added to library'), message: added.map((e) => e.name).join(', ') });
+  } catch (e) {
+    notify({ kind: 'error', ...describeError(e), title: t('Could not save the plate') });
+  }
 }
 
 /** The model file: from this device, or downloaded from Drive (and kept). */

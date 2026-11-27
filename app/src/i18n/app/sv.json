@@ -373,5 +373,8 @@
   "Sync with server storage": "Synkronisera med serverlagringen",
   "The API key is stored on the server too.": "API-nyckeln sparas också på servern.",
   "Cylinder": "Cylinder",
-  "Torus": "Torus"
+  "Torus": "Torus",
+  "Download plate as 3MF": "Ladda ner plattan som 3MF",
+  "Could not save the plate": "Det gick inte att spara plattan",
+  "Could not load the project’s settings": "Det gick inte att läsa in projektets inställningar"
 }

@@ -354,5 +354,8 @@
   "Save or discard your changes to get the latest presets.": "Išsaugokite arba atmeskite pakeitimus, kad gautumėte naujausius profilius.",
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Palikta naujesnė versija: {names}. Kita yra serverio aplanke „Conflicts“.",
   "Sync with server storage": "Sinchronizuoti su serverio saugykla",
-  "The API key is stored on the server too.": "API raktas taip pat saugomas serveryje."
+  "The API key is stored on the server too.": "API raktas taip pat saugomas serveryje.",
+  "Download plate as 3MF": "Atsisiųsti plokštę kaip 3MF",
+  "Could not save the plate": "Nepavyko įrašyti plokštės",
+  "Could not load the project’s settings": "Nepavyko įkelti projekto nustatymų"
 }

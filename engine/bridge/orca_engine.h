@@ -54,6 +54,7 @@ const char *orca_model_info(void *engine);
 /* Binary meshes for display, one record per object in model order (object coordinates):
  * u32 nverts, u32 ntris, f32 xyz[nverts], u32 idx[3*ntris]; little-endian. */
 int         orca_export_meshes(void *engine, const char *out_path);
+int         orca_export_3mf(void *engine, const char *out_path);   /* the plate as a project 3MF */
 /* Replace the object list and instance transforms:
  * {"objects":[{"index":<current index>,"instances":[{"matrix":[16 numbers, column-major]}],
  *   "supports"?:[painted supports per model part, as orca_paint_data]}]}
@@ -114,6 +115,9 @@ const char *orca_presets_list(void *presets);              /* {"printers":[…]}
 int         orca_presets_select(void *presets, const char *json);
 /* The preset types whose unsaved edits that selection would drop: {"lost": [types]}. */
 const char *orca_presets_select_loses(void *presets, const char *json);
+/* A project's settings ({name, config: {key: value}}): its presets selected, what differs as
+   unsaved edits → {"gcode": [changed G-code keys of the printer and filament]}; NULL on error. */
+const char *orca_presets_load_project(void *presets, const char *json);
 const char *orca_presets_state(void *presets);             /* selection + compatible lists */
 const char *orca_presets_full_config(void *presets);       /* config JSON for orca_set_config */
 const char *orca_presets_last_error(void *presets);

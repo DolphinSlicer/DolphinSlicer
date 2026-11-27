@@ -359,5 +359,8 @@
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Version la plus récente conservée pour : {names}. L’autre se trouve dans le dossier « Conflicts » du serveur.",
   "Sync with server storage": "Synchroniser avec le stockage sur le serveur",
   "The API key is stored on the server too.": "La clé API est aussi enregistrée sur le serveur.",
-  "Cube": "Cube"
+  "Cube": "Cube",
+  "Download plate as 3MF": "Télécharger le plateau en 3MF",
+  "Could not save the plate": "Impossible d’enregistrer le plateau",
+  "Could not load the project’s settings": "Impossible de charger les paramètres du projet"
 }

@@ -359,5 +359,8 @@
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Zachowano nowszą wersję: {names}. Druga znajduje się w folderze „Conflicts” na serwerze.",
   "Sync with server storage": "Synchronizuj z pamięcią na serwerze",
   "The API key is stored on the server too.": "Klucz API jest też zapisywany na serwerze.",
-  "Torus": "Torus"
+  "Torus": "Torus",
+  "Download plate as 3MF": "Pobierz płytę jako 3MF",
+  "Could not save the plate": "Nie udało się zapisać płyty",
+  "Could not load the project’s settings": "Nie udało się wczytać ustawień projektu"
 }

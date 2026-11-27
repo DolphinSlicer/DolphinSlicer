@@ -7,6 +7,7 @@ import {
   CircleCheck,
   Download,
   FileCode2,
+  FileDown,
   Info,
   Layers,
   Library,
@@ -22,10 +23,20 @@ import {
 } from 'lucide-react';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { t, tr } from '../i18n/i18n';
-import { cancelSlice, deleteObject, downloadGcode, importFiles, isModelFile, openGcode, readNow, slice } from '../state/actions';
+import {
+  cancelSlice,
+  deleteObject,
+  download3mf,
+  downloadGcode,
+  importFiles,
+  isModelFile,
+  openGcode,
+  readNow,
+  slice,
+} from '../state/actions';
 import { addModels, addPlateToLibrary } from '../state/libraryActions';
 import { select } from '../state/plate';
-import { dismiss, isStale, notify, set, useApp } from '../state/store';
+import { dismiss, get, isStale, notify, set, useApp } from '../state/store';
 import { deleteVolume, selectedVolume, selectVolume, TYPE_NAMES, volumeName } from '../state/supportVolumes';
 import { About } from './About';
 import { CalibrationButton } from './Calibration';
@@ -124,6 +135,18 @@ export function App() {
   useEffect(() => {
     window.addEventListener('keydown', onPlateKey);
     return () => window.removeEventListener('keydown', onPlateKey);
+  }, []);
+
+  // Cmd+S (Ctrl+S), desktop's Save Project: the plate as a 3MF, in place of the browser's Save page.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const mod = isMac ? e.metaKey && !e.ctrlKey : e.ctrlKey && !e.metaKey;
+      if (e.key.toLowerCase() !== 's' || !mod || e.altKey || e.shiftKey) return;
+      e.preventDefault();
+      if (get().objects.length && !document.querySelector('[aria-modal="true"]:not([data-closing] *), dialog:modal')) void download3mf();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
   }, []);
 
   // Cmd+F (Ctrl+F), desktop's search shortcut: the quick search, also from a field; not over another dialog.
@@ -403,6 +426,16 @@ function ObjectsCard() {
             data-tip={t('Add to library')}
           >
             <BookmarkPlus size={16} />
+          </button>
+          <button
+            className="icon-btn"
+            onClick={() => void download3mf()}
+            disabled={!objects.length}
+            data-testid="download-3mf"
+            aria-label={t('Download plate as 3MF')}
+            data-tip={`${t('Download plate as 3MF')} (${isMac ? '⌘' : 'Ctrl+'}S)`}
+          >
+            <FileDown size={16} />
           </button>
         </div>
       </div>

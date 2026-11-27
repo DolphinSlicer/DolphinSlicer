@@ -353,5 +353,8 @@
   "Save or discard your changes to get the latest presets.": "Mentsd vagy vesd el a módosításaidat, hogy megkapd a legújabb beállításokat.",
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Megtartott újabb verzió: {names}. A másik a szerver „Conflicts” mappájában van.",
   "Sync with server storage": "Szinkronizálás a szerveren lévő tárhellyel",
-  "The API key is stored on the server too.": "Az API-kulcs a szerveren is tárolódik."
+  "The API key is stored on the server too.": "Az API-kulcs a szerveren is tárolódik.",
+  "Download plate as 3MF": "Tálca letöltése 3MF-ként",
+  "Could not save the plate": "Nem sikerült menteni a tálcát",
+  "Could not load the project’s settings": "Nem sikerült betölteni a projekt beállításait"
 }
