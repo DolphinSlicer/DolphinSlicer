@@ -349,5 +349,6 @@
   "Save or discard your changes to get the latest presets.": "최신 사전 설정을 가져오려면 변경 사항을 저장하거나 취소하세요.",
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "최신 버전을 유지함: {names}. 다른 버전은 서버의 'Conflicts' 폴더에 있습니다.",
   "Sync with server storage": "서버 저장소와 동기화",
-  "The API key is stored on the server too.": "API 키도 서버에 저장됩니다."
+  "The API key is stored on the server too.": "API 키도 서버에 저장됩니다.",
+  "Could not download {name}": "{name}을(를) 다운로드할 수 없습니다"
 }

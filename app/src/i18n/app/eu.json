@@ -349,5 +349,6 @@
   "Save or discard your changes to get the latest presets.": "Gorde edo baztertu aldaketak aurrezarpen berrienak lortzeko.",
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Bertsio berriena mantendu da: {names}. Bestea zerbitzariko «Conflicts» karpetan dago.",
   "Sync with server storage": "Sinkronizatu zerbitzariko biltegiarekin",
-  "The API key is stored on the server too.": "API giltza zerbitzarian ere gordetzen da."
+  "The API key is stored on the server too.": "API giltza zerbitzarian ere gordetzen da.",
+  "Could not download {name}": "Ezin izan da {name} deskargatu"
 }

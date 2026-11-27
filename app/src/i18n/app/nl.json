@@ -368,5 +368,6 @@
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Nieuwere versie behouden van: {names}. De andere staat in de map 'Conflicts' op de server.",
   "Sync with server storage": "Synchroniseren met serveropslag",
   "The API key is stored on the server too.": "De API-sleutel wordt ook op de server opgeslagen.",
-  "Torus": "Torus"
+  "Torus": "Torus",
+  "Could not download {name}": "{name} kon niet worden gedownload"
 }

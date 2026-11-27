@@ -349,5 +349,6 @@
   "Save or discard your changes to get the latest presets.": "บันทึกหรือยกเลิกการเปลี่ยนแปลงเพื่อรับพรีเซ็ตล่าสุด",
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "เก็บเวอร์ชันที่ใหม่กว่าของ: {names} อีกเวอร์ชันอยู่ในโฟลเดอร์ \"Conflicts\" บนเซิร์ฟเวอร์",
   "Sync with server storage": "ซิงค์กับพื้นที่จัดเก็บบนเซิร์ฟเวอร์",
-  "The API key is stored on the server too.": "คีย์ API จะถูกเก็บไว้บนเซิร์ฟเวอร์ด้วย"
+  "The API key is stored on the server too.": "คีย์ API จะถูกเก็บไว้บนเซิร์ฟเวอร์ด้วย",
+  "Could not download {name}": "ไม่สามารถดาวน์โหลด {name} ได้"
 }

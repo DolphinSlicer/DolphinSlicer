@@ -350,5 +350,6 @@
   "Save or discard your changes to get the latest presets.": "Збережіть або скасуйте зміни, щоб отримати найновіші профілі.",
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Збережено новішу версію: {names}. Інша знаходиться в папці «Conflicts» на сервері.",
   "Sync with server storage": "Синхронізувати зі сховищем на сервері",
-  "The API key is stored on the server too.": "Ключ API також зберігається на сервері."
+  "The API key is stored on the server too.": "Ключ API також зберігається на сервері.",
+  "Could not download {name}": "Не вдалося завантажити {name}"
 }

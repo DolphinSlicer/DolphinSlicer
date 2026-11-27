@@ -356,5 +356,6 @@
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Ponechána novější verze: {names}. Ta druhá je ve složce „Conflicts“ na serveru.",
   "Sync with server storage": "Synchronizovat s úložištěm na serveru",
   "The API key is stored on the server too.": "API klíč se uloží i na server.",
-  "Torus": "Torus"
+  "Torus": "Torus",
+  "Could not download {name}": "{name} se nepodařilo stáhnout"
 }

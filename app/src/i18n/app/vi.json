@@ -358,5 +358,6 @@
   "Save or discard your changes to get the latest presets.": "Hãy lưu hoặc hủy các thay đổi để lấy cài đặt sẵn mới nhất.",
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Đã giữ phiên bản mới hơn của: {names}. Phiên bản còn lại nằm trong thư mục \"Conflicts\" trên máy chủ.",
   "Sync with server storage": "Đồng bộ với lưu trữ trên máy chủ",
-  "The API key is stored on the server too.": "Khóa API cũng được lưu trên máy chủ."
+  "The API key is stored on the server too.": "Khóa API cũng được lưu trên máy chủ.",
+  "Could not download {name}": "Không thể tải xuống {name}"
 }

@@ -352,5 +352,6 @@
   "Save or discard your changes to get the latest presets.": "最新のプリセットを取得するには、変更を保存するか破棄してください。",
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "新しい方のバージョンを保持しました: {names}。もう一方はサーバーの「Conflicts」フォルダーにあります。",
   "Sync with server storage": "サーバーストレージと同期",
-  "The API key is stored on the server too.": "APIキーもサーバーに保存されます。"
+  "The API key is stored on the server too.": "APIキーもサーバーに保存されます。",
+  "Could not download {name}": "{name} をダウンロードできませんでした"
 }

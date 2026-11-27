@@ -356,5 +356,6 @@
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Mantida a versão mais recente de: {names}. A outra está na pasta \"Conflicts\" do servidor.",
   "Sync with server storage": "Sincronizar com o armazenamento no servidor",
   "The API key is stored on the server too.": "A chave de API também é salva no servidor.",
-  "Cone": "Cone"
+  "Cone": "Cone",
+  "Could not download {name}": "Não foi possível baixar {name}"
 }

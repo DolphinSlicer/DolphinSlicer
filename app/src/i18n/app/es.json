@@ -353,5 +353,6 @@
   "Save or discard your changes to get the latest presets.": "Guarde o descarte sus cambios para obtener los perfiles más recientes.",
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Se conservó la versión más reciente de: {names}. La otra está en la carpeta «Conflicts» del servidor.",
   "Sync with server storage": "Sincronizar con el almacenamiento en el servidor",
-  "The API key is stored on the server too.": "La clave API también se guarda en el servidor."
+  "The API key is stored on the server too.": "La clave API también se guarda en el servidor.",
+  "Could not download {name}": "No se pudo descargar {name}"
 }

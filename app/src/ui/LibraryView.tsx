@@ -1,15 +1,16 @@
 // The model library: cards with thumbnails, search by name or tag, open on the plate.
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import { Box, Pencil, Plus, Search, Trash2 } from 'lucide-react';
-import { useMemo, useRef, useState } from 'react';
+import { Box, Download, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { t } from '../i18n/i18n';
 import type { LibraryEntry } from '../library/store';
 import { readNow } from '../state/actions';
-import { addModels, deleteModel, openModel, updateModel } from '../state/libraryActions';
+import { addModels, deleteModel, downloadModel, openModel, updateModel } from '../state/libraryActions';
 import { useApp } from '../state/store';
 import { ask } from './Confirm';
 import { formatBytes } from './format';
+import { ContextMenu } from './PlateToolbar';
 
 /** Every word must be in the name, file name or a tag. */
 export function matches(e: LibraryEntry, query: string, tags: string[]): boolean {
@@ -27,6 +28,9 @@ export function LibraryView() {
   const [query, setQuery] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [editing, setEditing] = useState<string | null>(null);
+  /** A model's context menu (a right click on its card), where it was opened. */
+  const [menu, setMenu] = useState<{ id: string; x: number; y: number } | null>(null);
+  const menuEntry = menu ? models.entries.find((e) => e.id === menu.id) : undefined;
   const input = useRef<HTMLInputElement>(null);
   const allTags = useMemo(() => [...new Set(models.entries.flatMap((e) => e.tags))].sort((a, b) => a.localeCompare(b)), [models.entries]);
   // A picked tag that no model has any more no longer filters (its chip is gone).
@@ -104,13 +108,69 @@ export function LibraryView() {
         ) : (
           <ul className="model-grid" data-testid="library-grid">
             {shown.map((e) => (
-              <ModelCard key={e.id} e={e} editing={editing === e.id} onEdit={(on) => setEditing(on ? e.id : null)} onTag={toggleTag} />
+              <ModelCard
+                key={e.id}
+                e={e}
+                editing={editing === e.id}
+                onEdit={(on) => setEditing(on ? e.id : null)}
+                onTag={toggleTag}
+                onMenu={(x, y) => setMenu({ id: e.id, x, y })}
+              />
             ))}
           </ul>
         )}
       </div>
+      {menu && menuEntry && (
+        <ContextMenu
+          x={menu.x}
+          y={menu.y}
+          label={menuEntry.name}
+          testid="library-menu"
+          onClose={() => setMenu(null)}
+          items={[
+            {
+              id: 'library-open',
+              label: () => t('Open on the plate'),
+              keys: '',
+              icon: Box,
+              enabled: () => true,
+              run: () => void openModel(menuEntry.id),
+            },
+            {
+              id: 'library-download',
+              label: () => t('Download'),
+              keys: '',
+              icon: Download,
+              enabled: () => true,
+              run: () => void downloadModel(menuEntry.id),
+            },
+            null,
+            {
+              id: 'library-edit',
+              label: () => t('Edit'),
+              keys: '',
+              icon: Pencil,
+              enabled: () => true,
+              run: () => setEditing(menuEntry.id),
+            },
+            {
+              id: 'library-delete',
+              label: () => t('Delete'),
+              keys: '',
+              icon: Trash2,
+              enabled: () => true,
+              run: () => void confirmDelete(menuEntry),
+            },
+          ]}
+        />
+      )}
     </div>
   );
+}
+
+/** Delete a model from the library, after asking. */
+async function confirmDelete(e: LibraryEntry) {
+  if (await ask(t('Delete {name} from the library?', { name: e.name }), { confirm: t('Delete'), danger: true })) void deleteModel(e.id);
 }
 
 function ModelCard({
@@ -118,26 +178,41 @@ function ModelCard({
   editing,
   onEdit,
   onTag,
+  onMenu,
 }: {
   e: LibraryEntry;
   editing: boolean;
   onEdit: (on: boolean) => void;
   onTag: (tag: string) => void;
+  /** A right click on the card, at a point on the page. */
+  onMenu: (x: number, y: number) => void;
 }) {
   const opening = useApp((s) => s.models.opening.includes(e.id));
   const [name, setName] = useState(e.name);
   const [tagText, setTagText] = useState(e.tags.join(', '));
-  const startEdit = () => {
+  // The form starts from the model as it is now (also when opened from the menu).
+  useEffect(() => {
+    if (!editing) return;
     setName(e.name);
     setTagText(e.tags.join(', '));
-    onEdit(true);
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editing]);
+  const startEdit = () => onEdit(true);
   const save = () => {
     void updateModel(e.id, { name, tags: tagText.split(',') });
     onEdit(false);
   };
   return (
-    <li className="model-card" data-testid="library-card" data-name={e.name}>
+    <li
+      className="model-card"
+      data-testid="library-card"
+      data-name={e.name}
+      onContextMenu={(ev) => {
+        if (editing) return;
+        ev.preventDefault();
+        onMenu(ev.clientX, ev.clientY);
+      }}
+    >
       <button
         className="model-open"
         onClick={() => void openModel(e.id)}
@@ -219,10 +294,7 @@ function ModelCard({
               aria-label={t('Delete {name}', { name: e.name })}
               data-tip={t('Delete')}
               data-testid="library-delete"
-              onClick={async () => {
-                if (await ask(t('Delete {name} from the library?', { name: e.name }), { confirm: t('Delete'), danger: true }))
-                  void deleteModel(e.id);
-              }}
+              onClick={() => void confirmDelete(e)}
             >
               <Trash2 size={14} />
             </button>

@@ -357,5 +357,6 @@
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "S'ha conservat la versió més recent de: {names}. L'altra és a la carpeta «Conflicts» del servidor.",
   "Sync with server storage": "Sincronitza amb l'emmagatzematge al servidor",
   "The API key is stored on the server too.": "La clau API també es desa al servidor.",
-  "Disc": "Disc"
+  "Disc": "Disc",
+  "Could not download {name}": "No s'ha pogut baixar {name}"
 }
