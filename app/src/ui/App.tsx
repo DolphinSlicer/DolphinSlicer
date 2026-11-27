@@ -422,8 +422,8 @@ function ObjectsCard() {
             onClick={() => void addPlateToLibrary()}
             disabled={!objects.length}
             data-testid="save-to-library"
-            aria-label={t('Add to library')}
-            data-tip={t('Add to library')}
+            aria-label={t('Save plate to library')}
+            data-tip={t('Save plate to library')}
           >
             <BookmarkPlus size={16} />
           </button>

@@ -231,7 +231,7 @@
   "Access to your local network is blocked. Allow it in the site settings (the icon left of the address), then try again.": "Přístup k místní síti je zablokován. Povolte ho v nastavení webu (ikona vlevo od adresy) a zkuste to znovu.",
   "Add models": "Přidat modely",
   "Add printer": "Přidat tiskárnu",
-  "Add to library": "Přidat do knihovny",
+  "Save plate to library": "Uložit podložku do knihovny",
   "Added to library": "Přidáno do knihovny",
   "Adding models": "Přidávání modelů",
   "Allow this site in moonraker.conf, then restart Moonraker:": "Povolte tento web v moonraker.conf a pak restartujte Moonraker:",

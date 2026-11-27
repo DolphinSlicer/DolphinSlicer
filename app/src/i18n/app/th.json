@@ -229,7 +229,7 @@
   "Access to your local network is blocked. Allow it in the site settings (the icon left of the address), then try again.": "การเข้าถึงเครือข่ายในพื้นที่ของคุณถูกบล็อก อนุญาตในการตั้งค่าเว็บไซต์ (ไอคอนทางซ้ายของที่อยู่) แล้วลองอีกครั้ง",
   "Add models": "เพิ่มโมเดล",
   "Add printer": "เพิ่มเครื่องพิมพ์",
-  "Add to library": "เพิ่มลงในคลัง",
+  "Save plate to library": "บันทึกเพลตลงในคลัง",
   "Added to library": "เพิ่มลงในคลังแล้ว",
   "Adding models": "กำลังเพิ่มโมเดล",
   "Allow this site in moonraker.conf, then restart Moonraker:": "อนุญาตเว็บไซต์นี้ใน moonraker.conf แล้วรีสตาร์ท Moonraker:",

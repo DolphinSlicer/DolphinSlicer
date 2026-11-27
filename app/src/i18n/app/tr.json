@@ -230,7 +230,7 @@
   "Access to your local network is blocked. Allow it in the site settings (the icon left of the address), then try again.": "Yerel ağınıza erişim engellendi. Site ayarlarından (adresin solundaki simge) izin verin, sonra tekrar deneyin.",
   "Add models": "Model ekle",
   "Add printer": "Yazıcı ekle",
-  "Add to library": "Kütüphaneye ekle",
+  "Save plate to library": "Plakayı kütüphaneye kaydet",
   "Added to library": "Kütüphaneye eklendi",
   "Adding models": "Modeller ekleniyor",
   "Allow this site in moonraker.conf, then restart Moonraker:": "moonraker.conf dosyasında bu siteye izin verin, sonra Moonraker'ı yeniden başlatın:",

@@ -229,7 +229,7 @@
   "Access to your local network is blocked. Allow it in the site settings (the icon left of the address), then try again.": "A helyi hálózathoz való hozzáférés le van tiltva. Engedélyezd a webhely beállításaiban (a cím bal oldalán lévő ikon), majd próbáld újra.",
   "Add models": "Modellek hozzáadása",
   "Add printer": "Nyomtató hozzáadása",
-  "Add to library": "Hozzáadás a könyvtárhoz",
+  "Save plate to library": "Tálca mentése a könyvtárba",
   "Added to library": "Hozzáadva a könyvtárhoz",
   "Adding models": "Modellek hozzáadása folyamatban",
   "Allow this site in moonraker.conf, then restart Moonraker:": "Engedélyezd ezt a webhelyet a moonraker.conf fájlban, majd indítsd újra a Moonrakert:",

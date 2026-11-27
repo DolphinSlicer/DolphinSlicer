@@ -229,7 +229,7 @@
   "Access to your local network is blocked. Allow it in the site settings (the icon left of the address), then try again.": "El acceso a su red local está bloqueado. Permítalo en la configuración del sitio (el icono a la izquierda de la dirección) y vuelva a intentarlo.",
   "Add models": "Añadir modelos",
   "Add printer": "Añadir impresora",
-  "Add to library": "Añadir a la biblioteca",
+  "Save plate to library": "Guardar la placa en la biblioteca",
   "Added to library": "Añadido a la biblioteca",
   "Adding models": "Añadiendo modelos",
   "Allow this site in moonraker.conf, then restart Moonraker:": "Permita este sitio en moonraker.conf y reinicie Moonraker:",

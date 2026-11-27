@@ -228,7 +228,7 @@
   "Access to your local network is blocked. Allow it in the site settings (the icon left of the address), then try again.": "로컬 네트워크 액세스가 차단되었습니다. 사이트 설정(주소 왼쪽의 아이콘)에서 허용한 후 다시 시도하세요.",
   "Add models": "모델 추가",
   "Add printer": "프린터 추가",
-  "Add to library": "라이브러리에 추가",
+  "Save plate to library": "플레이트를 라이브러리에 저장",
   "Added to library": "라이브러리에 추가됨",
   "Adding models": "모델 추가 중",
   "Allow this site in moonraker.conf, then restart Moonraker:": "moonraker.conf에서 이 사이트를 허용한 후 Moonraker를 다시 시작하세요:",

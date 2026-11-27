@@ -55,7 +55,7 @@ test('a plate downloaded as 3MF opens with its objects, support blocker and sett
   await expect(b.locator('.settings .field[data-key="sparse_infill_density"] input')).toHaveValue('37');
 });
 
-test('“Add to library” keeps the plate as one 3MF, opened again as the plate', { tag: '@browser' }, async ({ browser, baseURL }) => {
+test('“Save plate to library” keeps the plate as one 3MF, opened again as the plate', { tag: '@browser' }, async ({ browser, baseURL }) => {
   const page = await fresh(browser, baseURL!);
   await page.getByTestId('file-input').setInputFiles([
     { name: 'one.stl', mimeType: 'model/stl', buffer: boxStl(10, 10, 10) },

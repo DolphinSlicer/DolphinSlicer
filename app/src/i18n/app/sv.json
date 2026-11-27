@@ -244,7 +244,7 @@
   "Access to your local network is blocked. Allow it in the site settings (the icon left of the address), then try again.": "Åtkomst till ditt lokala nätverk är blockerad. Tillåt den i webbplatsinställningarna (ikonen till vänster om adressen) och försök sedan igen.",
   "Add models": "Lägg till modeller",
   "Add printer": "Lägg till skrivare",
-  "Add to library": "Lägg till i biblioteket",
+  "Save plate to library": "Spara plattan i biblioteket",
   "Added to library": "Tillagd i biblioteket",
   "Adding models": "Lägger till modeller",
   "Allow this site in moonraker.conf, then restart Moonraker:": "Tillåt den här webbplatsen i moonraker.conf och starta sedan om Moonraker:",

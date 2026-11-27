@@ -141,7 +141,7 @@ export function QuickSearch({ onClose, actions }: { onClose: () => void; actions
       action('import', 'Import models', <Upload size={15} />, () => clickInput('file-input')),
       action('gcode', 'Open G-code', <FileCode2 size={15} />, () => clickInput('gcode-input')),
       action('import-presets', 'Import presets', <Upload size={15} />, () => clickInput('preset-import-input')),
-      action('add-to-library', 'Add to library', <BookmarkPlus size={15} />, () => void addPlateToLibrary(), !objects),
+      action('add-to-library', 'Save plate to library', <BookmarkPlus size={15} />, () => void addPlateToLibrary(), !objects),
       action('printers-wizard', 'Add or remove printers…', <Printer size={15} />, () => set({ wizard: 'printers' })),
       action('filaments-wizard', 'Add or remove filaments…', <Printer size={15} />, () => set({ wizard: 'filaments' })),
       ...CALIBRATIONS.flatMap((m) =>
