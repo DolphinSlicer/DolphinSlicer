@@ -229,7 +229,7 @@
   "Access to your local network is blocked. Allow it in the site settings (the icon left of the address), then try again.": "El acceso a su red local está bloqueado. Permítalo en la configuración del sitio (el icono a la izquierda de la dirección) y vuelva a intentarlo.",
   "Add models": "Añadir modelos",
   "Add printer": "Añadir impresora",
-  "Add to library": "Añadir a la biblioteca",
+  "Save plate to library": "Guardar la placa en la biblioteca",
   "Added to library": "Añadido a la biblioteca",
   "Adding models": "Añadiendo modelos",
   "Allow this site in moonraker.conf, then restart Moonraker:": "Permita este sitio en moonraker.conf y reinicie Moonraker:",
@@ -354,5 +354,8 @@
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Se conservó la versión más reciente de: {names}. La otra está en la carpeta «Conflicts» del servidor.",
   "Sync with server storage": "Sincronizar con el almacenamiento en el servidor",
   "The API key is stored on the server too.": "La clave API también se guarda en el servidor.",
-  "Could not download {name}": "No se pudo descargar {name}"
+  "Could not download {name}": "No se pudo descargar {name}",
+  "Download plate as 3MF": "Descargar la placa como 3MF",
+  "Could not save the plate": "No se pudo guardar la placa",
+  "Could not load the project’s settings": "No se pudieron cargar los ajustes del proyecto"
 }

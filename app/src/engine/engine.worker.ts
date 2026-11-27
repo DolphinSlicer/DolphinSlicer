@@ -327,6 +327,24 @@ const handlers: { [K in Request['op']]: (req: Extract<Request, { op: K }>, id: n
     return null;
   },
 
+  async export3mf(req) {
+    const m = M!;
+    const e = loadFiles(req.files);
+    try {
+      let rc = m.ccall('orca_set_layout', 'number', ['number', 'string'], [e, JSON.stringify(req.layout)]) as number;
+      if (rc !== ORCA_OK) throw lastError(e);
+      rc = m.ccall('orca_set_config', 'number', ['number', 'string'], [e, req.config]) as number;
+      if (rc !== ORCA_OK) throw lastError(e);
+      rc = m.ccall('orca_export_3mf', 'number', ['number', 'string'], [e, '/out/plate.3mf']) as number;
+      if (rc !== ORCA_OK) throw lastError(e);
+      const bytes = m.FS.readFile('/out/plate.3mf');
+      m.FS.unlink('/out/plate.3mf');
+      return bytes.slice().buffer;
+    } finally {
+      m._orca_destroy(e);
+    }
+  },
+
   async arrange(req) {
     const m = M!;
     const e = loadFiles(req.files);
@@ -402,6 +420,18 @@ const handlers: { [K in Request['op']]: (req: Extract<Request, { op: K }>, id: n
       throw new EngineFailure({ code: 'INVALID_CONFIG', message: `${err.message}: ${err.detail}` });
     }
     return JSON.parse(m.UTF8ToString(m._orca_presets_state(presets)));
+  },
+
+  async presetsLoadProject(req) {
+    const m = M!;
+    const text = m.ccall(
+      'orca_presets_load_project',
+      'string',
+      ['number', 'string'],
+      [presets, JSON.stringify({ name: req.name, config: req.config })],
+    ) as string | null;
+    if (!text) throw presetsError();
+    return { state: JSON.parse(m.UTF8ToString(m._orca_presets_state(presets))), gcode: JSON.parse(text).gcode };
   },
 
   async presetsSelectLoses(req) {
@@ -729,6 +759,7 @@ self.onmessage = async (ev: MessageEvent<Request & { id: number }>) => {
     const transfer: Transferable[] = [];
     if (req.op === 'slice') transfer.push((value as ResponseValue['slice']).gcode);
     if (req.op === 'inspect') transfer.push((value as ResponseValue['inspect']).meshes);
+    if (req.op === 'export3mf') transfer.push(value as ResponseValue['export3mf']);
     if (req.op === 'gcodePreview') transfer.push((value as ResponseValue['gcodePreview']).bin);
     // Painted triangles: the arrays' buffers.
     const render =

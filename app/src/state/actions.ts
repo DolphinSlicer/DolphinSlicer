@@ -43,6 +43,7 @@ import { presetVendorIndex, profilesManifest, vendorBundle } from '../presets/pr
 import { BAD_NAME_CHARS, renamePresetFiles, renamePrinterFiles } from '../presets/renamePrinter';
 import { loadUserFiles, saveUserFiles } from '../presets/userStore';
 import { loadSchema } from '../settings/schema';
+import { ask } from '../ui/Confirm';
 import { describeError } from '../ui/errors';
 import { loadedCounts, onCollect, remember } from './history';
 import { addPrinterLink, renamePrinterLinks } from './printerActions';
@@ -882,9 +883,13 @@ export async function importFiles(list: { name: string; bytes: Promise<ArrayBuff
         notify({ kind: 'error', ...describeError(e), title: t('Could not open {name}', { name: file.name }) });
         continue;
       }
+      // An OrcaSlicer (Bambu Studio) project opened on an empty plate: its settings too.
+      const settings =
+        r.info.bbl_3mf && get().objects.length === 0 && is3mfProject({ name: file.name, bytes }) ? r.info.project_config : undefined;
       // All the files of one import are one step to undo.
       addInspected({ name: file.name, bytes }, r.info, meshesToGeometries(r.meshes, r.info.objects.length), added);
       added = true;
+      if (settings) await loadProjectSettings(file.name, settings);
     }
     // Shown where they went (a drop on the preview or the settings).
     if (added && get().view !== 'prepare' && get().view !== 'library') set({ view: 'prepare' });
@@ -1553,6 +1558,80 @@ export function gcodeFileName(): string {
   const base = clean((s.gcodeName ?? s.objects[0]?.name ?? 'plate').replace(/\.(stl|3mf|obj|amf|step|stp)$/i, '')) || 'plate';
   const printer = clean(s.gcodePrinter ?? s.presets.state?.printer ?? '');
   return `${base}${printer ? `_${printer}` : ''}.gcode`;
+}
+
+/**
+ * The plate as a project 3MF in OrcaSlicer's format: the objects as placed, with their support
+ * blockers, painted supports and own settings, and the printer, filament and print settings in
+ * use, so OrcaSlicer and this app open it as it is. Named after its first object.
+ */
+export async function plate3mf(): Promise<{ name: string; bytes: ArrayBuffer } | null> {
+  const s = get();
+  if (!s.objects.length || !s.presets.config) return null;
+  const live = liveFiles(s);
+  await auxReady();
+  const bytes = await aux.call('export3mf', {
+    files: live.files.map((f) => ({ name: f.name, bytes: f.bytes })),
+    layout: { objects: engineLayout(live.objects) },
+    config: s.presets.config,
+  });
+  const base = (s.objects[0]!.name || 'plate').replace(/\.[^./]+$/, '').replace(/[/\\\0]/g, '_');
+  return { name: `${base}.3mf`, bytes };
+}
+
+/** Download the plate as a project 3MF (Ctrl+S, as desktop's Save Project). */
+export async function download3mf() {
+  try {
+    const r = await plate3mf();
+    if (!r) return;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([r.bytes], { type: 'model/3mf' }));
+    a.download = r.name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 10_000);
+  } catch (e) {
+    notify({ kind: 'error', ...describeError(e), title: t('Could not save the plate') });
+  }
+}
+
+/**
+ * A project's settings, as OrcaSlicer opens a project: the printer, filament and print settings
+ * it names selected, what it changes kept as unsaved edits (asking first when there are unsaved
+ * edits already). The G-code it changes is pointed out, to be checked before printing.
+ */
+export async function loadProjectSettings(name: string, config: Record<string, string>) {
+  const st = get().presets.state;
+  if (!st || !Object.keys(config).length) return;
+  const edited = [st.dirty?.printer && st.printer, st.dirty?.filament && st.filaments[0], st.dirty?.print && st.process].filter(
+    (n): n is string => !!n,
+  );
+  if (edited.length && !(await ask(t('Discard unsaved changes to {names}?', { names: edited.join(', ') }), { confirm: t('Discard') })))
+    return;
+  set((s) => ({ presets: { ...s.presets, status: 'loading' } }));
+  try {
+    await auxReady();
+    const r = await aux.call('presetsLoadProject', { name, config });
+    // A printer the project names that isn't here comes from its settings: listed too.
+    await refreshPrinterList();
+    const cfg = await aux.call('presetsConfig', {});
+    const bed = keepBed(get().presets.bed, bedFromConfig(JSON.parse(cfg)));
+    set((s) => ({ presets: { ...s.presets, status: 'ready', state: r.state, config: cfg, bed, message: undefined } }));
+    save({ printer: r.state.printer, process: r.state.process, filament: r.state.filaments[0] });
+    touchPlate();
+    if (r.gcode.length) {
+      const schema = await loadSchema().catch(() => null);
+      notify({
+        kind: 'warning',
+        title: tr(N_('The 3MF has the following modified G-code in filament or printer presets:')),
+        message: `${r.gcode.map((k) => tr(schema?.options[k]?.label || k)).join(', ')}. ${tr(N_('Please confirm that all modified G-code is safe to prevent any damage to the machine!'))}`,
+      });
+    }
+  } catch (e) {
+    set((s) => ({ presets: { ...s.presets, status: 'ready' } }));
+    notify({ kind: 'error', ...describeError(e), title: t('Could not load the project’s settings') });
+  }
 }
 
 export function downloadGcode() {

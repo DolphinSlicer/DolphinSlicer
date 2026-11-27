@@ -229,7 +229,7 @@
   "Access to your local network is blocked. Allow it in the site settings (the icon left of the address), then try again.": "A helyi hálózathoz való hozzáférés le van tiltva. Engedélyezd a webhely beállításaiban (a cím bal oldalán lévő ikon), majd próbáld újra.",
   "Add models": "Modellek hozzáadása",
   "Add printer": "Nyomtató hozzáadása",
-  "Add to library": "Hozzáadás a könyvtárhoz",
+  "Save plate to library": "Tálca mentése a könyvtárba",
   "Added to library": "Hozzáadva a könyvtárhoz",
   "Adding models": "Modellek hozzáadása folyamatban",
   "Allow this site in moonraker.conf, then restart Moonraker:": "Engedélyezd ezt a webhelyet a moonraker.conf fájlban, majd indítsd újra a Moonrakert:",
@@ -354,5 +354,8 @@
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Megtartott újabb verzió: {names}. A másik a szerver „Conflicts” mappájában van.",
   "Sync with server storage": "Szinkronizálás a szerveren lévő tárhellyel",
   "The API key is stored on the server too.": "Az API-kulcs a szerveren is tárolódik.",
-  "Could not download {name}": "Nem sikerült letölteni: {name}"
+  "Could not download {name}": "Nem sikerült letölteni: {name}",
+  "Download plate as 3MF": "Tálca letöltése 3MF-ként",
+  "Could not save the plate": "Nem sikerült menteni a tálcát",
+  "Could not load the project’s settings": "Nem sikerült betölteni a projekt beállításait"
 }

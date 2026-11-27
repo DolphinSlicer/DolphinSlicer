@@ -28,6 +28,8 @@ export interface ModelInfo {
   objects: ObjectInfo[];
   plates: { index: number; name: string }[];
   bbl_3mf: boolean;
+  /** A project 3MF's settings (as its config file has them); empty for other files. */
+  project_config?: Record<string, string>;
 }
 
 export interface MeshData {
@@ -235,6 +237,8 @@ export type Request =
   /** Read a G-code file for the preview, as desktop's G-code viewer does. */
   | { op: 'gcodePreview'; bytes: ArrayBuffer }
   | { op: 'arrange'; files: ModelFile[]; layout: Layout; config: string }
+  | { op: 'export3mf'; files: ModelFile[]; layout: Layout; config: string }
+  | { op: 'presetsLoadProject'; name: string; config: Record<string, string> }
   | { op: 'presetsLoad'; vendors: VendorBundle[]; userFiles: UserFiles }
   | { op: 'presetsSelect'; selection: PresetSelection }
   /** The preset types whose unsaved edits that selection would drop (it changes nothing). */
@@ -307,6 +311,10 @@ export type ResponseValue = {
   gcodePreview: EnginePreview;
   /** Per layout object, its instances: the new matrix, and the bed (0: the plate; more: further plates to its right; -1: not placed). */
   arrange: { objects: { instances: { matrix: number[]; bed: number }[] }[] };
+  /** The plate as a project 3MF. */
+  export3mf: ArrayBuffer;
+  /** The new selection, and the G-code settings of the printer and filament the project changes. */
+  presetsLoadProject: { state: PresetState; gcode: string[] };
   presetsLoad: { printers: PresetEntry[]; warnings: string; ms: number };
   presetsSelect: PresetState;
   presetsSelectLoses: PresetType[];

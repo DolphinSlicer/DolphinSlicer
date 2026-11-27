@@ -233,7 +233,7 @@
   "Access to your local network is blocked. Allow it in the site settings (the icon left of the address), then try again.": "Доступ к локальной сети заблокирован. Разрешите его в настройках сайта (значок слева от адреса), затем повторите попытку.",
   "Add models": "Добавить модели",
   "Add printer": "Добавить принтер",
-  "Add to library": "Добавить в библиотеку",
+  "Save plate to library": "Сохранить стол в библиотеку",
   "Added to library": "Добавлено в библиотеку",
   "Adding models": "Добавление моделей",
   "Allow this site in moonraker.conf, then restart Moonraker:": "Разрешите этот сайт в moonraker.conf, затем перезапустите Moonraker:",
@@ -352,5 +352,8 @@
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "Сохранена более новая версия: {names}. Другая находится в папке «Conflicts» на сервере.",
   "Sync with server storage": "Синхронизировать с хранилищем на сервере",
   "The API key is stored on the server too.": "API-ключ тоже сохраняется на сервере.",
-  "Could not download {name}": "Не удалось скачать {name}"
+  "Could not download {name}": "Не удалось скачать {name}",
+  "Download plate as 3MF": "Скачать стол как 3MF",
+  "Could not save the plate": "Не удалось сохранить стол",
+  "Could not load the project’s settings": "Не удалось загрузить настройки проекта"
 }

@@ -232,7 +232,7 @@
   "Access to your local network is blocked. Allow it in the site settings (the icon left of the address), then try again.": "L'accés a la vostra xarxa local està bloquejat. Permeteu-lo a la configuració del lloc (la icona a l'esquerra de l'adreça) i torneu-ho a provar.",
   "Add models": "Afegir models",
   "Add printer": "Afegir impressora",
-  "Add to library": "Afegir a la biblioteca",
+  "Save plate to library": "Desa la placa a la biblioteca",
   "Added to library": "S'ha afegit a la biblioteca",
   "Adding models": "S'estan afegint models",
   "Allow this site in moonraker.conf, then restart Moonraker:": "Permeteu aquest lloc a moonraker.conf i reinicieu Moonraker:",
@@ -358,5 +358,8 @@
   "Sync with server storage": "Sincronitza amb l'emmagatzematge al servidor",
   "The API key is stored on the server too.": "La clau API també es desa al servidor.",
   "Disc": "Disc",
-  "Could not download {name}": "No s'ha pogut baixar {name}"
+  "Could not download {name}": "No s'ha pogut baixar {name}",
+  "Download plate as 3MF": "Baixa la placa com a 3MF",
+  "Could not save the plate": "No s'ha pogut desar la placa",
+  "Could not load the project’s settings": "No s'han pogut carregar els ajustos del projecte"
 }

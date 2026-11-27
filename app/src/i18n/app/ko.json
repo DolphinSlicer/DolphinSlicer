@@ -228,7 +228,7 @@
   "Access to your local network is blocked. Allow it in the site settings (the icon left of the address), then try again.": "로컬 네트워크 액세스가 차단되었습니다. 사이트 설정(주소 왼쪽의 아이콘)에서 허용한 후 다시 시도하세요.",
   "Add models": "모델 추가",
   "Add printer": "프린터 추가",
-  "Add to library": "라이브러리에 추가",
+  "Save plate to library": "플레이트를 라이브러리에 저장",
   "Added to library": "라이브러리에 추가됨",
   "Adding models": "모델 추가 중",
   "Allow this site in moonraker.conf, then restart Moonraker:": "moonraker.conf에서 이 사이트를 허용한 후 Moonraker를 다시 시작하세요:",
@@ -350,5 +350,8 @@
   "Kept the newer version of: {names}. The other one is in the Conflicts folder on the server.": "최신 버전을 유지함: {names}. 다른 버전은 서버의 'Conflicts' 폴더에 있습니다.",
   "Sync with server storage": "서버 저장소와 동기화",
   "The API key is stored on the server too.": "API 키도 서버에 저장됩니다.",
-  "Could not download {name}": "{name}을(를) 다운로드할 수 없습니다"
+  "Could not download {name}": "{name}을(를) 다운로드할 수 없습니다",
+  "Download plate as 3MF": "플레이트를 3MF로 다운로드",
+  "Could not save the plate": "플레이트를 저장할 수 없습니다",
+  "Could not load the project’s settings": "프로젝트 설정을 불러올 수 없습니다"
 }
