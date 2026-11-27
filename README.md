@@ -102,7 +102,7 @@ DolphinSlicer has two parts:
 
 Each folder's README explains how to build and test it. Changes go through pull requests with
 [Conventional Commits](https://www.conventionalcommits.org) titles; each pull request gets its own
-preview deployment, removed when the pull request closes.
+preview deployment.
 
 ## Credits and license
 
