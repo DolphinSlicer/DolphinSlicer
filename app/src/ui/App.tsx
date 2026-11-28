@@ -102,6 +102,31 @@ export function App() {
   );
   const wizard = useApp((s) => s.wizard);
   const [dragOver, setDragOver] = useState(false);
+  // Files dragged over the window: the browser sends dragover again and again (at least every
+  // ~350 ms, also when the pointer rests), so the overlay goes when they stop coming, whichever
+  // way the drag ended (out of the window, Escape, a drop somewhere else).
+  const dragGone = useRef(0);
+  const dragGoneIn = useCallback((ms: number) => {
+    clearTimeout(dragGone.current);
+    dragGone.current = window.setTimeout(() => setDragOver(false), ms);
+  }, []);
+  const dragging = useCallback(() => {
+    setDragOver(true);
+    dragGoneIn(1000);
+  }, [dragGoneIn]);
+  const dragEnded = useCallback(() => {
+    clearTimeout(dragGone.current);
+    setDragOver(false);
+  }, []);
+  useEffect(() => {
+    window.addEventListener('drop', dragEnded, true);
+    window.addEventListener('dragend', dragEnded, true);
+    return () => {
+      window.removeEventListener('drop', dragEnded, true);
+      window.removeEventListener('dragend', dragEnded, true);
+      clearTimeout(dragGone.current);
+    };
+  }, [dragEnded]);
   const done = sliceState.state === 'done';
   const [topbar, compact] = useFit<HTMLElement>(TOPBAR_STEPS);
   // The name of a view shown as an icon only.
@@ -193,10 +218,13 @@ export function App() {
         // Archive tools (e.g. WinRAR) offer the file as "copy" only; without an explicit copy
         // effect the drop is refused.
         e.dataTransfer.dropEffect = 'copy';
-        setDragOver(true);
+        dragging();
       }}
       onDragLeave={(e) => {
-        if (e.currentTarget === e.target) setDragOver(false);
+        // Left for somewhere outside the app (no element: out of the window, or canceled). Not at
+        // once: Safari names no element also within the page, where a dragover follows.
+        const to = e.relatedTarget;
+        if (!(to instanceof Node) || !e.currentTarget.contains(to)) dragGoneIn(100);
       }}
       onDrop={onDrop}
     >
