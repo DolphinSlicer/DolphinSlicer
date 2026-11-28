@@ -1334,7 +1334,19 @@ input[type="checkbox"].switch:disabled {
 .preset-field:last-of-type {
   margin-bottom: 2px;
 }
-.preset-field > .caption {
+.preset-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 16px;
+}
+.preset-head > .icon-btn.discard {
+  /* Centered over the settings button (34px) at the row's end, in the caption's line. */
+  width: 34px;
+  height: 16px;
+  color: var(--muted);
+}
+.preset-head > .caption {
   display: block;
   font-size: 12px;
   color: var(--muted);

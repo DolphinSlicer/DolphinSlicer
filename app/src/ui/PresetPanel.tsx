@@ -1,14 +1,14 @@
 // Printer / process / filament pickers, backed by OrcaSlicer's PresetBundle in the engine.
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import { Settings } from 'lucide-react';
+import { Settings, Undo2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import type { PresetEntry, PresetSelection, PresetType } from '../engine/protocol';
 import { t, tr } from '../i18n/i18n';
 import { filamentInLibrary, isModelVariant, printerInLibrary } from '../presets/library';
 import { profilesManifest } from '../presets/profiles';
 import { loadSchema } from '../settings/schema';
-import { applySelection, aux, preferLibraryFilament } from '../state/actions';
+import { applySelection, aux, preferLibraryFilament, resetSettings } from '../state/actions';
 import { notify, set, useApp } from '../state/store';
 import { ask } from './Confirm';
 import { describeError } from './errors';
@@ -210,9 +210,13 @@ export function PresetPanel() {
         const id = type === 'print' ? 'process' : type;
         return (
           <div className="preset-field" key={type}>
-            <span className="caption" id={`preset-${id}-label`}>
-              {caption}
-            </span>
+            <div className="preset-head">
+              <span className="caption" id={`preset-${id}-label`}>
+                {caption}
+              </span>
+              {/* Above the settings button. */}
+              {p.state?.dirty?.[type] && <DiscardButton type={type} name={picker.value[type]} picker={picker} />}
+            </div>
             <div className="select-row">
               <PresetSelect
                 type={type}
@@ -302,6 +306,27 @@ function BedTypeSelect({ picker }: { picker: ReturnType<typeof usePresetPicker> 
         <span className="edit-spacer" />
       </div>
     </div>
+  );
+}
+
+/** Shown while the preset has unsaved changes: back to it as saved, after asking. */
+function DiscardButton({ type, name, picker }: { type: PresetType; name: string; picker: ReturnType<typeof usePresetPicker> }) {
+  const { busy, run } = picker;
+  return (
+    <button
+      type="button"
+      className="icon-btn discard"
+      aria-label={t('Discard changes')}
+      data-tip={t('Discard changes')}
+      disabled={busy}
+      data-testid={`discard-${type}`}
+      onClick={async () => {
+        if (await ask(t('Discard unsaved changes to {names}?', { names: name }), { confirm: t('Discard') }))
+          run(() => resetSettings(type, undefined, 'saved'));
+      }}
+    >
+      <Undo2 size={12} />
+    </button>
   );
 }
 
