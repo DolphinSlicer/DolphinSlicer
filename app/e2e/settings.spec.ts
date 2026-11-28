@@ -683,3 +683,32 @@ test('compare presets side by side: the other preset’s values beside these, an
   await expect(page.locator('.settings .field.differs').first()).toBeVisible();
   await expect(page.getByTestId('settings-preset')).toHaveAttribute('data-value', 'MyKlipper 0.4 nozzle');
 });
+
+test('the arrow beside a modified preset discards its changes, after asking', async ({ page }) => {
+  await ready(page);
+  await expect(page.getByTestId('discard-print')).toHaveCount(0);
+  await page.getByTestId('edit-print').click();
+  await page.getByTestId('settings-search').fill('sparse infill density');
+  const density = (await field(page, 'sparse_infill_density')).locator('input');
+  const saved = await density.inputValue();
+  await density.fill('37');
+  await density.press('Enter');
+  await page.getByRole('tab', { name: 'Prepare' }).click();
+  await expect(page.getByTestId('process')).toContainText('(modified)');
+  // Only the modified one has it.
+  await expect(page.getByTestId('discard-filament')).toHaveCount(0);
+  await expect(page.getByTestId('discard-printer')).toHaveCount(0);
+
+  // Canceled: kept.
+  await page.getByTestId('discard-print').click();
+  await answer(page, 'Cancel');
+  await expect(page.getByTestId('process')).toContainText('(modified)');
+
+  await page.getByTestId('discard-print').click();
+  await answer(page, 'Discard');
+  await expect(page.getByTestId('process')).not.toContainText('(modified)');
+  await expect(page.getByTestId('discard-print')).toHaveCount(0);
+  await page.getByTestId('edit-print').click();
+  await page.getByTestId('settings-search').fill('sparse infill density');
+  await expect((await field(page, 'sparse_infill_density')).locator('input')).toHaveValue(saved);
+});
