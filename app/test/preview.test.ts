@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { describe, expect, it } from 'vitest';
 import { colorize, hexColor, RANGE_COLORS, rangeValues, TRAVEL } from '../src/gcode/colors';
-import { buildPreview, MOVE, PATH, type PreviewMeta, roundToBin } from '../src/gcode/preview';
+import { buildPreview, MOVE, PATH, type PreviewMeta, roundToBin, spreadTimes } from '../src/gcode/preview';
 
 interface V {
   type: number;
@@ -132,6 +132,21 @@ describe('the path played back', () => {
     expect([...d.path.t0]).toEqual([0, 1.5, 3.5, 0]);
     expect([...d.path.t1]).toEqual([1, 3.5, 4.5, 0.25]);
     expect([...d.layerPathTime]).toEqual([4.5, 0.25]);
+  });
+});
+
+describe('spreadTimes', () => {
+  it('shares a group’s time, given to its last move, over its moves by their length and speed', () => {
+    // Moves of 10 mm at 10 mm/s, 30 mm at 10 mm/s, a retraction in place, then 10 mm at 20 mm/s carrying the 4.5 s.
+    const pos = Float32Array.from([0, 0, 0, 10, 0, 0, 40, 0, 0, 40, 0, 0, 50, 0, 0]);
+    const speed = Float32Array.from([0, 10, 10, 0, 20]);
+    const time = Float32Array.from([0, 0, 0, 0, 4.5]);
+    expect([...spreadTimes(pos, speed, time, 5)]).toEqual([0, 1, 3, 0, expect.closeTo(0.5)]);
+  });
+
+  it('keeps the time of a group that does not move where it is', () => {
+    const pos = Float32Array.from([0, 0, 0, 0, 0, 0, 10, 0, 0]);
+    expect([...spreadTimes(pos, Float32Array.from([0, 0, 10]), Float32Array.from([0, 0.5, 1]), 3)]).toEqual([0, 0.5, 1]);
   });
 });
 

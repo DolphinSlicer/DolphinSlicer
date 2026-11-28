@@ -190,6 +190,8 @@ export function buildPreview(buf: ArrayBuffer, meta: PreviewMeta): PreviewData {
     extruder = u8(),
     color = u8();
 
+  const moveTime = spreadTimes(pos, speed, time, n);
+
   let segs = 0,
     travels = 0,
     moves = 0;
@@ -319,14 +321,14 @@ export function buildPreview(buf: ArrayBuffer, meta: PreviewMeta): PreviewData {
     if (i === 0) continue;
     if (x === pos[i * 3 - 3] && y === pos[i * 3 - 2] && z === pos[i * 3 - 1]) {
       // In place (a retraction, a pause): time before the next move.
-      clock += time[i]!;
+      clock += moveTime[i]!;
       continue;
     }
     pEnd[pc * 3] = x;
     pEnd[pc * 3 + 1] = y;
     pEnd[pc * 3 + 2] = z;
     pT0[pc] = clock;
-    clock += time[i]!;
+    clock += moveTime[i]!;
     pT1[pc] = clock;
     pRef[pc] =
       t === MOVE.Extrude ? (PATH.Seg << PATH.shift) | sc : t === MOVE.Travel ? (PATH.Travel << PATH.shift) | tc : PATH.Other << PATH.shift;
@@ -427,6 +429,31 @@ export function buildPreview(buf: ArrayBuffer, meta: PreviewMeta): PreviewData {
     bbox: sc ? { min: [minX, minY, minZ], max: [maxX, maxY, maxZ] } : { min: [0, 0, 0], max: [0, 0, 0] },
     meta,
   };
+}
+
+/**
+ * Each vertex's own time. The engine's estimator gives a group of moves' time to the last one
+ * (the others 0): it is shared out again over the group's moves by how long each takes at its
+ * feed rate (length / speed); to the moves in place only when the group does not move.
+ */
+export function spreadTimes(pos: Float32Array, speed: Float32Array, time: Float32Array, n: number): Float32Array {
+  const out = new Float32Array(n);
+  let from = 1;
+  let weight = 0;
+  const w = new Float32Array(n);
+  for (let i = 1; i < n; i++) {
+    const len = Math.hypot(pos[i * 3]! - pos[i * 3 - 3]!, pos[i * 3 + 1]! - pos[i * 3 - 2]!, pos[i * 3 + 2]! - pos[i * 3 - 1]!);
+    w[i] = len > 0 ? len / Math.max(speed[i]!, 1e-3) : 0;
+    weight += w[i]!;
+    if (!(time[i]! > 0)) continue;
+    let total = 0;
+    for (let k = from; k <= i; k++) total += time[k]!;
+    if (weight > 0) for (let k = from; k <= i; k++) out[k] = (total * w[k]!) / weight;
+    else for (let k = from; k <= i; k++) out[k] = time[k]!;
+    from = i + 1;
+    weight = 0;
+  }
+  return out;
 }
 
 /**
