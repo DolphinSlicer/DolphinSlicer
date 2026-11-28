@@ -354,5 +354,6 @@
   "Could not download {name}": "Impossibile scaricare {name}",
   "Download plate as 3MF": "Scarica il piatto come 3MF",
   "Could not save the plate": "Impossibile salvare il piatto",
-  "Could not load the project’s settings": "Impossibile caricare le impostazioni del progetto"
+  "Could not load the project’s settings": "Impossibile caricare le impostazioni del progetto",
+  "Time in the layer": "Tempo nello strato"
 }

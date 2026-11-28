@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { describe, expect, it } from 'vitest';
 import { colorize, hexColor, RANGE_COLORS, rangeValues, TRAVEL } from '../src/gcode/colors';
-import { buildPreview, MOVE, type PreviewMeta, roundToBin } from '../src/gcode/preview';
+import { buildPreview, MOVE, PATH, type PreviewMeta, roundToBin, spreadTimes } from '../src/gcode/preview';
 
 interface V {
   type: number;
@@ -15,27 +15,29 @@ interface V {
   mm3?: number;
   extruder?: number;
   color?: number;
+  /** Seconds the move takes. */
+  time?: number;
 }
 
 /** The engine's preview file (orca_export_preview) for these vertices. */
 function file(vs: V[]): ArrayBuffer {
   const n = vs.length;
   const buf = new ArrayBuffer(n * 64);
-  const f = new Float32Array(buf, 0, n * 13);
+  const f = new Float32Array(buf, 0, n * 14);
   vs.forEach((v, i) => {
     f.set(v.pos, i * 3);
-    const vals = [v.h ?? 0.2, v.w ?? 0.45, v.speed ?? 0, v.actual ?? v.speed ?? 0, v.mm3 ?? 0.1, 0, 210, 0, 1000, 8];
+    const vals = [v.h ?? 0.2, v.w ?? 0.45, v.speed ?? 0, v.actual ?? v.speed ?? 0, v.mm3 ?? 0.1, 0, 210, 0, 1000, 8, v.time ?? 0];
     vals.forEach((x, k) => {
       f[n * 3 + k * n + i] = x;
     });
   });
-  new Uint32Array(buf, n * 52, n).set(vs.map((v) => v.layer));
-  const u8 = (k: number, get: (v: V) => number) => new Uint8Array(buf, n * 56 + k * n, n).set(vs.map(get));
+  new Uint32Array(buf, n * 56, n).set(vs.map((v) => v.layer));
+  const u8 = (k: number, get: (v: V) => number) => new Uint8Array(buf, n * 60 + k * n, n).set(vs.map(get));
   u8(0, (v) => v.role ?? 0);
   u8(1, (v) => v.type);
   u8(2, (v) => v.extruder ?? 0);
   u8(3, (v) => v.color ?? 0);
-  return buf.slice(0, n * 60);
+  return buf;
 }
 const meta = (n: number, layers: number[]): PreviewMeta => ({
   count: n,
@@ -95,6 +97,56 @@ describe('buildPreview', () => {
     expect(d.ranges.speed[0]).toMatchObject({ min: 30, max: 100 });
     expect(d.ranges.speed[1]).toMatchObject({ min: 30, max: 200 });
     expect(d.ranges.layerTime).toMatchObject({ min: 3, max: 12 });
+  });
+});
+
+describe('the path played back', () => {
+  // A travel (1 s), a retraction in place (0.5 s), two extrusions (2 s, 1 s); next layer: a travel (0.25 s).
+  const R = MOVE.Retract;
+  const vs: V[] = [
+    { type: T, pos: [0, 0, 0.2], layer: 0 },
+    { type: T, pos: [10, 0, 0.2], layer: 0, time: 1 },
+    { type: R, pos: [10, 0, 0.2], layer: 0, time: 0.5 },
+    { type: E, pos: [10, 0, 0.2], layer: 0, role: 2 },
+    { type: E, pos: [20, 0, 0.2], layer: 0, role: 2, time: 2 },
+    { type: E, pos: [20, 10, 0.2], layer: 0, role: 2, time: 1 },
+    { type: T, pos: [20, 10, 0.4], layer: 1, time: 0.25 },
+  ];
+  const d = buildPreview(file(vs), meta(vs.length, [4.5, 0.25]));
+
+  it('lists the moves in print order with what each draws', () => {
+    expect(d.path.count).toBe(4);
+    const kinds = [...d.path.ref].map((r) => [r >>> PATH.shift, r & PATH.index]);
+    expect(kinds).toEqual([
+      [PATH.Travel, 0],
+      [PATH.Seg, 0],
+      [PATH.Seg, 1],
+      [PATH.Travel, 1],
+    ]);
+    expect(d.path.start).toEqual([0, 0, expect.closeTo(0.2)]);
+    expect([...d.path.end.subarray(3, 6)]).toEqual([20, 0, expect.closeTo(0.2)]);
+    expect([...d.layerPathStart]).toEqual([0, 3, 4]);
+  });
+
+  it('times them from their layer’s start, a pause in place before the next move', () => {
+    expect([...d.path.t0]).toEqual([0, 1.5, 3.5, 0]);
+    expect([...d.path.t1]).toEqual([1, 3.5, 4.5, 0.25]);
+    expect([...d.layerPathTime]).toEqual([4.5, 0.25]);
+  });
+});
+
+describe('spreadTimes', () => {
+  it('shares a group’s time, given to its last move, over its moves by their length and speed', () => {
+    // Moves of 10 mm at 10 mm/s, 30 mm at 10 mm/s, a retraction in place, then 10 mm at 20 mm/s carrying the 4.5 s.
+    const pos = Float32Array.from([0, 0, 0, 10, 0, 0, 40, 0, 0, 40, 0, 0, 50, 0, 0]);
+    const speed = Float32Array.from([0, 10, 10, 0, 20]);
+    const time = Float32Array.from([0, 0, 0, 0, 4.5]);
+    expect([...spreadTimes(pos, speed, time, 5)]).toEqual([0, 1, 3, 0, expect.closeTo(0.5)]);
+  });
+
+  it('keeps the time of a group that does not move where it is', () => {
+    const pos = Float32Array.from([0, 0, 0, 0, 0, 0, 10, 0, 0]);
+    expect([...spreadTimes(pos, Float32Array.from([0, 0, 10]), Float32Array.from([0, 0.5, 1]), 3)]).toEqual([0, 0.5, 1]);
   });
 });
 

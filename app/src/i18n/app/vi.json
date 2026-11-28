@@ -362,5 +362,6 @@
   "Could not download {name}": "Không thể tải xuống {name}",
   "Download plate as 3MF": "Tải bàn in xuống dưới dạng 3MF",
   "Could not save the plate": "Không thể lưu bàn in",
-  "Could not load the project’s settings": "Không thể tải thiết lập của dự án"
+  "Could not load the project’s settings": "Không thể tải thiết lập của dự án",
+  "Time in the layer": "Thời gian trong lớp"
 }

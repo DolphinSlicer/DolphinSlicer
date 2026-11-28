@@ -358,5 +358,6 @@
   "Could not download {name}": "Nepavyko atsisiųsti {name}",
   "Download plate as 3MF": "Atsisiųsti plokštę kaip 3MF",
   "Could not save the plate": "Nepavyko įrašyti plokštės",
-  "Could not load the project’s settings": "Nepavyko įkelti projekto nustatymų"
+  "Could not load the project’s settings": "Nepavyko įkelti projekto nustatymų",
+  "Time in the layer": "Laikas sluoksnyje"
 }

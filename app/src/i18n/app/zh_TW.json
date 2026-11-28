@@ -352,5 +352,6 @@
   "Could not download {name}": "無法下載 {name}",
   "Download plate as 3MF": "將列印板下載為 3MF",
   "Could not save the plate": "無法儲存列印板",
-  "Could not load the project’s settings": "無法載入專案的設定"
+  "Could not load the project’s settings": "無法載入專案的設定",
+  "Time in the layer": "層內時間"
 }

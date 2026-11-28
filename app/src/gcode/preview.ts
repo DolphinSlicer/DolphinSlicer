@@ -21,6 +21,9 @@ export const MOVE = {
 } as const;
 const ROLE_CUSTOM = 14;
 
+/** A path move's ref: what it draws in its top two bits (an extrusion segment, a travel move, nothing), the index below. */
+export const PATH = { Seg: 0, Travel: 1, Other: 2, shift: 30, index: 0x3fffffff } as const;
+
 /** What orca_export_preview returns beside the vertices. */
 export interface PreviewMeta {
   count: number;
@@ -89,6 +92,24 @@ export interface PreviewData {
   layerCount: number;
   /** Layers with a pause or custom G-code (grey in the Filament view, as desktop). */
   layerGrey: Uint8Array;
+  /**
+   * Every move of the nozzle in print order (extrusions, travel moves, wipes), for playing the
+   * print back: where it ends, when it starts and ends (seconds from its layer's start, the
+   * engine's estimate), and what is drawn for it (see PATH).
+   */
+  path: {
+    end: Float32Array;
+    t0: Float32Array;
+    t1: Float32Array;
+    ref: Uint32Array;
+    count: number;
+    /** Where the nozzle is before the first move. */
+    start: [number, number, number];
+  };
+  /** First path move of each layer, plus a final end entry. */
+  layerPathStart: Uint32Array;
+  /** Seconds each layer takes, from its first move's start (the path's times). */
+  layerPathTime: Float32Array;
   /** Roles that occur. */
   rolesPresent: number[];
   /** Extruders that extrude. */
@@ -155,7 +176,8 @@ export function buildPreview(buf: ArrayBuffer, meta: PreviewMeta): PreviewData {
     temp = f32(n),
     pa = f32(n),
     accel = f32(n),
-    jerk = f32(n);
+    jerk = f32(n),
+    time = f32(n);
   const vLayer = new Uint32Array(buf, at, n);
   at += n * 4;
   const u8 = () => {
@@ -168,11 +190,15 @@ export function buildPreview(buf: ArrayBuffer, meta: PreviewMeta): PreviewData {
     extruder = u8(),
     color = u8();
 
+  const moveTime = spreadTimes(pos, speed, time, n);
+
   let segs = 0,
-    travels = 0;
+    travels = 0,
+    moves = 0;
   for (let i = 1; i < n; i++) {
     const zero = pos[i * 3] === pos[i * 3 - 3] && pos[i * 3 + 1] === pos[i * 3 - 2] && pos[i * 3 + 2] === pos[i * 3 - 1];
     if (zero) continue;
+    moves++;
     if (type[i] === MOVE.Extrude) segs++;
     else if (type[i] === MOVE.Travel) travels++;
   }
@@ -203,7 +229,13 @@ export function buildPreview(buf: ArrayBuffer, meta: PreviewMeta): PreviewData {
   };
   const layerCount = n ? vLayer[n - 1]! + 1 : 0;
   const layerSeg = new Uint32Array(layerCount + 1),
-    layerTr = new Uint32Array(layerCount + 1);
+    layerTr = new Uint32Array(layerCount + 1),
+    layerPath = new Uint32Array(layerCount + 1),
+    layerPathTime = new Float32Array(layerCount);
+  const pEnd = new Float32Array(moves * 3),
+    pT0 = new Float32Array(moves),
+    pT1 = new Float32Array(moves),
+    pRef = new Uint32Array(moves);
   const layerZ = new Float32Array(layerCount),
     layerGrey = new Uint8Array(layerCount);
   const zSeen = new Uint8Array(layerCount);
@@ -234,13 +266,19 @@ export function buildPreview(buf: ArrayBuffer, meta: PreviewMeta): PreviewData {
 
   let sc = 0,
     tc = 0,
+    pc = 0,
     li = -1;
+  // Seconds into the layer: where the next move starts (after any moves in place before it).
+  let clock = 0;
   for (let i = 0; i < n; i++) {
     const L = vLayer[i]!;
     while (li < L) {
+      if (li >= 0) layerPathTime[li] = clock;
       li++;
       layerSeg[li] = sc;
       layerTr[li] = tc;
+      layerPath[li] = pc;
+      clock = 0;
     }
     const t = type[i]!,
       x = pos[i * 3]!,
@@ -281,7 +319,20 @@ export function buildPreview(buf: ArrayBuffer, meta: PreviewMeta): PreviewData {
       }
     }
     if (i === 0) continue;
-    if (x === pos[i * 3 - 3] && y === pos[i * 3 - 2] && z === pos[i * 3 - 1]) continue;
+    if (x === pos[i * 3 - 3] && y === pos[i * 3 - 2] && z === pos[i * 3 - 1]) {
+      // In place (a retraction, a pause): time before the next move.
+      clock += moveTime[i]!;
+      continue;
+    }
+    pEnd[pc * 3] = x;
+    pEnd[pc * 3 + 1] = y;
+    pEnd[pc * 3 + 2] = z;
+    pT0[pc] = clock;
+    clock += moveTime[i]!;
+    pT1[pc] = clock;
+    pRef[pc] =
+      t === MOVE.Extrude ? (PATH.Seg << PATH.shift) | sc : t === MOVE.Travel ? (PATH.Travel << PATH.shift) | tc : PATH.Other << PATH.shift;
+    pc++;
     if (t === MOVE.Extrude) {
       const o = sc * 6;
       seg[o] = pos[i * 3 - 3]!;
@@ -330,10 +381,12 @@ export function buildPreview(buf: ArrayBuffer, meta: PreviewMeta): PreviewData {
       tc++;
     }
   }
+  if (li >= 0 && li < layerCount) layerPathTime[li] = clock;
   while (li < layerCount) {
     li++;
     layerSeg[li] = sc;
     layerTr[li] = tc;
+    layerPath[li] = pc;
   }
   // A layer without extrusions shows the height of the one below.
   for (let l = 1; l < layerCount; l++) if (!zSeen[l]) layerZ[l] = layerZ[l - 1]!;
@@ -360,12 +413,47 @@ export function buildPreview(buf: ArrayBuffer, meta: PreviewMeta): PreviewData {
     layerZ,
     layerCount,
     layerGrey,
+    path: {
+      end: pEnd,
+      t0: pT0,
+      t1: pT1,
+      ref: pRef,
+      count: pc,
+      start: n ? [pos[0]!, pos[1]!, pos[2]!] : [0, 0, 0],
+    },
+    layerPathStart: layerPath,
+    layerPathTime,
     rolesPresent,
     extrudersUsed,
     ranges,
     bbox: sc ? { min: [minX, minY, minZ], max: [maxX, maxY, maxZ] } : { min: [0, 0, 0], max: [0, 0, 0] },
     meta,
   };
+}
+
+/**
+ * Each vertex's own time. The engine's estimator gives a group of moves' time to the last one
+ * (the others 0): it is shared out again over the group's moves by how long each takes at its
+ * feed rate (length / speed); to the moves in place only when the group does not move.
+ */
+export function spreadTimes(pos: Float32Array, speed: Float32Array, time: Float32Array, n: number): Float32Array {
+  const out = new Float32Array(n);
+  let from = 1;
+  let weight = 0;
+  const w = new Float32Array(n);
+  for (let i = 1; i < n; i++) {
+    const len = Math.hypot(pos[i * 3]! - pos[i * 3 - 3]!, pos[i * 3 + 1]! - pos[i * 3 - 2]!, pos[i * 3 + 2]! - pos[i * 3 - 1]!);
+    w[i] = len > 0 ? len / Math.max(speed[i]!, 1e-3) : 0;
+    weight += w[i]!;
+    if (!(time[i]! > 0)) continue;
+    let total = 0;
+    for (let k = from; k <= i; k++) total += time[k]!;
+    if (weight > 0) for (let k = from; k <= i; k++) out[k] = (total * w[k]!) / weight;
+    else for (let k = from; k <= i; k++) out[k] = time[k]!;
+    from = i + 1;
+    weight = 0;
+  }
+  return out;
 }
 
 /**

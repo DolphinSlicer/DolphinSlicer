@@ -363,5 +363,6 @@
   "Could not download {name}": "Impossible de télécharger {name}",
   "Download plate as 3MF": "Télécharger le plateau en 3MF",
   "Could not save the plate": "Impossible d’enregistrer le plateau",
-  "Could not load the project’s settings": "Impossible de charger les paramètres du projet"
+  "Could not load the project’s settings": "Impossible de charger les paramètres du projet",
+  "Time in the layer": "Temps dans la couche"
 }

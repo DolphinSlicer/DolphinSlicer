@@ -357,5 +357,6 @@
   "Could not download {name}": "Nem sikerült letölteni: {name}",
   "Download plate as 3MF": "Tálca letöltése 3MF-ként",
   "Could not save the plate": "Nem sikerült menteni a tálcát",
-  "Could not load the project’s settings": "Nem sikerült betölteni a projekt beállításait"
+  "Could not load the project’s settings": "Nem sikerült betölteni a projekt beállításait",
+  "Time in the layer": "Idő a rétegben"
 }

@@ -1,11 +1,12 @@
 // G-code preview controls: color view and its legend, layer range, feature visibility, travel moves, statistics.
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { useEffect, useRef, useState } from 'react';
+import { Pause, Play } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { debugMode } from '../engine/capabilities';
 import { hexColor, RANGE_COLORS, rangeValues, SPEED_VIEWS, VIEWS, type ViewType, viewRange } from '../gcode/colors';
 import { ROLE_COLORS, ROLES } from '../gcode/parse';
 import type { PreviewData } from '../gcode/preview';
-import { bcp47, t, tr } from '../i18n/i18n';
+import { bcp47, N_, t, tr } from '../i18n/i18n';
 import { onPreviewData, parsedGcode } from '../state/actions';
 import { formatLength, formatMoney, formatNumber, formatWeight, type Prefs } from '../state/prefs';
 import { isStale, useApp } from '../state/store';
@@ -74,6 +75,9 @@ export function PreviewPanel() {
   const [range, setRange] = useState<[number, number]>(() => [...(viewport()?.gcode.layerRange ?? [0, 0])] as [number, number]);
   const [hidden, setHidden] = useState<Set<number>>(hiddenRoles);
   const [travel, setTravel] = useState(() => viewport()?.gcode.showTravel ?? false);
+  /** Seconds into the top layer the print is shown up to (Infinity: all of it). */
+  const [time, setTime] = useState(Infinity);
+  const [playing, setPlaying] = useState(false);
   const [, force] = useState(0);
   const [bench, setBench] = useState<string | null>(null);
 
@@ -81,6 +85,8 @@ export function PreviewPanel() {
     const off = onPreviewData(() => {
       const n = parsedGcode?.layerCount ?? 0;
       setRange([0, Math.max(0, n - 1)]);
+      setTime(Infinity);
+      setPlaying(false);
       setHidden(hiddenRoles());
       setTravel(viewport()?.gcode.showTravel ?? false);
       force((x) => x + 1);
@@ -92,9 +98,42 @@ export function PreviewPanel() {
   useEffect(() => {
     const vp = viewport();
     if (!vp) return;
-    vp.gcode.setRange(range[0], range[1]);
+    vp.gcode.setRange(range[0], range[1], time);
     vp.invalidate();
-  }, [range, preview.ready]);
+  }, [range, time, preview.ready]);
+
+  // Playing: the clock runs in real time; at a layer's end the next one begins.
+  const now = useRef({ range, time });
+  now.current = { range, time };
+  useEffect(() => {
+    if (!playing) return;
+    let last = performance.now(),
+      frame = 0;
+    const tick = (at: number) => {
+      const g = parsedGcode;
+      if (!g) return setPlaying(false);
+      let [lo, hi] = now.current.range;
+      let next = (now.current.time === Infinity ? 0 : now.current.time) + (at - last) / 1000;
+      last = at;
+      while (next >= g.layerPathTime[hi]! && hi < g.layerCount - 1) next -= g.layerPathTime[hi++]!;
+      if (next >= g.layerPathTime[hi]!) {
+        setTime(Infinity);
+        setPlaying(false);
+        return;
+      }
+      if (hi !== now.current.range[1]) setRange([lo, hi]);
+      setTime(next);
+      frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [playing]);
+  // A layer picked by hand: shown whole.
+  const pickLayers = useCallback((v: [number, number]) => {
+    setPlaying(false);
+    setTime(Infinity);
+    setRange(v);
+  }, []);
 
   const g = parsedGcode;
   const n = g?.layerCount ?? 0;
@@ -226,7 +265,7 @@ export function PreviewPanel() {
             <br />
             <span className="muted small">{z(range[1])}</span>
           </div>
-          <LayerRange count={n} value={range} onChange={setRange} />
+          <LayerRange count={n} value={range} onChange={pickLayers} />
           <div className="layer-label">
             {range[0] + 1}
             <br />
@@ -234,7 +273,143 @@ export function PreviewPanel() {
           </div>
         </div>
       )}
+      {g && n > 0 && (
+        <LayerPlayer
+          g={g}
+          layer={range[1]}
+          time={time}
+          playing={playing}
+          onTime={(v) => {
+            setPlaying(false);
+            setTime(v);
+          }}
+          onPlay={(on) => {
+            // From the layer's start when all of it is shown.
+            if (on && (time === Infinity || time >= (g.layerPathTime[range[1]] ?? 0))) setTime(0);
+            setPlaying(on);
+          }}
+        />
+      )}
     </>
+  );
+}
+
+/**
+ * The top layer's moves in time: a play button that prints it in real time (going on with the
+ * next layers), and a slider to any moment of it. Arrow keys step from move to move.
+ */
+function LayerPlayer({
+  g,
+  layer,
+  time,
+  playing,
+  onTime,
+  onPlay,
+}: {
+  g: PreviewData;
+  layer: number;
+  time: number;
+  playing: boolean;
+  onTime: (t: number) => void;
+  onPlay: (on: boolean) => void;
+}) {
+  const track = useRef<HTMLDivElement>(null);
+  const dragging = useRef(false);
+  const total = g.layerPathTime[layer] ?? 0;
+  const cur = Math.min(time, total);
+  const pct = total > 0 ? (cur / total) * 100 : 100;
+  const first = g.layerPathStart[layer]!,
+    end = g.layerPathStart[layer + 1]!;
+
+  const at = (clientX: number) => {
+    const r = track.current!.getBoundingClientRect();
+    const f = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
+    return f >= 1 ? Infinity : f * total;
+  };
+  /** The end of the next (or previous) move from the time shown. */
+  const step = (dir: 1 | -1) => {
+    const t1 = g.path.t1;
+    if (dir > 0) {
+      for (let m = first; m < end; m++) if (t1[m]! > cur + 1e-6) return onTime(m === end - 1 ? Infinity : t1[m]!);
+      return onTime(Infinity);
+    }
+    for (let m = end - 1; m >= first; m--) if (t1[m]! < cur - 1e-6) return onTime(t1[m]!);
+    onTime(0);
+  };
+  const key = (e: React.KeyboardEvent) => {
+    switch (e.key) {
+      case 'ArrowRight':
+      case 'ArrowUp':
+        step(1);
+        break;
+      case 'ArrowLeft':
+      case 'ArrowDown':
+        step(-1);
+        break;
+      case 'Home':
+        onTime(0);
+        break;
+      case 'End':
+        onTime(Infinity);
+        break;
+      default:
+        return;
+    }
+    e.preventDefault();
+  };
+  const label = tr(N_('Play'));
+  return (
+    <div className="layer-player card" data-testid="layer-player">
+      <button
+        type="button"
+        className="icon-btn"
+        aria-label={playing ? t('Pause') : label}
+        data-tip={playing ? t('Pause') : label}
+        aria-pressed={playing}
+        onClick={() => onPlay(!playing)}
+        disabled={!total}
+        data-testid="play"
+      >
+        {playing ? <Pause size={16} /> : <Play size={16} />}
+      </button>
+      <div
+        className="hrange"
+        ref={track}
+        onPointerDown={(e) => {
+          dragging.current = true;
+          onTime(at(e.clientX));
+          track.current!.setPointerCapture(e.pointerId);
+          track.current!.querySelector<HTMLElement>('.thumb')?.focus();
+        }}
+        onPointerMove={(e) => {
+          if (dragging.current) onTime(at(e.clientX));
+        }}
+        onPointerUp={(e) => {
+          dragging.current = false;
+          if (track.current!.hasPointerCapture(e.pointerId)) track.current!.releasePointerCapture(e.pointerId);
+        }}
+        onWheel={(e) => step(e.deltaY < 0 ? 1 : -1)}
+      >
+        <div className="rail" />
+        <div className="fill" style={{ width: `${pct}%` }} />
+        <div
+          className="thumb"
+          role="slider"
+          tabIndex={0}
+          aria-label={t('Time in the layer')}
+          aria-valuemin={0}
+          aria-valuemax={Math.round(total)}
+          aria-valuenow={Math.round(cur)}
+          aria-valuetext={`${formatDuration(cur)} / ${formatDuration(total)}`}
+          style={{ left: `${pct}%` }}
+          onKeyDown={key}
+          data-testid="layer-time"
+        />
+      </div>
+      <span className="player-time" data-testid="layer-time-label">
+        {formatDuration(cur)} <span className="muted">/ {formatDuration(total)}</span>
+      </span>
+    </div>
   );
 }
 

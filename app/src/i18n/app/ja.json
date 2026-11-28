@@ -356,5 +356,6 @@
   "Could not download {name}": "{name} をダウンロードできませんでした",
   "Download plate as 3MF": "プレートを3MFでダウンロード",
   "Could not save the plate": "プレートを保存できませんでした",
-  "Could not load the project’s settings": "プロジェクトの設定を読み込めませんでした"
+  "Could not load the project’s settings": "プロジェクトの設定を読み込めませんでした",
+  "Time in the layer": "レイヤー内の時間"
 }
