@@ -695,15 +695,16 @@ const char *orca_export_preview(void *p)
         const size_t n = verts.size();
 
         // Struct of arrays: positions (3 floats), one float array per value, the layers (uint32),
-        // then one byte array each for role, move type, extruder and color.
+        // then one byte array each for role, move type, extruder and color. The last value is the
+        // move's estimated time (normal mode, seconds; 0 for a phantom), for playing it back.
         e.preview.reset();
-        e.preview_bytes = n * 60;
+        e.preview_bytes = n * 64;
         e.preview.reset(new char[std::max<size_t>(e.preview_bytes, 1)]);
         char *base = e.preview.get();
         float *pos = reinterpret_cast<float *>(base);
         float *val = pos + 3 * n;
-        uint32_t *lay = reinterpret_cast<uint32_t *>(base + n * 52);
-        uint8_t *bytes = reinterpret_cast<uint8_t *>(base + n * 56);
+        uint32_t *lay = reinterpret_cast<uint32_t *>(base + n * 56);
+        uint8_t *bytes = reinterpret_cast<uint8_t *>(base + n * 60);
         for (size_t k = 0; k < n; ++k) {
             const uint32_t i = verts[k] & ~PHANTOM;
             const bool phantom = (verts[k] & PHANTOM) != 0;
@@ -720,6 +721,7 @@ const char *orca_export_preview(void *p)
             val[7 * n + k] = m.pressure_advance;
             val[8 * n + k] = m.acceleration;
             val[9 * n + k] = m.jerk;
+            val[10 * n + k] = phantom ? 0.f : m.time[0];
             lay[k] = layer_of[k];
             bytes[k] = preview_role(m.extrusion_role);
             bytes[n + k] = preview_type(m.type);

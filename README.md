@@ -46,7 +46,7 @@ browser.
 ## Features
 
 - **Prepare your plate**: import STL, 3MF, OBJ and AMF, then arrange, rotate, scale and paint supports.
-- **Preview the G-code** layer by layer, with print time, filament use and cost.
+- **Preview the G-code** layer by layer, with print time, filament use and cost, and play a layer back in real time with the nozzle shown.
 - **Printer profiles** for 70+ brands, plus your own printers and OrcaSlicer presets.
 - **Calibration tests**: temperature, flow, pressure advance, retraction and more.
 - **Send to your printer** over Klipper or OctoPrint, or export the G-code.

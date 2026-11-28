@@ -22,6 +22,12 @@ self.onmessage = (ev: MessageEvent<{ id: number; bin: ArrayBuffer; meta: Preview
       d.layerTravelStart,
       d.layerZ,
       d.layerGrey,
+      d.path.end,
+      d.path.t0,
+      d.path.t1,
+      d.path.ref,
+      d.layerPathStart,
+      d.layerPathTime,
       ...Object.values(d.values),
       ...Object.values(d.travelValues),
     ];

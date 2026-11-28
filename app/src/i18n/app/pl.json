@@ -363,5 +363,6 @@
   "Could not download {name}": "Nie udało się pobrać {name}",
   "Download plate as 3MF": "Pobierz płytę jako 3MF",
   "Could not save the plate": "Nie udało się zapisać płyty",
-  "Could not load the project’s settings": "Nie udało się wczytać ustawień projektu"
+  "Could not load the project’s settings": "Nie udało się wczytać ustawień projektu",
+  "Time in the layer": "Czas w warstwie"
 }

@@ -354,5 +354,6 @@
   "Could not download {name}": "Не вдалося завантажити {name}",
   "Download plate as 3MF": "Завантажити стіл як 3MF",
   "Could not save the plate": "Не вдалося зберегти стіл",
-  "Could not load the project’s settings": "Не вдалося завантажити налаштування проєкту"
+  "Could not load the project’s settings": "Не вдалося завантажити налаштування проєкту",
+  "Time in the layer": "Час у шарі"
 }

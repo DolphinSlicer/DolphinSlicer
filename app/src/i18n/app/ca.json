@@ -361,5 +361,6 @@
   "Could not download {name}": "No s'ha pogut baixar {name}",
   "Download plate as 3MF": "Baixa la placa com a 3MF",
   "Could not save the plate": "No s'ha pogut desar la placa",
-  "Could not load the project’s settings": "No s'han pogut carregar els ajustos del projecte"
+  "Could not load the project’s settings": "No s'han pogut carregar els ajustos del projecte",
+  "Time in the layer": "Temps dins la capa"
 }

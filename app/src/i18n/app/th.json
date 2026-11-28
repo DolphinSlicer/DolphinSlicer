@@ -353,5 +353,6 @@
   "Could not download {name}": "ไม่สามารถดาวน์โหลด {name} ได้",
   "Download plate as 3MF": "ดาวน์โหลดเพลตเป็น 3MF",
   "Could not save the plate": "ไม่สามารถบันทึกเพลตได้",
-  "Could not load the project’s settings": "ไม่สามารถโหลดการตั้งค่าของโปรเจกต์ได้"
+  "Could not load the project’s settings": "ไม่สามารถโหลดการตั้งค่าของโปรเจกต์ได้",
+  "Time in the layer": "เวลาในชั้น"
 }

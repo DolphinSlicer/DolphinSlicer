@@ -2135,6 +2135,67 @@ input[type="checkbox"].switch:disabled {
   cursor: grabbing;
 }
 
+/* The top layer played back: under the 3D view, clear of the layer slider. */
+.layer-player {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  width: min(560px, calc(100% - 200px));
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 14px 4px 4px;
+}
+.player-time {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.hrange {
+  position: relative;
+  flex: 1;
+  height: 28px;
+  cursor: pointer;
+  touch-action: none;
+}
+.hrange .rail,
+.hrange .fill {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 4px;
+  transform: translateY(-50%);
+  border-radius: 2px;
+}
+.hrange .rail {
+  right: 0;
+  background: var(--line-strong);
+}
+.hrange .fill {
+  background: var(--accent);
+}
+.hrange .thumb {
+  position: absolute;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border-radius: 50%;
+  background: var(--surface-solid);
+  border: 3px solid var(--accent);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  cursor: grab;
+}
+.hrange .thumb:hover,
+.hrange .thumb:focus-visible {
+  box-shadow:
+    0 0 0 5px var(--accent-soft),
+    0 1px 4px rgba(0, 0, 0, 0.35);
+  outline: none;
+}
+
 /* Slider: as the layer slider, across. --pct (0–100%) is the filled part, set by its place. */
 :where(input[type="range"]) {
   appearance: none;

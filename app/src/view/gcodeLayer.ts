@@ -7,6 +7,8 @@
 import {
   BufferAttribute,
   BufferGeometry,
+  ConeGeometry,
+  CylinderGeometry,
   DoubleSide,
   Float32BufferAttribute,
   Group,
@@ -16,13 +18,14 @@ import {
   InterleavedBufferAttribute,
   LineSegments,
   Mesh,
+  MeshStandardMaterial,
   ShaderMaterial,
   Sphere,
   Vector3,
 } from 'three';
 import { autoView, colorize, SPEED_VIEWS, type ViewType } from '../gcode/colors';
 import { ROLES } from '../gcode/parse';
-import type { PreviewData } from '../gcode/preview';
+import { PATH, type PreviewData } from '../gcode/preview';
 
 // Segment rendering ported from OrcaSlicer's libvgcode (src/libvgcode/src/ShadersES.hpp,
 // Segments_Vertex_Shader_ES, and SegmentTemplate.cpp; Copyright (c) Prusa Research 2023 Enrico Turri,
@@ -200,6 +203,31 @@ function lineColors(c: Uint8Array, n: number): Uint8Array {
 
 const ROLE_CUSTOM = ROLES.indexOf('Custom');
 
+/** The nozzle marker: a hot end's nozzle, its tip at the group's origin (where it prints). */
+function nozzleMarker(): Group {
+  const g = new Group();
+  const mat = new MeshStandardMaterial({ color: 0xc9cdd3, metalness: 0.35, roughness: 0.45, transparent: true, opacity: 0.85 });
+  // Built along Y by three.js: turned to stand along Z, the cone's tip down.
+  const tip = new Mesh(new ConeGeometry(1.8, 2.5, 32).rotateX(-Math.PI / 2), mat);
+  tip.position.z = 1.25;
+  const body = new Mesh(new CylinderGeometry(3.2, 3.2, 3, 6).rotateX(Math.PI / 2), mat);
+  body.position.z = 4;
+  const block = new Mesh(new CylinderGeometry(1.2, 1.2, 6, 32).rotateX(Math.PI / 2), mat);
+  block.position.z = 8.5;
+  g.add(tip, body, block);
+  g.renderOrder = 1;
+  return g;
+}
+
+/** Where the print is: the top layer printed up to a moment of it. */
+export interface PlayPosition {
+  /** The path move under way (PreviewData.path), and how far along it (0–1). */
+  move: number;
+  along: number;
+  /** The nozzle's position. */
+  at: [number, number, number];
+}
+
 export class GcodeLayer {
   readonly group = new Group();
   private mesh: Mesh<InstancedBufferGeometry, ShaderMaterial> | null = null;
@@ -207,6 +235,11 @@ export class GcodeLayer {
   private data: PreviewData | null = null;
   readonly roleVisible = new Float32Array(ROLES.length).fill(1);
   private range: [number, number] = [0, 0];
+  /** Seconds into the top layer it is shown up to (Infinity: all of it). */
+  private time = Infinity;
+  /** The segment drawn shortened (the one under way), with its real end. */
+  private cut: { index: number; end: [number, number, number] } | null = null;
+  readonly marker = nozzleMarker();
   showTravel = false;
   /** The color view (desktop's view type). */
   view: ViewType = 'feature';
@@ -273,6 +306,7 @@ export class GcodeLayer {
       this.travel.visible = this.showTravel;
       this.group.add(this.travel);
     }
+    this.group.add(this.marker);
     this.setRange(0, data.layerCount - 1);
   }
 
@@ -301,22 +335,101 @@ export class GcodeLayer {
     }
   }
 
-  /** Show layers lo..hi (inclusive, 0-based). */
-  setRange(lo: number, hi: number) {
+  /** Show layers lo..hi (inclusive, 0-based); the top one up to `time` seconds into it. */
+  setRange(lo: number, hi: number, time = Infinity) {
     const d = this.data;
     if (!d || !this.mesh) return;
     hi = Math.max(0, Math.min(d.layerCount - 1, hi));
     lo = Math.max(0, Math.min(hi, lo));
     this.range = [lo, hi];
+    this.time = time;
     (this.mesh.material.uniforms.layerRange!.value as number[])[0] = lo;
     (this.mesh.material.uniforms.layerRange!.value as number[])[1] = hi;
-    // Nothing above the top layer is submitted to the GPU.
-    this.mesh.geometry.instanceCount = d.layerSegStart[hi + 1]!;
-    if (this.travel) this.travel.geometry.setDrawRange(0, d.layerTravelStart[hi + 1]! * 2);
+    const p = this.playPosition();
+    this.restoreCut();
+    // Nothing after the move under way is submitted to the GPU.
+    let segs = d.layerSegStart[hi + 1]!,
+      travels = d.layerTravelStart[hi + 1]!;
+    if (p && p.move < d.layerPathStart[hi + 1]!) {
+      [segs, travels] = this.drawnBefore(p.move, hi);
+      const ref = d.path.ref[p.move]!;
+      if (ref >>> PATH.shift === PATH.Seg && p.along > 0) {
+        // The extrusion under way, up to the nozzle.
+        const i = ref & PATH.index;
+        this.cut = { index: i, end: [d.seg[i * 6 + 3]!, d.seg[i * 6 + 4]!, d.seg[i * 6 + 5]!] };
+        this.writeEnd(i, p.at);
+        segs = i + 1;
+      }
+    }
+    this.mesh.geometry.instanceCount = segs;
+    if (this.travel) this.travel.geometry.setDrawRange(0, travels * 2);
+    if (p) this.marker.position.set(...p.at);
+    this.marker.visible = !!p;
   }
 
   get layerRange() {
     return this.range;
+  }
+
+  /** Where the nozzle is at the time shown (the end of the top layer when it is all shown). */
+  playPosition(): PlayPosition | null {
+    const d = this.data;
+    if (!d?.path.count) return null;
+    const hi = this.range[1];
+    const first = d.layerPathStart[hi]!,
+      end = d.layerPathStart[hi + 1]!;
+    if (first === end) return null;
+    const { t0, t1 } = d.path;
+    // The first move that ends after the time: the one under way.
+    let a = first,
+      b = end;
+    while (a < b) {
+      const m = (a + b) >> 1;
+      if (t1[m]! <= this.time) a = m + 1;
+      else b = m;
+    }
+    if (a >= end) return { move: end, along: 1, at: this.endOf(end - 1) };
+    const from = this.endOf(a - 1),
+      to = this.endOf(a);
+    const span = t1[a]! - t0[a]!;
+    const along = span > 0 ? Math.min(1, Math.max(0, (this.time - t0[a]!) / span)) : 0;
+    return { move: a, along, at: [0, 1, 2].map((k) => from[k]! + (to[k]! - from[k]!) * along) as [number, number, number] };
+  }
+
+  /** Where path move m ends (-1: where the nozzle starts). */
+  private endOf(m: number): [number, number, number] {
+    const d = this.data!;
+    if (m < 0) return d.path.start;
+    return [d.path.end[m * 3]!, d.path.end[m * 3 + 1]!, d.path.end[m * 3 + 2]!];
+  }
+
+  /** The extrusion segments and travel moves done before path move m, in layer hi. */
+  private drawnBefore(m: number, hi: number): [number, number] {
+    const d = this.data!;
+    let segs = -1,
+      travels = -1;
+    for (let k = m - 1; k >= d.layerPathStart[hi]! && (segs < 0 || travels < 0); k--) {
+      const ref = d.path.ref[k]!,
+        kind = ref >>> PATH.shift;
+      if (segs < 0 && kind === PATH.Seg) segs = (ref & PATH.index) + 1;
+      if (travels < 0 && kind === PATH.Travel) travels = (ref & PATH.index) + 1;
+    }
+    return [segs < 0 ? d.layerSegStart[hi]! : segs, travels < 0 ? d.layerTravelStart[hi]! : travels];
+  }
+
+  private writeEnd(i: number, at: readonly number[]) {
+    const a = this.mesh!.geometry.getAttribute('iEnd') as InterleavedBufferAttribute;
+    a.setXYZ(i, at[0]!, at[1]!, at[2]!);
+    // Only what changed goes to the GPU (three.js clears the ranges once it has).
+    a.data.addUpdateRange(i * 6, 6);
+    a.data.needsUpdate = true;
+  }
+
+  /** The segment shortened for the time shown back to its full length. */
+  private restoreCut() {
+    if (!this.cut || !this.mesh) return;
+    this.writeEnd(this.cut.index, this.cut.end);
+    this.cut = null;
   }
 
   setRoleVisible(role: number, visible: boolean) {
@@ -333,6 +446,8 @@ export class GcodeLayer {
   }
 
   dispose() {
+    this.restoreCut();
+    this.group.remove(this.marker);
     for (const o of [this.mesh, this.travel]) {
       if (!o) continue;
       this.group.remove(o);

@@ -350,5 +350,6 @@
   "Could not download {name}": "无法下载 {name}",
   "Download plate as 3MF": "将打印板下载为 3MF",
   "Could not save the plate": "无法保存打印板",
-  "Could not load the project’s settings": "无法加载项目的设置"
+  "Could not load the project’s settings": "无法加载项目的设置",
+  "Time in the layer": "层内时间"
 }

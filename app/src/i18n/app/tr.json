@@ -357,5 +357,6 @@
   "Could not download {name}": "{name} indirilemedi",
   "Download plate as 3MF": "Plakayı 3MF olarak indir",
   "Could not save the plate": "Plaka kaydedilemedi",
-  "Could not load the project’s settings": "Projenin ayarları yüklenemedi"
+  "Could not load the project’s settings": "Projenin ayarları yüklenemedi",
+  "Time in the layer": "Katmandaki süre"
 }

@@ -353,5 +353,6 @@
   "Could not download {name}": "Ezin izan da {name} deskargatu",
   "Download plate as 3MF": "Deskargatu plaka 3MF gisa",
   "Could not save the plate": "Ezin izan da plaka gorde",
-  "Could not load the project’s settings": "Ezin izan dira proiektuaren ezarpenak kargatu"
+  "Could not load the project’s settings": "Ezin izan dira proiektuaren ezarpenak kargatu",
+  "Time in the layer": "Denbora geruzan"
 }

@@ -357,5 +357,6 @@
   "Could not download {name}": "No se pudo descargar {name}",
   "Download plate as 3MF": "Descargar la placa como 3MF",
   "Could not save the plate": "No se pudo guardar la placa",
-  "Could not load the project’s settings": "No se pudieron cargar los ajustes del proyecto"
+  "Could not load the project’s settings": "No se pudieron cargar los ajustes del proyecto",
+  "Time in the layer": "Tiempo en la capa"
 }
